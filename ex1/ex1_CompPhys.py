@@ -15,11 +15,11 @@ L = 1
 # Elasticity parametre
 xi = 1
 # Number of particles
-N = 10
+N = 2
 # Radii of the partiles
 R = 0.1
 # Number of timesteps
-T = 1
+T = 10
 
 radii = np.ones(N) * R
 masses = np.ones(N)
@@ -71,15 +71,15 @@ def check_wall_collison(x, v, r):
         (r - x) / v
     return dt
 
-def find_wall_collisions(particles, collisions, t=0, n=0):
+def find_wall_collisions(particles, collisions, t=0):
     for i in range(N):
         for j in range(2): # check both x and y wall
             dt = check_wall_collison(
-                particles[n, i, 0+j], 
-                particles[n, i, 2+j], 
+                particles[i, 0+j], 
+                particles[i, 2+j], 
                 radii[i]
                 )
-            heapq.heappush(collisions, (t+dt, i, NaN, "wall"+str(j)))
+            heapq.heappush(collisions, (t+dt, i, None, "wall"+str(j)))
     return collisions
 
 
@@ -93,8 +93,19 @@ def transelate(particles, n, dt):
         particles[n+1, :2] = particles[n, :2] + particles[n, 2:] * dt
 
 
-def find_next_collision(particles, i, t):
-    pass
+def push_next_collision(particles, i, t, collisions):
+    collision_types = ["wall0", "wall1", "particle"]
+    wall0 = check_wall_collison(particles[i, 0], particles[i, 2], radii[i])
+    wall1 = check_wall_collison(particles[i, 1], particles[i, 3], radii[i])
+
+    # Temp vals, untill particle-particle is implemented
+    #TODO: impolement particle-particle collision
+    particle = np.inf
+    j = None
+
+    collision_times = [wall0, wall1, particle]
+    next_col = np.argmin(collision_times)
+    heapq.heappush(collisions, (t+next_col, i, j, collision_types[next_col]))
 
 
 def collide(particles, i, collision_type, collisons):
@@ -105,7 +116,6 @@ def collide(particles, i, collision_type, collisons):
     elif collision_type == "particle":
         pass
 
-    #TODO: find next
     #TODO: implement particle-particle collisons
 
 """
@@ -132,9 +142,14 @@ def run_loop():
         dt = t - t_next
         transelate(particles, n, dt)
         collide(particles[n+1], i_next, next_coll[3], collisions)
-        push_next_collision(particles[n+1], i_next, )
+        for i in [i_next, j_next]:
+            if i==None: continue
+            last_collided[i] = t_next
+            push_next_collision(particles[n+1], i, t_next, collisions)
 
         t = t_next
+        plot_particles(particles[n])
+
 
 
 """
@@ -167,5 +182,4 @@ def plot_particles(particles, plot_vel=True):
 Running
 """
 
-particles = init_particles(N, radii)
-plot_particles(particles)
+run_loop()
