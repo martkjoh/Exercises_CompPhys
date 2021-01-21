@@ -15,7 +15,7 @@ L = 1
 # Elasticity parametre
 xi = 1
 # Number of particles
-N = 2
+N = 1
 # Radii of the partiles
 R = 0.1
 # Number of timesteps
@@ -84,11 +84,6 @@ def find_wall_collisions(particles, collisions, t=0):
 
 
 def transelate(particles, n, dt):
-    """ 
-    Move the simulation forward for time dt.
-    All particles are moved in a straight line.
-    No collisions should occur during this time.
-    """
     particles[n+1, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
     particles[n+1, :, 2:] = particles[n, :, 2:]
 
@@ -104,9 +99,10 @@ def push_next_collision(particles, i, t, collisions):
     particle = np.inf
     j = None
 
-    collision_times = [wall0, wall1, particle]
-    next_col = np.argmin(collision_times)
-    heapq.heappush(collisions, (t+next_col, i, j, collision_types[next_col]))
+    cols = [wall0, wall1, particle]
+    next_col = np.argmin(cols)
+    col = (t+cols[next_col], i, j, collision_types[next_col])
+    heapq.heappush(collisions, col)
 
 
 def collide(particles, i, collision_type):
@@ -132,21 +128,26 @@ def run_loop():
     last_collided = np.zeros(N)
 
     t = 0
+    print(collisions)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
-        print(next_coll)
         plot_particles(particles[n])
+        print(next_coll)
+        print(last_collided)
         t_next = next_coll[0]
         i_next = next_coll[1]
         j_next = next_coll[2]
         # Skip invalid collisions
-        if last_collided[i_next] > t_next: break
+        if last_collided[i_next] >= t_next: 
+            print("aaaaa")
+            continue
 
         dt = t_next - t
         transelate(particles, n, dt)
         collide(particles[n+1], i_next, next_coll[3])
         for i in [i_next, j_next]:
-            if i==None: continue
+            if i==None: 
+                continue
             last_collided[i] = t_next
             push_next_collision(particles[n+1], i, t_next, collisions)
 
