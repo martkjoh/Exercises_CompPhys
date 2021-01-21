@@ -68,7 +68,7 @@ def check_wall_collison(x, v, r):
     if v > 0:
         dt = (L - r - x) / v
     elif v < 0:
-        (r - x) / v
+        dt =(r - x) / v
     return dt
 
 def find_wall_collisions(particles, collisions, t=0):
@@ -89,8 +89,9 @@ def transelate(particles, n, dt):
     All particles are moved in a straight line.
     No collisions should occur during this time.
     """
-    for i in range(N):
-        particles[n+1, :2] = particles[n, :2] + particles[n, 2:] * dt
+    particles[n+1, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
+    particles[n+1, :, 2:] = particles[n, :, 2:]
+
 
 
 def push_next_collision(particles, i, t, collisions):
@@ -108,14 +109,14 @@ def push_next_collision(particles, i, t, collisions):
     heapq.heappush(collisions, (t+next_col, i, j, collision_types[next_col]))
 
 
-def collide(particles, i, collision_type, collisons):
+def collide(particles, i, collision_type):
     if collision_type == "wall0":
-        particles[i, 2:] = xi * np.array([-particles[i, 3], particles[i, 2]])
+        particles[i, 2:] = xi * np.array([-particles[i, 2], particles[i, 3]])
     if collision_type == "wall1":
-        particles[i, 2:] = xi * np.array([particles[i, 3], -particles[i, 2]])
+        particles[i, 2:] = xi * np.array([particles[i, 2], -particles[i, 3]])
     elif collision_type == "particle":
         pass
-
+    
     #TODO: implement particle-particle collisons
 
 """
@@ -133,22 +134,24 @@ def run_loop():
     t = 0
     for n in range(T):
         next_coll = heapq.heappop(collisions)
+        print(next_coll)
+        plot_particles(particles[n])
         t_next = next_coll[0]
         i_next = next_coll[1]
         j_next = next_coll[2]
         # Skip invalid collisions
         if last_collided[i_next] > t_next: break
 
-        dt = t - t_next
+        dt = t_next - t
         transelate(particles, n, dt)
-        collide(particles[n+1], i_next, next_coll[3], collisions)
+        collide(particles[n+1], i_next, next_coll[3])
         for i in [i_next, j_next]:
             if i==None: continue
             last_collided[i] = t_next
             push_next_collision(particles[n+1], i, t_next, collisions)
 
         t = t_next
-        plot_particles(particles[n])
+
 
 
 
@@ -165,6 +168,9 @@ def plot_particles(particles, plot_vel=True):
         for i in range(N)
         ]        
     ax.add_collection(PatchCollection(circles))
+
+    ax.set_ylim(0, 1)
+    ax.set_xlim(0, 1)
 
     if plot_vel:
         length = 0.2
