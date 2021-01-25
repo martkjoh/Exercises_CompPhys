@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
 import heapq
+from numpy.core.fromnumeric import shape
 
 from numpy.core.numeric import NaN
 
@@ -15,7 +16,7 @@ L = 1
 # Elasticity parametre
 xi = 1
 # Number of particles
-N = 1
+N = 5
 # Radii of the partiles
 R = 0.1
 # Number of timesteps
@@ -55,7 +56,6 @@ def init_particles(N, radii):
         else: k += 1
         if k > 100: 
             raise Exception("can't fit particles")
-
     
     return particles
 
@@ -70,6 +70,7 @@ def check_wall_collison(x, v, r):
     elif v < 0:
         dt =(r - x) / v
     return dt
+
 
 def find_wall_collisions(particles, collisions, t=0):
     for i in range(N):
@@ -89,10 +90,10 @@ def transelate(particles, n, dt):
 
 
 
-def push_next_collision(particles, i, t, collisions):
+def push_next_collision(particles, n, i, t, collisions):
     collision_types = ["wall0", "wall1", "particle"]
-    wall0 = check_wall_collison(particles[i, 0], particles[i, 2], radii[i])
-    wall1 = check_wall_collison(particles[i, 1], particles[i, 3], radii[i])
+    wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
+    wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
 
     # Temp vals, untill particle-particle is implemented
     #TODO: impolement particle-particle collision
@@ -105,11 +106,11 @@ def push_next_collision(particles, i, t, collisions):
     heapq.heappush(collisions, col)
 
 
-def collide(particles, i, collision_type):
+def collide(particles, n, i, collision_type):
     if collision_type == "wall0":
-        particles[i, 2:] = xi * np.array([-particles[i, 2], particles[i, 3]])
+        particles[n, i, 2:] = xi * np.array([-particles[n, i, 2], particles[n, i, 3]])
     if collision_type == "wall1":
-        particles[i, 2:] = xi * np.array([particles[i, 2], -particles[i, 3]])
+        particles[n, i, 2:] = xi * np.array([particles[n, i, 2], -particles[n, i, 3]])
     elif collision_type == "particle":
         pass
     
@@ -128,30 +129,28 @@ def run_loop():
     last_collided = np.zeros(N)
 
     t = 0
-    print(collisions)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
-        plot_particles(particles[n])
-        print(next_coll)
-        print(last_collided)
+        plot_particles(particles[n], title=t)
         t_next = next_coll[0]
         i_next = next_coll[1]
         j_next = next_coll[2]
+        
         # Skip invalid collisions
-        if last_collided[i_next] >= t_next: 
-            print("aaaaa")
-            continue
-
-        dt = t_next - t
-        transelate(particles, n, dt)
-        collide(particles[n+1], i_next, next_coll[3])
+        # TODO: check also for particle j
+        valid_collision = not (last_collided[i_next] >= t_next)
+        if valid_collision:
+            dt = t_next - t
+            t = t_next
+            transelate(particles, n, dt)
+            collide(particles, n+1, i_next, next_coll[3])
+        
         for i in [i_next, j_next]:
             if i==None: 
                 continue
-            last_collided[i] = t_next
-            push_next_collision(particles[n+1], i, t_next, collisions)
-
-        t = t_next
+            if valid_collision:
+                last_collided[i] = t
+            push_next_collision(particles, n+1, i, t, collisions)
 
 
 
@@ -160,7 +159,7 @@ def run_loop():
 Plotting
 """
 
-def plot_particles(particles, plot_vel=True):
+def plot_particles(particles, plot_vel=True, title=""):
     fig, ax = plt.subplots()
     circles = [
         plt.Circle((particles[i, 0], particles[i, 1]),
@@ -172,6 +171,7 @@ def plot_particles(particles, plot_vel=True):
 
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
+    ax.set_title(title)
 
     if plot_vel:
         length = 0.2
