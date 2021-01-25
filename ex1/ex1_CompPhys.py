@@ -17,13 +17,11 @@ L = 1
 xi = 1
 xi_p = 1
 # Number of particles
-N = 4
-# Radii of the partiles
-R = 0.1
+N = 2
 # Number of timesteps
-T = 10
+T = 20
 
-radii = np.ones(N) * R
+radii = np.ones(N) * 0.2
 masses = np.ones(N)
 
 # Particles must wholly inside the box, and not overlapping
@@ -76,9 +74,11 @@ def check_particle_collision(particles, n, i, j):
     R = radii[i] + radii[j]
     dx = particles[n, j, :2] - particles[n, i, :2]
     dv = particles[n, j, 2:] - particles[n, i, 2:] 
-    d = (dv @ dx)**2 - (dv @ dv)**2 * ((dx @ dx)**2 - R**2)
+    d = (dv @ dx) - (dv @ dv) * ((dx @ dx) - R**2)
     dt = np.inf
-    if not (dv@dx >= 0 or d < 0):
+    if dv @ dx >= 0: pass
+    elif d <= 0: pass
+    else:
         dt = - (dv @ dx + np.sqrt(d)) / (dv @ dv)
     return dt
 
@@ -128,8 +128,8 @@ def collide(particles, n, i, j,  collision_type):
         dv = particles[n, j, 2:] - particles[n, i, 2:]
         M = masses[i] + masses[j]
         a = ((1 + xi_p)/M * (dv@dx)/R**2) 
-        particles[n, i, 2:] += masses[i] * dx
-        particles[n, j, 2:] += masses[i] * dx
+        particles[n, i, 2:] += a * masses[i] * dx
+        particles[n, j, 2:] += a * masses[i] * dx
 
 
 """
@@ -145,6 +145,7 @@ def run_loop():
 
     t = 0
     plot_particles(particles[0], title=t)
+    print(collisions)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
         t_next = next_coll[0]
