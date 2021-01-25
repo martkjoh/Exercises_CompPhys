@@ -3,9 +3,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
 import heapq
-from numpy.core.fromnumeric import shape
-
-from numpy.core.numeric import NaN
 
 
 """
@@ -19,7 +16,7 @@ xi_p = 1
 # Number of particles
 N = 2
 # Number of timesteps
-T = 10
+T = 100
 
 radii = np.ones(N) * 0.2
 masses = np.ones(N)
@@ -102,6 +99,7 @@ def push_next_collision(particles, n, i, t, collisions):
 
     cols = [wall0, wall1, particle]
     next_col = np.argmin(cols)
+    if next_col < 3: j = -1
     col = (t+cols[next_col], i, j, t, collision_types[next_col])
     heapq.heappush(collisions, col)
 
@@ -164,7 +162,7 @@ def run_loop():
             plot_particles(particles[n+1], title=next_coll[4])
         
         for a in [i, j]:
-            if a==None or a==-1: 
+            if a==-1: 
                 continue
             if valid_collision:
                 last_collided[a] = t
@@ -200,6 +198,7 @@ def plot_particles(particles, plot_vel=True, title=""):
             for i in range(N)]
 
     plt.show()
+    
 
 
 """
