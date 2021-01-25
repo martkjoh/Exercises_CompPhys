@@ -85,6 +85,17 @@ def find_wall_collisions(particles, collisions, t=0):
     return collisions
 
 
+def check_particle_collision(particles, n, i, j, radii, collisions):
+    R2 = radii[i]**2 + radii[j]**2
+    dx = particles[n, j, :2] - particles[n, i, :2]
+    dv = particles[n, j, 2:] - particles[n, i, 2:] 
+    d = (dv @ dx)**2 - (dv@dv)**2 * ((dx @ dx)**2 - R2)
+    dt = np.inf
+    if not (dv@dx >= 0 or d < 0):
+        dt = - (dv @ dx + sqrt(d)) / (dv @ dv)
+    heapq.heappush(collisions, (t + dt, i, j, t, "particle"))
+
+
 def transelate(particles, n, dt):
     particles[n, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
 
