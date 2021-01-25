@@ -19,7 +19,7 @@ xi_p = 1
 # Number of particles
 N = 2
 # Number of timesteps
-T = 20
+T = 10
 
 radii = np.ones(N) * 0.2
 masses = np.ones(N)
@@ -74,10 +74,10 @@ def check_particle_collision(particles, n, i, j):
     R = radii[i] + radii[j]
     dx = particles[n, j, :2] - particles[n, i, :2]
     dv = particles[n, j, 2:] - particles[n, i, 2:] 
-    d = (dv @ dx) - (dv @ dv) * ((dx @ dx) - R**2)
+    d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
     dt = np.inf
     if dv @ dx >= 0: pass
-    elif d <= 0: pass
+    elif d < 0: pass
     else:
         dt = - (dv @ dx + np.sqrt(d)) / (dv @ dv)
     return dt
@@ -87,7 +87,7 @@ def find_next_particle_collision(particles, n, i, t):
     dt_min = np.inf
     j_min = -1
     for j in range(i+1, N):
-        dt = check_particle_collision(particles, 0, i, j)
+        dt = check_particle_collision(particles, n, i, j)
         if dt < dt_min:
             dt_min = dt
             j_min = j
@@ -126,10 +126,10 @@ def collide(particles, n, i, j,  collision_type):
         R = radii[i] + radii[j]
         dx = particles[n, j, :2] - particles[n, i, :2]
         dv = particles[n, j, 2:] - particles[n, i, 2:]
-        M = masses[i] + masses[j]
-        a = ((1 + xi_p)/M * (dv@dx)/R**2) 
-        particles[n, i, 2:] += a * masses[i] * dx
-        particles[n, j, 2:] += a * masses[i] * dx
+        mu = masses[i] * masses[j] / (masses[i] + masses[j])
+        a = (1 + xi_p) * mu * (dv@dx)/R**2
+        particles[n, i, 2:] += a / masses[i] * dx
+        particles[n, j, 2:] += -a / masses[j] * dx
 
 
 """
@@ -145,7 +145,6 @@ def run_loop():
 
     t = 0
     plot_particles(particles[0], title=t)
-    print(collisions)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
         t_next = next_coll[0]
@@ -162,15 +161,14 @@ def run_loop():
             t = t_next
             transelate(particles, n+1, dt)
             collide(particles, n+1, i, j, next_coll[4])
-            plot_particles(particles[n+1], title=t)
+            plot_particles(particles[n+1], title=next_coll[4])
         
         for a in [i, j]:
-            if a==None: 
+            if a==None or a==-1: 
                 continue
             if valid_collision:
                 last_collided[a] = t
             push_next_collision(particles, n+1, a, t, collisions)
-
 
 
 """
@@ -202,6 +200,7 @@ def plot_particles(particles, plot_vel=True, title=""):
             for i in range(N)]
 
     plt.show()
+
 
 """
 Running
