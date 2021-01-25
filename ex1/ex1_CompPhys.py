@@ -16,11 +16,11 @@ L = 1
 # Elasticity parametre
 xi = 1
 # Number of particles
-N = 5
+N = 1
 # Radii of the partiles
 R = 0.1
 # Number of timesteps
-T = 10
+T = 100
 
 radii = np.ones(N) * R
 masses = np.ones(N)
@@ -68,7 +68,7 @@ def check_wall_collison(x, v, r):
     if v > 0:
         dt = (L - r - x) / v
     elif v < 0:
-        dt =(r - x) / v
+        dt = (r - x) / v
     return dt
 
 
@@ -80,14 +80,13 @@ def find_wall_collisions(particles, collisions, t=0):
                 particles[i, 2+j], 
                 radii[i]
                 )
-            heapq.heappush(collisions, (t+dt, i, None, "wall"+str(j)))
+                # Time of collision, particle 1, particle 2, time added to heap, type of collision, 
+            heapq.heappush(collisions, (t+dt, i, None, t, "wall"+str(j)))
     return collisions
 
 
 def transelate(particles, n, dt):
-    particles[n+1, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
-    particles[n+1, :, 2:] = particles[n, :, 2:]
-
+    particles[n, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
 
 
 def push_next_collision(particles, n, i, t, collisions):
@@ -102,7 +101,7 @@ def push_next_collision(particles, n, i, t, collisions):
 
     cols = [wall0, wall1, particle]
     next_col = np.argmin(cols)
-    col = (t+cols[next_col], i, j, collision_types[next_col])
+    col = (t+cols[next_col], i, j, t, collision_types[next_col])
     heapq.heappush(collisions, col)
 
 
@@ -113,8 +112,8 @@ def collide(particles, n, i, collision_type):
         particles[n, i, 2:] = xi * np.array([particles[n, i, 2], -particles[n, i, 3]])
     elif collision_type == "particle":
         pass
-    
-    #TODO: implement particle-particle collisons
+        #TODO: implement particle-particle collisons
+
 
 """
 main loop
@@ -126,24 +125,27 @@ def run_loop():
     collisions = []
     collisions = find_wall_collisions(particles[0], collisions)
     # When has particle i last collided? Used to remove invalid collisions
-    last_collided = np.zeros(N)
+    last_collided = -np.ones(N)
 
     t = 0
+    plot_particles(particles[0], title=t)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
-        plot_particles(particles[n], title=t)
         t_next = next_coll[0]
         i_next = next_coll[1]
         j_next = next_coll[2]
+        t_added = next_coll[3]
         
         # Skip invalid collisions
         # TODO: check also for particle j
-        valid_collision = not (last_collided[i_next] >= t_next)
+        valid_collision = (t_added >= last_collided[i_next])
+        particles[n+1] = particles[n]
         if valid_collision:
             dt = t_next - t
             t = t_next
-            transelate(particles, n, dt)
-            collide(particles, n+1, i_next, next_coll[3])
+            transelate(particles, n+1, dt)
+            collide(particles, n+1, i_next, next_coll[4])
+            plot_particles(particles[n+1], title=t)
         
         for i in [i_next, j_next]:
             if i==None: 
