@@ -2,6 +2,7 @@ from matplotlib import collections
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
+from matplotlib.animation import FuncAnimation as FA
 import heapq
 
 
@@ -140,7 +141,7 @@ def run_loop(N, T, init):
     last_collided = -np.ones(N)
 
     t = 0
-    plot_particles(particles[0], title=t)
+    # plot_particles(particles[0], N, radii)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
         t_next = next_coll[0]
@@ -157,7 +158,7 @@ def run_loop(N, T, init):
             t = t_next
             transelate(particles, n+1, dt)
             collide(particles, n+1, i, j, next_coll[4])
-            plot_particles(particles[n+1], title=next_coll[4])
+            # plot_particles(particles[n+1], N, radii)
         
         if valid_collision:
             last_collided[i] = t
@@ -165,36 +166,67 @@ def run_loop(N, T, init):
                 last_collided[j] = t
         push_next_collision(particles, n+1, i, t, collisions)
         t += np.finfo(t).eps # to invalidate collisions added twice
+    anim_particles(particles)
 
 
 """
 Plotting
 """
 
-def plot_particles(particles, plot_vel=True, title=""):
-    fig, ax = plt.subplots()
+def add_particles(ax, particles, N, radii):
     circles = [
         plt.Circle((particles[i, 0], particles[i, 1]),
             radius=radii[i], 
             linewidth=0) 
         for i in range(N)
         ]        
-    ax.add_collection(PatchCollection(circles))
+    return ax.add_collection(PatchCollection(circles))
 
+
+def add_vel(ax, particles, N):
+    length = 0.1
+    return [ax.arrow(
+        particles[i, 0], 
+        particles[i, 1], 
+        particles[i, 2]*length, 
+        particles[i, 3]*length,
+        head_width=0.01)
+        for i in range(N)]
+
+
+def plot_particles(particles, N, radii, plot_vel=True):
+    fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
-    ax.set_title(title)
-
+    add_particles(ax, particles, N, radii)
     if plot_vel:
-        length = 0.1
-        [ax.arrow(
-            particles[i, 0], 
-            particles[i, 1], 
-            particles[i, 2]*length, 
-            particles[i, 3]*length,
-            head_width=0.01)
-            for i in range(N)]
+        add_vel(ax, particles, N)
 
+    plt.show()
+
+
+def anim_particles(particles, plot_vel=True):
+    fig, ax = plt.subplots()
+
+    circles = [
+        plt.Circle((particles[0, i, 0], particles[0, i, 1]),
+            radius=radii[i], 
+            linewidth=0) 
+        for i in range(N)
+        ]
+    patches = PatchCollection(circles)
+    ax.add_collection(patches)
+
+    def anim(n):
+        circles = [
+            plt.Circle((particles[n, i, 0], particles[n, i, 1]),
+                radius=radii[i], 
+                linewidth=0) 
+            for i in range(N)
+        ]
+        patches.set_paths(circles)
+
+    a = FA(fig, anim, interval=1)
     plt.show()
     
 
@@ -207,13 +239,13 @@ Running
 L = 1
 # Elasticity parametre
 xi = 1
-xi_p = 0.8
+xi_p = 1
 # Number of particles
-N = 40
+N = 1000
 # Number of timesteps
-T = 100
+T = 1000
 # Radius
-R = 0.05
+R = 0.003
 
 radii = np.ones(N) * R
 masses = np.ones(N)
