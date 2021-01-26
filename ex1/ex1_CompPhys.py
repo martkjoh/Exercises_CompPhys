@@ -8,21 +8,18 @@ import heapq
 """
 Initializing
 """
-# Sides of the box
-L = 1
-# Elasticity parametre
-xi = 1
-xi_p = 1
-# Number of particles
-N = 2
-# Number of timesteps
-T = 100
 
-radii = np.ones(N) * 0.2
-masses = np.ones(N)
+
+def one_testparticle(N):
+    return np.array([[R + 0.01, 1 - R - 0.01, 0, -1],])
+
+def two_testparticles(N):
+    return np.array([
+        [R, 0.5, 1, 0],
+        [0.5, 1-R, 0, -1]])
 
 # Particles must wholly inside the box, and not overlapping
-def init_particles(N, radii):
+def random_dist(N):
     # particle_no, (x, y, vx, vy)
     particles = np.zeros((N, 4))
     i = 0
@@ -83,7 +80,8 @@ def check_particle_collision(particles, n, i, j):
 def find_next_particle_collision(particles, n, i, t):
     dt_min = np.inf
     j_min = -1
-    for j in range(i+1, N):
+    for j in range(N): # I should not need to check all
+        if i == j: continue
         dt = check_particle_collision(particles, n, i, j)
         if dt < dt_min:
             dt_min = dt
@@ -99,7 +97,7 @@ def push_next_collision(particles, n, i, t, collisions):
 
     cols = [wall0, wall1, particle]
     next_col = np.argmin(cols)
-    if next_col < 3: j = -1
+    if next_col < 2: j = -1
     col = (t+cols[next_col], i, j, t, collision_types[next_col])
     heapq.heappush(collisions, col)
 
@@ -134,9 +132,9 @@ def collide(particles, n, i, j,  collision_type):
 main loop
 """
 
-def run_loop():
+def run_loop(N, T, init):
     particles = np.empty((T+1, N, 4))
-    particles[0] = init_particles(N, radii)
+    particles[0] = init(N)
     collisions = init_collisions(particles)
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
@@ -161,12 +159,12 @@ def run_loop():
             collide(particles, n+1, i, j, next_coll[4])
             plot_particles(particles[n+1], title=next_coll[4])
         
-        for a in [i, j]:
-            if a==-1: 
-                continue
-            if valid_collision:
-                last_collided[a] = t
-            push_next_collision(particles, n+1, a, t, collisions)
+        if valid_collision:
+            last_collided[i] = t
+            if j !=-1: 
+                last_collided[j] = t
+        push_next_collision(particles, n+1, i, t, collisions)
+        t += np.finfo(t).eps # to invalidate collisions added twice
 
 
 """
@@ -188,7 +186,7 @@ def plot_particles(particles, plot_vel=True, title=""):
     ax.set_title(title)
 
     if plot_vel:
-        length = 0.2
+        length = 0.1
         [ax.arrow(
             particles[i, 0], 
             particles[i, 1], 
@@ -205,4 +203,19 @@ def plot_particles(particles, plot_vel=True, title=""):
 Running
 """
 
-run_loop()
+# Sides of the box
+L = 1
+# Elasticity parametre
+xi = 1
+xi_p = 0.8
+# Number of particles
+N = 40
+# Number of timesteps
+T = 100
+# Radius
+R = 0.05
+
+radii = np.ones(N) * R
+masses = np.ones(N)
+
+run_loop(N, T, random_dist)
