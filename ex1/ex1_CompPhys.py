@@ -207,6 +207,9 @@ def plot_particles(particles, N, radii, plot_vel=True):
 
 def anim_particles(particles, plot_vel=True):
     fig, ax = plt.subplots()
+    length = 0.1
+    ax.set_ylim(0, 1)
+    ax.set_xlim(0, 1)
 
     circles = [
         plt.Circle((particles[0, i, 0], particles[0, i, 1]),
@@ -214,7 +217,19 @@ def anim_particles(particles, plot_vel=True):
             linewidth=0) 
         for i in range(N)
         ]
-    patches = PatchCollection(circles)
+    arrows = [
+        plt.Arrow(
+        particles[0, i, 0], 
+        particles[0, i, 1], 
+        particles[0, i, 2]*length, 
+        particles[0, i, 3]*length,
+        width=0.05)
+        for i in range(N)
+        ]
+    patches = PatchCollection(circles + arrows)
+    colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
+    patches.set_array(colors)
+
     ax.add_collection(patches)
 
     def anim(n):
@@ -224,9 +239,19 @@ def anim_particles(particles, plot_vel=True):
                 linewidth=0) 
             for i in range(N)
         ]
-        patches.set_paths(circles)
+        arrows = [
+        plt.Arrow(
+            particles[n, i, 0], 
+            particles[n, i, 1], 
+            particles[n, i, 2]*length, 
+            particles[n, i, 3]*length,
+            width=0.05
+            )
+            for i in range(N)
+        ]
+        patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=1)
+    a = FA(fig, anim, interval=400)
     plt.show()
     
 
@@ -241,11 +266,11 @@ L = 1
 xi = 1
 xi_p = 1
 # Number of particles
-N = 1000
+N = 5
 # Number of timesteps
-T = 1000
+T = 100
 # Radius
-R = 0.003
+R = 0.05
 
 radii = np.ones(N) * R
 masses = np.ones(N)
