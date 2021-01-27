@@ -56,6 +56,12 @@ def random_dist(N):
 """
 Utillities
 """
+
+def get_vel2(particles, n):
+    return np.einsum("ij -> i", particles[n, :, 2:]**2)
+
+def get_energy(particles, masses, n):
+    return 1/2 * masses @ (get_vel2(particles, n))
     
 def check_wall_collison(x, v, r):
     dt = np.inf
@@ -128,7 +134,7 @@ def collide(particles, n, i, j,  collision_type):
 main loop
 """
 
-def run_loop(N, T, init):
+def run_loop(N, T, radii, masses, init):
     particles = np.empty((T+1, N, 4))
     particles[0] = init(N)
     collisions = init_collisions(particles)
@@ -163,13 +169,29 @@ def run_loop(N, T, init):
             n += 1
 
         m += 1
-        if m > 1e6: break
-    anim_particles(particles, t)
+        if m > 10*T: raise Exception("Too many invalid collisions")
+    
+    return particles, t
 
 
 """
 Plotting
 """
+
+def plot_energy(particles, t, masses):
+    fig, ax = plt.subplots()
+    N = len(t)
+    E = np.array([get_energy(particles, masses, n) for n in range(N)])
+    print(E)
+    ax.plot(t, E)
+    plt.show()
+
+def plot_vel_dist(particles, n):
+    fig, ax = plt.subplots()
+    v2 = get_vel2(particles, n)
+    ax.hist(np.sqrt(v2), bins=20, density=True)
+    plt.show()
+
 
 def get_particles_plot(particles, n, N, radii):
     circles =  [plt.Circle(
@@ -184,7 +206,7 @@ def get_arrows_plot(particles, n, N, radii):
         particles[n, i, 1], 
         particles[n, i, 2]*radii[i], 
         particles[n, i, 3]*radii[i],
-        width=0.05)
+        width=radii[i]*0.4)
         for i in range(N)]
     return arrows
 
@@ -241,13 +263,18 @@ L = 1
 xi = 1
 xi_p = 1
 # Number of particles
-N = 100
+N = 1000
 # Number of timesteps
-T = 1000
+T = 5000
 # Radius
-R = 0.025
+R = 0.002
 
 radii = np.ones(N) * R
 masses = np.ones(N)
 
-run_loop(N, T, random_dist)
+particles, t = run_loop(N, T, radii, masses, random_dist)
+plot_energy(particles, t, masses)
+for i in range(10):
+    plot_vel_dist(particles, int(T/10 * i)+1)
+
+anim_particles(particles, t)
