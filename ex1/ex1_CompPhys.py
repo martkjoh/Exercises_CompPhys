@@ -91,17 +91,12 @@ def find_next_particle_collision(particles, n, i, t):
 
 
 def push_next_collision(particles, n, i, t, collisions):
-    collision_types = ["wall0", "wall1", "particle"]
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
     particle, j = find_next_particle_collision(particles, n, i, t)
-
-    cols = [wall0, wall1, particle]
-    next_col = np.argmin(cols)
-    if next_col < 2: j = -1
-    col = (t+cols[next_col], i, j, t, collision_types[next_col])
-    heapq.heappush(collisions, col)
-
+    if wall0<np.inf: heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
+    if wall1<np.inf: heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
+    if particle<np.inf: heapq.heappush(collisions, (t+particle, i, j, t, "particle"))
 
 def init_collisions(particles):    
     collisions = []
@@ -140,8 +135,7 @@ def run_loop(N, T, init):
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
 
-    t = 0
-    # plot_particles(particles[0], N, radii)
+    t = np.zeros(T+1)
     for n in range(T):
         next_coll = heapq.heappop(collisions)
         t_next = next_coll[0]
@@ -151,110 +145,89 @@ def run_loop(N, T, init):
         
         # Skip invalid collisions
         valid_collision = (t_added >= last_collided[i]) \
-            or (j and (t_added >= last_collided[j]))
+            and (j==-1 or (t_added >= last_collided[j]))
+
         particles[n+1] = particles[n]
         if valid_collision:
-            dt = t_next - t
-            t = t_next
+            dt = t_next - t[n]
+            t[n+1] = t_next
+            print(next_coll)
+            # plot_particles(particles, n, N, radii)
             transelate(particles, n+1, dt)
             collide(particles, n+1, i, j, next_coll[4])
-            # plot_particles(particles[n+1], N, radii)
-        
-        if valid_collision:
-            last_collided[i] = t
+            last_collided[i] = t[n+1]
             if j !=-1: 
-                last_collided[j] = t
-        push_next_collision(particles, n+1, i, t, collisions)
-        t += np.finfo(t).eps # to invalidate collisions added twice
-    anim_particles(particles)
+                last_collided[j] = t[n+1]
+        else: t[n+1] = t[n]
+
+        push_next_collision(particles, n+1, i, t[n+1], collisions)
+        # t[n+1] += np.finfo(t[n+1]).eps # to invalidate collisions added twice
+    anim_particles(particles, t)
 
 
 """
 Plotting
 """
 
-def add_particles(ax, particles, N, radii):
-    circles = [
-        plt.Circle((particles[i, 0], particles[i, 1]),
-            radius=radii[i], 
-            linewidth=0) 
-        for i in range(N)
-        ]        
-    return ax.add_collection(PatchCollection(circles))
-
-
-def add_vel(ax, particles, N):
-    length = 0.1
-    return [ax.arrow(
-        particles[i, 0], 
-        particles[i, 1], 
-        particles[i, 2]*length, 
-        particles[i, 3]*length,
-        head_width=0.01)
+def get_particles_plot(particles, n, N, radii):
+    circles =  [plt.Circle(
+        (particles[n, i, 0], particles[n, i, 1]),radius=radii[i], linewidth=0) 
         for i in range(N)]
+    return circles
 
-
-def plot_particles(particles, N, radii, plot_vel=True):
-    fig, ax = plt.subplots()
-    ax.set_ylim(0, 1)
-    ax.set_xlim(0, 1)
-    add_particles(ax, particles, N, radii)
-    if plot_vel:
-        add_vel(ax, particles, N)
-
-    plt.show()
-
-
-def anim_particles(particles, plot_vel=True):
-    fig, ax = plt.subplots()
+def get_arrows_plot(particles, n, N):
     length = 0.1
+    arrows = [plt.Arrow(
+        particles[n, i, 0], 
+        particles[n, i, 1], 
+        particles[n, i, 2]*length, 
+        particles[n, i, 3]*length,
+        width=0.05)
+        for i in range(N)]
+    return arrows
+
+
+def plot_particles(particles, n, N, radii, plot_vel=True):
+    fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
-
-    circles = [
-        plt.Circle((particles[0, i, 0], particles[0, i, 1]),
-            radius=radii[i], 
-            linewidth=0) 
-        for i in range(N)
-        ]
-    arrows = [
-        plt.Arrow(
-        particles[0, i, 0], 
-        particles[0, i, 1], 
-        particles[0, i, 2]*length, 
-        particles[0, i, 3]*length,
-        width=0.05)
-        for i in range(N)
-        ]
+    circles  = get_particles_plot(particles, n, N, radii)
+    arrows = get_arrows_plot(particles, n, N)
     patches = PatchCollection(circles + arrows)
     colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
     patches.set_array(colors)
 
     ax.add_collection(patches)
 
-    def anim(n):
-        circles = [
-            plt.Circle((particles[n, i, 0], particles[n, i, 1]),
-                radius=radii[i], 
-                linewidth=0) 
-            for i in range(N)
-        ]
-        arrows = [
-        plt.Arrow(
-            particles[n, i, 0], 
-            particles[n, i, 1], 
-            particles[n, i, 2]*length, 
-            particles[n, i, 3]*length,
-            width=0.05
-            )
-            for i in range(N)
-        ]
+    plt.show()
+
+
+def anim_particles(particles, t, plot_vel=True):
+    dt = 0.1
+    steps = np.nonzero(np.diff(t // dt))[0]
+    fig, ax = plt.subplots()
+    ax.set_ylim(0, 1)
+    ax.set_xlim(0, 1)
+
+    circles = get_particles_plot(particles, 0, N, radii)
+    arrows = get_arrows_plot(particles, 0, N)
+
+    patches = PatchCollection(circles + arrows)
+    colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
+    patches.set_array(colors)
+
+    ax.add_collection(patches)
+
+    def anim(n, fargs):
+        steps = fargs
+        # n = steps[n]
+        circles = get_particles_plot(particles, n, N, radii)
+        arrows = get_arrows_plot(particles, n, N)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=400)
+    a = FA(fig, anim, fargs=(steps,), interval=400)
     plt.show()
     
-
 
 """
 Running
@@ -266,11 +239,11 @@ L = 1
 xi = 1
 xi_p = 1
 # Number of particles
-N = 5
+N = 7
 # Number of timesteps
 T = 100
 # Radius
-R = 0.05
+R = 0.1
 
 radii = np.ones(N) * R
 masses = np.ones(N)
