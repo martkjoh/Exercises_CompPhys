@@ -49,7 +49,7 @@ def random_dist(N):
 
         # emergency break (heh)
         else: k += 1
-        if k > 100: 
+        if k > N*10: 
             raise Exception("can't fit particles")
     
     return particles
@@ -83,23 +83,23 @@ def check_wall_collison(x, v, r):
     return dt
 
 
+#FIXME: This sometimes returns negative times. WHYYYYYYY??
 def check_particle_collision(particles, n, i, j):
     R = radii[i] + radii[j]
-    dx = particles[n, i, :2] - particles[n, j, :2]
-    dv = particles[n, i, 2:] - particles[n, j, 2:] 
+    dx = particles[n, j, :2] - particles[n, i, :2]
+    dv = particles[n, j, 2:] - particles[n, i, 2:] 
     d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
-    dt = np.inf
-    if dv @ dx >= 0: pass
-    elif d < 0: pass
-    else:
-        dt = - (dv @ dx + np.sqrt(d)) / (dv @ dv)
+    dt = None
+    if (d <= 0 or dv @ dx >= 0): dt =  np.inf
+    else: dt = - (dv @ dx + np.sqrt(d)) / (dv @ dv)
+    if dt<0: print(dt, dx, dv, d)
     return dt
 
 
 def find_next_particle_collision(particles, n, i):
     dt_min = np.inf
     j_min = -1
-    for j in range(N): # I should not need to check all
+    for j in range(N):
         if i == j: continue
         dt = check_particle_collision(particles, n, i, j)
         if dt < dt_min:
@@ -115,6 +115,7 @@ def push_next_collision(particles, n, i, t, collisions):
     heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
     heapq.heappush(collisions, (t+particle, i, j, t, "particle"))
+
 
 def init_collisions(particles):    
     collisions = []
@@ -140,6 +141,7 @@ def collide(particles, n, i, j,  collision_type):
         a = (1 + xi_p) * mu * (dv@dx)/R**2
         particles[n, i, 2:] += a / masses[i] * dx
         particles[n, j, 2:] += -a / masses[j] * dx
+
 
 def find_E_jump(particles, masses):
     T = len(particles)
@@ -199,7 +201,7 @@ def plot_energy(particles, t, masses):
     fig, ax = plt.subplots()
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
-    ax.plot(t, E)
+    ax.plot(np.arange(T+1), E)
     plt.show()
 
 def plot_vel_dist(particles, n):
@@ -303,22 +305,21 @@ def ideal_gas():
     for i in range(10):
         plot_vel_dist(particles, int(T/10 * i)+1)
 
+
+np.random.seed(0)
+
 # Number of particles
-N = 10
+N = 20
 # Number of timesteps
-T = 10000
+T = 1000
 # Radius
-R = 0.05
+R = 0.02
 radii = np.ones(N) * R
 masses = np.ones(N)
 
+
 particles, t = run_loop(N, T, radii, masses, random_dist)
-jumps = find_E_jump(particles, masses)
-# for i in jumps:
-#     print(i)
-#     print(t[i - 1], t[i], t[i + 1])
-a = np.nonzero(np.diff(t) < 0)[0]
-print(jumps)
-print(a)
+
 plot_energy(particles, t, masses)
+
 anim_particles(particles, t)
