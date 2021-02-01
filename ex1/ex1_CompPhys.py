@@ -10,18 +10,23 @@ import heapq
 Initializing
 """
 
+# Sides of the box
+L = 1
 
-def one_testparticle(N):
-    return np.array([[R + 0.01, 1 - R - 0.01, 0, -1],])
+def one_testparticle(N, radii):
+    R = radii[0]
+    return np.array([[R, 1/2, 1, -1],])
 
-def two_testparticles(N):
+
+def two_testparticles(N, radii):
+    R = radii[0]
     return np.array([
         [R, 0.5, 1, 0],
         [0.5, 1-R, 0, -1]])
 
 
 # Particles must wholly inside the box, and not overlapping
-def random_dist(N):
+def random_dist(N, radii):
     # particle_no, (x, y, vx, vy)
     particles = np.zeros((N, 4))
     i = 0
@@ -54,6 +59,7 @@ def random_dist(N):
     
     return particles
 
+
 """
 Utillities
 """
@@ -66,7 +72,8 @@ def get_energy(particles, masses, n):
     return 1/2 * masses @ (get_vel2(particles, n))
 
 
-def get_temp(particles, masses, n, N):
+def get_temp(particles, masses, n):
+    N = len(particles[n])
     return get_energy(particles, masses, n) / N
 
 
@@ -83,7 +90,7 @@ def check_wall_collison(x, v, r):
     return dt
 
 
-def check_particle_collision(particles, n, i, j):
+def check_particle_collision(particles, n, i, j, radii):
     R = radii[i] + radii[j]
     dx = particles[n, j, :2] - particles[n, i, :2]
     dv = particles[n, j, 2:] - particles[n, i, 2:] 
@@ -92,20 +99,20 @@ def check_particle_collision(particles, n, i, j):
     else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
 
 
-def push_next_collision(particles, n, i, t, collisions):
+def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
     heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
-    for j in range(N):
-        dt = check_particle_collision(particles, n, i, j)
+    for j in range(len(particles[0])):
+        dt = check_particle_collision(particles, n, i, j, radii)
         heapq.heappush(collisions, (t+dt, i, j, t, "particle"))
 
 
-def init_collisions(particles):    
+def init_collisions(particles, radii):
     collisions = []
-    for i in range(N):
-        push_next_collision(particles, 0, i, 0, collisions)
+    for i in range(len(particles[0])):
+        push_next_collision(particles, 0, i, 0, collisions, radii)
     return collisions
 
 
@@ -113,7 +120,7 @@ def transelate(particles, n, dt):
     particles[n, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
 
 
-def collide(particles, n, i, j,  collision_type):
+def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
     if collision_type == "wall0":
         particles[n, i, 2:] = xi * np.array([-particles[n, i, 2], particles[n, i, 3]])
     if collision_type == "wall1":
@@ -128,21 +135,14 @@ def collide(particles, n, i, j,  collision_type):
         particles[n, j, 2:] += -a / masses[j] * dx
 
 
-def find_E_jump(particles, masses):
-    T = len(particles)
-    E = np.array([get_energy(particles, masses, n) for n in range(T)])
-    jumps = np.nonzero(np.abs(np.diff(E) > 1e-6))[0]
-    return jumps
-
-
 """
 main loop
 """
 
-def run_loop(N, T, radii, masses, init):
+def run_loop(init, N, T, radii, masses, xi, xi_p):
     particles = np.empty((T+1, N, 4))
-    particles[0] = init(N)
-    collisions = init_collisions(particles)
+    particles[0] = init(N, radii)
+    collisions = init_collisions(particles, radii)
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
 
@@ -164,12 +164,12 @@ def run_loop(N, T, radii, masses, init):
             dt = t_next - t[n]
             t[n+1] = t_next
             transelate(particles, n+1, dt)
-            collide(particles, n+1, i, j, next_coll[4])
+            collide(particles, n+1, i, j, next_coll[4], radii, masses, xi, xi_p)
             last_collided[i] = t[n+1]
-            push_next_collision(particles, n+1, i, t[n+1], collisions)
+            push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
             if j !=-1: 
                 last_collided[j] = t[n+1]
-                push_next_collision(particles, n+1, j, t[n+1], collisions)
+                push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
             n += 1
     
     return particles, t
@@ -183,10 +183,11 @@ def plot_energy(particles, t, masses):
     fig, ax = plt.subplots()
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
-    ax.plot(np.arange(T+1), E)
+    T = len(particles)
+    ax.plot(np.arange(T), E)
     plt.show()
 
-def plot_vel_dist(particles, n):
+def plot_vel_dist(particles, n, masses):
     fig, ax = plt.subplots()
     N = len(particles)
     v2 = get_vel2(particles, n)
@@ -204,7 +205,6 @@ def get_particles_plot(particles, n, N, radii):
     return circles
 
 def get_arrows_plot(particles, n, N, radii):
-    length = 0.1
     arrows = [plt.Arrow(
         particles[n, i, 0], 
         particles[n, i, 1], 
@@ -231,7 +231,7 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
     plt.show()
 
 
-def anim_particles(particles, t, plot_vel=True):
+def anim_particles(particles, t, N, radii, plot_vel=True):
     dt = 0.1
     steps = np.nonzero(np.diff(t // dt))[0]
     fig, ax = plt.subplots()
@@ -262,30 +262,36 @@ def anim_particles(particles, t, plot_vel=True):
 Running
 """
 
+def test_case_one_particles():
+    # Elasticity parametre
+    xi = 1
+    xi_p = 1
+    # Number of particles
+    N = 1
+    # Number of timesteps
+    T = 1000
+    # Radius
+    R = 0.1
+    radii = np.ones(N) * R
+    masses = np.ones(N)
 
-# Sides of the box
-L = 1
-# Elasticity parametre
-xi = 1
-xi_p = 1
+    particles, t = run_loop(one_testparticle, N, T, radii, masses, xi, xi_p)
+    anim_particles(particles, t, N, radii)
 
+def test_case_two_particles():
+    xi = 1
+    xi_p = 1
+    N = 2
+    T = 1000
+    R = 0.05
+    radii = np.ones(N) * R
+    masses = np.ones(N)
 
-# def ideal_gas():
-# Number of particles
-N = 2000
-# Number of timesteps
-T = 1
-# Radius
-R = 0.002
-radii = np.ones(N) * R
-masses = np.ones(N)
+    particles, t = run_loop(two_testparticles, N, T, radii, masses, xi, xi_p)
+    anim_particles(particles, t, N, radii)
 
-
-particles, t = run_loop(N, T, radii, masses, random_dist)
-
-plot_energy(particles, t, masses)
+# plot_energy(particles, t, masses)
 # for i in range(10):
 #     plot_vel_dist(particles, int(T/10 * i)+1)
 
-
-anim_particles(particles, t)
+test_case_two_particles()
