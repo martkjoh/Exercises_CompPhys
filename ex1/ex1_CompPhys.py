@@ -13,17 +13,22 @@ Initializing
 # Sides of the box
 L = 1
 
-def one_testparticle(N, radii):
+def init_one_testparticle(N, radii):
     R = radii[0]
     return np.array([[R, 1/2, 1, -1],])
 
 
-def two_testparticles(N, radii):
+def init_two_testparticles(N, radii):
     R = radii[0]
     return np.array([
-        [R, 0.5, 1, 0],
-        [0.5, 1-R, 0, -1]])
+        [R, 0.5, 0, 0],
+        [0.5, 1-R, 0, 0]])
 
+def init_collision_angle(b, N, radii):
+    return np.array([
+        [1/2, 1/2, 0, 0],
+        [radii[1], 1/2 + b, 1, 0]
+    ])
 
 # Particles must wholly inside the box, and not overlapping
 def random_dist(N, radii):
@@ -262,7 +267,7 @@ def anim_particles(particles, t, N, radii, plot_vel=True):
 Running
 """
 
-def test_case_one_particles():
+def test_case_one_particle():
     # Elasticity parametre
     xi = 1
     xi_p = 1
@@ -275,8 +280,9 @@ def test_case_one_particles():
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    particles, t = run_loop(one_testparticle, N, T, radii, masses, xi, xi_p)
+    particles, t = run_loop(init_one_testparticle, N, T, radii, masses, xi, xi_p)
     anim_particles(particles, t, N, radii)
+    plot_energy(particles, t, masses)
 
 def test_case_two_particles():
     xi = 1
@@ -287,11 +293,50 @@ def test_case_two_particles():
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    particles, t = run_loop(two_testparticles, N, T, radii, masses, xi, xi_p)
+    particles, t = run_loop(init_two_testparticles, N, T, radii, masses, xi, xi_p)
     anim_particles(particles, t, N, radii)
+    plot_energy(particles, t, masses)
 
-# plot_energy(particles, t, masses)
+def test_case_many_particles():
+    xi = 1
+    xi_p = 1
+    N = 100
+    T = 1000
+    R = 0.02
+    radii = np.ones(N) * R
+    masses = np.ones(N)
+
+    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+    anim_particles(particles, t, N, radii)
+    plot_energy(particles, t, masses)
+
+def test_case_collision_angle():
+    xi = 1
+    xi_p = 1
+    N = 2
+    T = 2
+    a = 0.01
+    R = 1e-6
+    radii = np.array([a, R])
+    masses = np.array([1e6, 1])
+    m = 100
+    bs = np.linspace(-a , a, m)
+    theta = np.empty(m)
+    for i, b in enumerate(bs):
+        init = lambda N, radii : init_collision_angle(b, N, radii)
+        particles, t = run_loop(init, N, T, radii, masses, xi, xi_p)
+        x, y = particles[2, 1, :2]
+        x -= 0.5
+        y -= 0.5
+        theta[i] = np.arctan2(y, -x)
+    fig, ax = plt.subplots()
+    ax.plot(theta, bs)
+    ax.plot(theta, a *  np.sin(theta / 2), "k--")
+    plt.show()
+
+
 # for i in range(10):
 #     plot_vel_dist(particles, int(T/10 * i)+1)
 
-test_case_two_particles()
+
+test_case_collision_angle()
