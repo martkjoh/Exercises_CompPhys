@@ -1,2 +1,3 @@
 *.insyncdl
-*.npy
+ex1/data/*
+ex1/__pycache__/
