@@ -83,38 +83,23 @@ def check_wall_collison(x, v, r):
     return dt
 
 
-#FIXME: This sometimes returns negative times. WHYYYYYYY??
 def check_particle_collision(particles, n, i, j):
     R = radii[i] + radii[j]
     dx = particles[n, j, :2] - particles[n, i, :2]
     dv = particles[n, j, 2:] - particles[n, i, 2:] 
     d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
-    dt = None
-    if (d <= 0 or dv @ dx >= 0): dt =  np.inf
-    else: dt = - (dv @ dx + np.sqrt(d)) / (dv @ dv)
-    if dt<0: print(dt, dx, dv, d)
-    return dt
-
-
-def find_next_particle_collision(particles, n, i):
-    dt_min = np.inf
-    j_min = -1
-    for j in range(N):
-        if i == j: continue
-        dt = check_particle_collision(particles, n, i, j)
-        if dt < dt_min:
-            dt_min = dt
-            j_min = j
-    return dt_min, j_min
+    if (d <= 0 or dv @ dx >= 0): return np.inf
+    else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
 
 
 def push_next_collision(particles, n, i, t, collisions):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
-    particle, j = find_next_particle_collision(particles, n, i)
     heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
-    heapq.heappush(collisions, (t+particle, i, j, t, "particle"))
+    for j in range(N):
+        dt = check_particle_collision(particles, n, i, j)
+        heapq.heappush(collisions, (t+dt, i, j, t, "particle"))
 
 
 def init_collisions(particles):    
@@ -177,9 +162,7 @@ def run_loop(N, T, radii, masses, init):
         if valid_collision:
             particles[n+1] = particles[n]
             dt = t_next - t[n]
-            if dt<0: print(next_coll)
             t[n+1] = t_next
-            # plot_particles(particles, n, N, radii)
             transelate(particles, n+1, dt)
             collide(particles, n+1, i, j, next_coll[4])
             last_collided[i] = t[n+1]
@@ -188,7 +171,6 @@ def run_loop(N, T, radii, masses, init):
                 last_collided[j] = t[n+1]
                 push_next_collision(particles, n+1, j, t[n+1], collisions)
             n += 1
-            # print(next_coll, n)
     
     return particles, t
 
@@ -208,7 +190,7 @@ def plot_vel_dist(particles, n):
     fig, ax = plt.subplots()
     N = len(particles)
     v2 = get_vel2(particles, n)
-    Temp = get_temp(particles, masses, n, N) * 5 
+    Temp = get_temp(particles, masses, n, N)
     ax.hist(np.sqrt(v2), bins=30, density=True)
     v = np.linspace(np.sqrt(np.min(v2)), np.sqrt(np.max(v2)), 1000)
     ax.plot(v, MaxBoltz(v, masses[0], Temp))
@@ -242,6 +224,7 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
     patches = PatchCollection(circles + arrows)
     colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
     patches.set_array(colors)
+    ax.set_title(n)
 
     ax.add_collection(patches)
 
@@ -266,7 +249,6 @@ def anim_particles(particles, t, plot_vel=True):
 
     def anim(n, fargs):
         steps = fargs
-        # n = steps[n]
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
@@ -288,32 +270,13 @@ xi = 1
 xi_p = 1
 
 
-def ideal_gas():
-    # Number of particles
-    N = 1000
-    # Number of timesteps
-    T = 1000
-    # Radius
-    R = 0.0035
-    radii = np.ones(N) * R
-    masses = np.ones(N)
-
-
-
-    particles, t = run_loop(N, T, radii, masses, random_dist)
-    plot_energy(particles, t, masses)
-    for i in range(10):
-        plot_vel_dist(particles, int(T/10 * i)+1)
-
-
-np.random.seed(0)
-
+# def ideal_gas():
 # Number of particles
-N = 20
+N = 2000
 # Number of timesteps
-T = 1000
+T = 1
 # Radius
-R = 0.02
+R = 0.002
 radii = np.ones(N) * R
 masses = np.ones(N)
 
@@ -321,5 +284,8 @@ masses = np.ones(N)
 particles, t = run_loop(N, T, radii, masses, random_dist)
 
 plot_energy(particles, t, masses)
+# for i in range(10):
+#     plot_vel_dist(particles, int(T/10 * i)+1)
+
 
 anim_particles(particles, t)
