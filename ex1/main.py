@@ -2,7 +2,6 @@ import heapq
 import os
 import numpy as np
 from progress.bar import Bar
-# os.chdir("ex1/")
 
 from utillities import init_collisions, transelate, collide, push_next_collision
 from particle_init import *
@@ -13,6 +12,7 @@ data_folder = "data/"
 
 
 # Main loop
+
 def run_loop(init, N, T, radii, masses, xi, xi_p):
     particles = np.empty((T+1, N, 4))
     particles[0] = init(N, radii)
@@ -122,6 +122,18 @@ def test_case_collision_angle():
     ax.plot(theta, a *  np.sin(theta / 2), "k--")
     plt.show()
 
+def profile_run():
+    # uncomment the @profile decorator, and run kernprof.py -l -v example.py
+    # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
+    xi = 1
+    xi_p = 1
+    N = 500
+    T = 1000
+    R = 0.002
+    radii = np.ones(N) * R
+    masses = np.ones(N)
+    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+
 
 def problem1(run_simulation = False):
     path = data_folder + "problem1/"
@@ -143,6 +155,8 @@ def problem1(run_simulation = False):
 
     plot_vel_dist(particles, 3000, 1000, masses)
 
-problem1()
-test_case_many_particles()
-test_case_two_particles()
+
+
+
+if __name__ == "__main__":
+    profile_run()

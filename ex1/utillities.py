@@ -1,5 +1,6 @@
 import heapq
 import numpy as np
+from numba import njit
 
 
 # Sides of the box
@@ -9,6 +10,7 @@ L = 1
 utillities
 """
 
+@njit
 def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
