@@ -19,6 +19,7 @@ def two_testparticles(N):
         [R, 0.5, 1, 0],
         [0.5, 1-R, 0, -1]])
 
+
 # Particles must wholly inside the box, and not overlapping
 def random_dist(N):
     # particle_no, (x, y, vx, vy)
@@ -60,9 +61,19 @@ Utillities
 def get_vel2(particles, n):
     return np.einsum("ij -> i", particles[n, :, 2:]**2)
 
+
 def get_energy(particles, masses, n):
     return 1/2 * masses @ (get_vel2(particles, n))
-    
+
+
+def get_temp(particles, masses, n, N):
+    return get_energy(particles, masses, n) / N
+
+
+def MaxBoltz(v, m, T):
+    return m * v / T * np.exp(-m * v**2 / (2 * T))
+
+
 def check_wall_collison(x, v, r):
     dt = np.inf
     if v > 0:
@@ -71,10 +82,11 @@ def check_wall_collison(x, v, r):
         dt = (r - x) / v
     return dt
 
+
 def check_particle_collision(particles, n, i, j):
     R = radii[i] + radii[j]
-    dx = particles[n, j, :2] - particles[n, i, :2]
-    dv = particles[n, j, 2:] - particles[n, i, 2:] 
+    dx = particles[n, i, :2] - particles[n, j, :2]
+    dv = particles[n, i, 2:] - particles[n, j, 2:] 
     d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
     dt = np.inf
     if dv @ dx >= 0: pass
@@ -84,7 +96,7 @@ def check_particle_collision(particles, n, i, j):
     return dt
 
 
-def find_next_particle_collision(particles, n, i, t):
+def find_next_particle_collision(particles, n, i):
     dt_min = np.inf
     j_min = -1
     for j in range(N): # I should not need to check all
@@ -99,7 +111,7 @@ def find_next_particle_collision(particles, n, i, t):
 def push_next_collision(particles, n, i, t, collisions):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
-    particle, j = find_next_particle_collision(particles, n, i, t)
+    particle, j = find_next_particle_collision(particles, n, i)
     heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
     heapq.heappush(collisions, (t+particle, i, j, t, "particle"))
@@ -129,6 +141,12 @@ def collide(particles, n, i, j,  collision_type):
         particles[n, i, 2:] += a / masses[i] * dx
         particles[n, j, 2:] += -a / masses[j] * dx
 
+def find_E_jump(particles, masses):
+    T = len(particles)
+    E = np.array([get_energy(particles, masses, n) for n in range(T)])
+    jumps = np.nonzero(np.abs(np.diff(E) > 1e-6))[0]
+    return jumps
+
 
 """
 main loop
@@ -142,7 +160,7 @@ def run_loop(N, T, radii, masses, init):
     last_collided = -np.ones(N)
 
     t = np.zeros(T+1)
-    n = m = 0
+    n = 0
     while n < T:
         next_coll = heapq.heappop(collisions)
         t_next = next_coll[0]
@@ -157,6 +175,7 @@ def run_loop(N, T, radii, masses, init):
         if valid_collision:
             particles[n+1] = particles[n]
             dt = t_next - t[n]
+            if dt<0: print(next_coll)
             t[n+1] = t_next
             # plot_particles(particles, n, N, radii)
             transelate(particles, n+1, dt)
@@ -167,9 +186,7 @@ def run_loop(N, T, radii, masses, init):
                 last_collided[j] = t[n+1]
                 push_next_collision(particles, n+1, j, t[n+1], collisions)
             n += 1
-
-        m += 1
-        if m > 10*T: raise Exception("Too many invalid collisions")
+            # print(next_coll, n)
     
     return particles, t
 
@@ -182,14 +199,17 @@ def plot_energy(particles, t, masses):
     fig, ax = plt.subplots()
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
-    print(E)
     ax.plot(t, E)
     plt.show()
 
 def plot_vel_dist(particles, n):
     fig, ax = plt.subplots()
+    N = len(particles)
     v2 = get_vel2(particles, n)
-    ax.hist(np.sqrt(v2), bins=20, density=True)
+    Temp = get_temp(particles, masses, n, N) * 5 
+    ax.hist(np.sqrt(v2), bins=30, density=True)
+    v = np.linspace(np.sqrt(np.min(v2)), np.sqrt(np.max(v2)), 1000)
+    ax.plot(v, MaxBoltz(v, masses[0], Temp))
     plt.show()
 
 
@@ -248,8 +268,9 @@ def anim_particles(particles, t, plot_vel=True):
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
+        
 
-    a = FA(fig, anim, fargs=(steps,), interval=2)
+    a = FA(fig, anim, fargs=(steps,), interval=100)
     plt.show()
     
 
@@ -257,24 +278,47 @@ def anim_particles(particles, t, plot_vel=True):
 Running
 """
 
+
 # Sides of the box
 L = 1
 # Elasticity parametre
 xi = 1
 xi_p = 1
-# Number of particles
-N = 1000
-# Number of timesteps
-T = 5000
-# Radius
-R = 0.002
 
+
+def ideal_gas():
+    # Number of particles
+    N = 1000
+    # Number of timesteps
+    T = 1000
+    # Radius
+    R = 0.0035
+    radii = np.ones(N) * R
+    masses = np.ones(N)
+
+
+
+    particles, t = run_loop(N, T, radii, masses, random_dist)
+    plot_energy(particles, t, masses)
+    for i in range(10):
+        plot_vel_dist(particles, int(T/10 * i)+1)
+
+# Number of particles
+N = 10
+# Number of timesteps
+T = 10000
+# Radius
+R = 0.05
 radii = np.ones(N) * R
 masses = np.ones(N)
 
 particles, t = run_loop(N, T, radii, masses, random_dist)
+jumps = find_E_jump(particles, masses)
+# for i in jumps:
+#     print(i)
+#     print(t[i - 1], t[i], t[i + 1])
+a = np.nonzero(np.diff(t) < 0)[0]
+print(jumps)
+print(a)
 plot_energy(particles, t, masses)
-for i in range(10):
-    plot_vel_dist(particles, int(T/10 * i)+1)
-
 anim_particles(particles, t)
