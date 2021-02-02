@@ -1,9 +1,8 @@
-import heapq
 import numpy as np
 from progress.bar import Bar
 import matplotlib.pyplot as plt # to be removed
 
-from utillities import init_collisions, transelate, collide, push_next_collision
+from utillities import init_collisions, transelate, collide, push_next_collision, get_next_col
 from particle_init import *
 from plotting import anim_particles, plot_particles, plot_vel_dist, plot_energy
 
@@ -24,8 +23,7 @@ def run_loop(init, N, T, radii, masses, xi, xi_p):
     n = 0
     bar = Bar("running simulation", max=T)
     while n < T:
-        next_coll = heapq.heappop(collisions)
-        t_next, i, j, t_added, collision_type = next_coll
+        t_next, i, j, t_added, col_type = get_next_col(collisions)
         
         # Skip invalid collisions
         valid_collision = (t_added >= last_collided[i]) \
@@ -37,7 +35,7 @@ def run_loop(init, N, T, radii, masses, xi, xi_p):
             t[n+1] = t_next
 
             transelate(particles, n+1, dt)
-            collide(particles, n+1, i, j, collision_type, radii, masses, xi, xi_p)
+            collide(particles, n+1, i, j, col_type, radii, masses, xi, xi_p)
 
             last_collided[i] = t[n+1]
             push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
@@ -160,7 +158,7 @@ def problem1(run_simulation = False):
 
 
 if __name__ == "__main__":
-    # profile_run()
+    profile_run()
     # problem1()
-    test_case_many_particles()
-    test_case_collision_angle()
+    # test_case_many_particles()
+    # test_case_collision_angle()

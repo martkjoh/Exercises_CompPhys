@@ -1,7 +1,6 @@
 import heapq
 import numpy as np
 
-
 # Sides of the box
 L = 1 
 
@@ -9,6 +8,8 @@ L = 1
 utillities
 """
 
+def get_next_col(collisions):
+    return heapq.heappop(collisions)
 
 def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
