@@ -1,5 +1,4 @@
 import heapq
-import os
 import numpy as np
 from progress.bar import Bar
 import matplotlib.pyplot as plt # to be removed
