@@ -2,6 +2,7 @@ import heapq
 import os
 import numpy as np
 from progress.bar import Bar
+import matplotlib.pyplot as plt # to be removed
 
 from utillities import init_collisions, transelate, collide, push_next_collision
 from particle_init import *
@@ -122,6 +123,7 @@ def test_case_collision_angle():
     ax.plot(theta, a *  np.sin(theta / 2), "k--")
     plt.show()
 
+
 def profile_run():
     # uncomment the @profile decorator, and run kernprof.py -l -v example.py
     # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
@@ -159,4 +161,7 @@ def problem1(run_simulation = False):
 
 
 if __name__ == "__main__":
-    profile_run()
+    # profile_run()
+    # problem1()
+    test_case_many_particles()
+    test_case_collision_angle()
