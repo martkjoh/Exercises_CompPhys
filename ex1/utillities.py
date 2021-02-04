@@ -1,5 +1,8 @@
 import heapq
 import numpy as np
+from os import path, mkdir
+from progress.bar import Bar
+
 
 # Sides of the box
 L = 1 
@@ -10,6 +13,7 @@ utillities
 
 def get_next_col(collisions):
     return heapq.heappop(collisions)
+
 
 def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
@@ -27,6 +31,20 @@ def init_collisions(particles, radii):
         push_next_collision(particles, 0, i, 0, collisions, radii)
     return collisions
 
+
+def simulate(dir_path, kwargs):
+    random_dist, N, T, radii, masses, xi, xi_p = kwargs
+    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+    if not path.isdir(dir_path):
+        mkdir(dir_path)
+    np.save(dir_path + "particles.npy", particles)
+    np.save(dir_path + "t.npy", t)
+
+
+def read_data(path):
+    particles = np.load(path + "particles.npy")
+    t = np.load(path + "t.npy")
+    return particles, t
 
 """
 Physics
@@ -65,6 +83,7 @@ def check_particle_collision(particles, n, i, j, radii):
     if (d <= 0 or dv @ dx >= 0): return np.inf
     else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
 
+
 def transelate(particles, n, dt):
     particles[n, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
 
@@ -82,3 +101,45 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
         a = (1 + xi_p) * mu * (dv@dx)/R**2
         particles[n, i, 2:] += a / masses[i] * dx
         particles[n, j, 2:] += -a / masses[j] * dx
+
+
+"""
+Main Loop
+"""
+
+def run_loop(init, N, T, radii, masses, xi, xi_p):
+    particles = np.empty((T+1, N, 4))
+    particles[0] = init(N, radii)
+    collisions = init_collisions(particles, radii)
+    # When has particle i last collided? Used to remove invalid collisions
+    last_collided = -np.ones(N)
+
+    t = np.zeros(T+1)
+    n = 0
+    bar = Bar("running simulation", max=T)
+    while n < T:
+        t_next, i, j, t_added, col_type = get_next_col(collisions)
+        
+        # Skip invalid collisions
+        valid_collision = (t_added >= last_collided[i]) \
+            and (j==-1 or (t_added >= last_collided[j]))
+
+        if valid_collision:
+            particles[n+1] = particles[n]
+            dt = t_next - t[n]
+            t[n+1] = t_next
+
+            transelate(particles, n+1, dt)
+            collide(particles, n+1, i, j, col_type, radii, masses, xi, xi_p)
+
+            last_collided[i] = t[n+1]
+            push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
+            if j !=-1: 
+                last_collided[j] = t[n+1]
+                push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
+
+            n += 1
+            bar.next()
+        
+    bar.finish()
+    return particles, t
