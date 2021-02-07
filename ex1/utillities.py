@@ -149,6 +149,7 @@ def run_loop(init, N, T, radii, masses, xi, xi_p):
                 push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
 
             n += 1
+            t[n] += 1e-9
             bar.next()
         
     bar.finish()

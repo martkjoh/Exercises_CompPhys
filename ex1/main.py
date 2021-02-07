@@ -97,9 +97,10 @@ def problem1(run_simulation = False):
 
     kwargs = (random_dist, N, T, radii, masses, xi, xi_p)
     if run_simulation: simulate(path, kwargs)
-
-    particles, t = read_data(path)
-    plot_vel_dist(particles, 5*N, N, masses)
+    
+    else:
+        particles, t = read_data(path)
+        plot_vel_dist(particles, 5*N, N, masses)
 
 
 def problem2(run_simulation=False):
@@ -118,17 +119,18 @@ def problem2(run_simulation=False):
     kwargs = (random_dist, N, T, radii, masses, xi, xi_p)
     if run_simulation: simulate(path, kwargs)
 
-    particles, t = read_data(path)
-    anim_particles(particles, t, N, radii)
-    plot_vel_dist(particles[:, :N1], 4000, 1000, masses[:N1])
-    plot_vel_dist(particles[:, N1:], 4000, 1000, masses[N1:])
+    else:
+        particles, t = read_data(path)
+        anim_particles(particles, t, N, radii)
+        plot_vel_dist(particles[:, :N1], 4000, 1000, masses[:N1])
+        plot_vel_dist(particles[:, N1:], 4000, 1000, masses[N1:])
 
 def problem3(run_simulation=False):
     path = data_folder + "problem3/"
     xis = [1, 0.9, 0.8]
-    N = 1000
+    N = 1_500
     T = 20_000
-    R = 0.005
+    R = 0.004
     radii =np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -142,10 +144,11 @@ def problem3(run_simulation=False):
             kwargs = (random_dist, N, T, radii, masses, xi, xi)
             simulate(path_xi, kwargs)
 
-    for i, xi in enumerate(xis):
-        path_xi = path + str(i) + "/"
-        particles, t = read_data(path_xi)
-        plot_energy_prob3(particles, t, masses, N1, N2)
+    else:
+        for i, xi in enumerate(xis):
+            path_xi = path + str(i) + "/"
+            particles, t = read_data(path_xi)
+            plot_energy_prob3(particles, t, masses, N1, N2)
 
 
 if __name__ == "__main__":
@@ -156,4 +159,5 @@ if __name__ == "__main__":
 
     # problem1()
     # problem2()
-    problem3(True)
+    problem3()
+    
