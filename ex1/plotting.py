@@ -34,8 +34,23 @@ def plot_vel_dist(particles, n0, dn, masses):
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
  
     ax.plot(v, MaxBoltz(v, masses[0], temp))
-    ax.hist(np.sqrt(v2), bins=30, density=True)
+    ax.hist(np.sqrt(v2), bins=100, density=True)
     ax.set_title("$T={}$".format(temp))
+
+    plt.show()
+
+
+def plot_energy_prob3(particles, t, masses, N1, N2):
+    fig, ax = plt.subplots()
+    T = len(t)
+    E1 = np.array([get_energy(particles[:, :N1], masses[:N1], n) for n in range(T)]) / N1
+    E2 = np.array([get_energy(particles[:, N1:], masses[N1:], n) for n in range(T)])  / N2
+    Etot = np.array([get_energy(particles, masses, n) for n in range(T)]) / (N1 + N2)
+
+    ax.plot(np.arange(T), E1, label="$m = 1$")
+    ax.plot(np.arange(T), E2, label="$m = 4$")
+    ax.plot(np.arange(T), Etot, label="All")
+    ax.legend()
 
     plt.show()
 

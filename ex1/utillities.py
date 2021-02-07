@@ -1,7 +1,12 @@
 import heapq
+import time
 import numpy as np
-from os import path, mkdir
+import os
+from os import getcwd, path, mkdir
 from progress.bar import Bar
+
+if not os.getcwd().split("/")[-1] == "ex1":
+    os.chdir(os.getcwd() + "/ex1")
 
 
 # Sides of the box
@@ -18,11 +23,11 @@ def get_next_col(collisions):
 def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
-    heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
-    heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
+    if wall0 != np.inf: heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
+    if wall1 != np.inf: heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
     for j in range(len(particles[0])):
         dt = check_particle_collision(particles, n, i, j, radii)
-        heapq.heappush(collisions, (t+dt, i, j, t, "particle"))
+        if dt != np.inf: heapq.heappush(collisions, (t+dt, i, j, t, "particle"))
 
 
 def init_collisions(particles, radii):
@@ -35,6 +40,7 @@ def init_collisions(particles, radii):
 def simulate(dir_path, kwargs):
     random_dist, N, T, radii, masses, xi, xi_p = kwargs
     particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+    print(os.getcwd())
     if not path.isdir(dir_path):
         mkdir(dir_path)
     np.save(dir_path + "particles.npy", particles)
@@ -45,6 +51,7 @@ def read_data(path):
     particles = np.load(path + "particles.npy")
     t = np.load(path + "t.npy")
     return particles, t
+
 
 """
 Physics
@@ -78,7 +85,7 @@ def check_wall_collison(x, v, r):
 def check_particle_collision(particles, n, i, j, radii):
     R = radii[i] + radii[j]
     dx = particles[n, j, :2] - particles[n, i, :2]
-    dv = particles[n, j, 2:] - particles[n, i, 2:] 
+    dv = particles[n, j, 2:] - particles[n, i, 2:]
     d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
     if (d <= 0 or dv @ dx >= 0): return np.inf
     else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
@@ -108,8 +115,11 @@ Main Loop
 """
 
 def run_loop(init, N, T, radii, masses, xi, xi_p):
+    tic = time.time()
+    print("Placing particles")
     particles = np.empty((T+1, N, 4))
     particles[0] = init(N, radii)
+    print("Finding inital collisions")
     collisions = init_collisions(particles, radii)
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
@@ -142,4 +152,5 @@ def run_loop(init, N, T, radii, masses, xi, xi_p):
             bar.next()
         
     bar.finish()
+    print("Time elapsed: {}".format(time.time() - tic))
     return particles, t

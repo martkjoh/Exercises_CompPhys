@@ -16,11 +16,13 @@ def init_two_testparticles(N, radii):
         [R, 0.5, 1, 0],
         [0.5, 1-R, 0, -1]])
 
+
 def init_collision_angle(b, N, radii):
     return np.array([
         [1/2, 1/2, 0, 0],
         [radii[1], 1/2 + b, 1, 0]
     ])
+
 
 # Particles must wholly inside the box, and not overlapping
 def random_dist(N, radii):
@@ -48,10 +50,11 @@ def random_dist(N, radii):
             vel = vel/np.sqrt(vel[0]**2 + vel[1]**2)
             particles[i] = np.array([pos[0], pos[1], vel[0], vel[1]])
             i+=1
+            k = 0
 
         # emergency break (heh)
         else: k += 1
-        if k > N*10: 
+        if k > 10: 
             raise Exception("can't fit particles")
     
     return particles
