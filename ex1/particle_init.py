@@ -25,7 +25,7 @@ def init_collision_angle(b, N, radii):
 
 
 # Particles must wholly inside the box, and not overlapping
-def random_dist(N, radii):
+def random_dist(N, radii, x=(0, 1), y=(0, 1)):
     # particle_no, (x, y, vx, vy)
     particles = np.zeros((N, 4))
     i = 0
@@ -34,8 +34,8 @@ def random_dist(N, radii):
         pos = np.random.rand(2)
 
         # Check if inside box
-        if (pos[0] - radii[i]) < 0 or (pos[0] + radii[i]) > L: continue
-        if (pos[1] - radii[i]) < 0 or (pos[1] + radii[i]) > L: continue
+        if (pos[0] - radii[i]) < x[0] or (pos[0] + radii[i]) > x[1]: continue
+        if (pos[1] - radii[i]) < y[0] or (pos[1] + radii[i]) > y[1]: continue
 
         # Check if overlap with other particles
         overlap = False
@@ -58,3 +58,8 @@ def random_dist(N, radii):
             raise Exception("can't fit particles")
     
     return particles
+
+
+def projectile(N, radii):
+    particles = random_dist(N-1, radii[1:], x=(0, 1), y=(0, 0.5))
+    return np.concatenate([np.array([[0.5, 0.75, 0, -5],]), particles])

@@ -88,7 +88,7 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
     plt.show()
 
 
-def anim_particles(particles, t, N, radii, plot_vel=True):
+def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
     dt = 0.1
     steps = np.nonzero(np.diff(t // dt))[0]
     fig, ax = plt.subplots()
@@ -103,12 +103,14 @@ def anim_particles(particles, t, N, radii, plot_vel=True):
     patches.set_array(colors)
     ax.add_collection(patches)
 
-    def anim(n, fargs):
-        steps = fargs
+    def anim(n):
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, fargs=(steps,), interval=100)
-    plt.show()
+    a = FA(fig, anim, interval=10)
+    a.save("video/" + title + ".mp4", dpi=400)
+    
+    # plt.show()
+    
     

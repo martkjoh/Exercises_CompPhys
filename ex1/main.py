@@ -22,7 +22,7 @@ def test_case_one_particle():
     masses = np.ones(N)
 
     particles, t = run_loop(init_one_testparticle, N, T, radii, masses, xi, xi_p)
-    anim_particles(particles, t, N, radii)
+    anim_particles(particles, t, N, radii, title="test_case_one_particle")
     plot_energy(particles, t, masses)
 
 
@@ -35,20 +35,20 @@ def test_case_two_particles():
     masses = np.ones(N)
 
     particles, t = run_loop(init_two_testparticles, N, T, radii, masses, xi, xi_p)
-    anim_particles(particles, t, N, radii)
+    anim_particles(particles, t, N, radii, title="test_case_two_particles")
     plot_energy(particles, t, masses)
 
 
 def test_case_many_particles():
     xi = xi_p = 1
     N = 100
-    T = 1000
+    T = 100
     R = 0.02
     radii = np.ones(N) * R
     masses = np.ones(N)
 
     particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
-    anim_particles(particles, t, N, radii)
+    anim_particles(particles, t, N, radii, "test_case_man_particles")
     plot_energy(particles, t, masses)
 
 
@@ -125,6 +125,7 @@ def problem2(run_simulation=False):
         plot_vel_dist(particles[:, :N1], 4000, 1000, masses[:N1])
         plot_vel_dist(particles[:, N1:], 4000, 1000, masses[N1:])
 
+
 def problem3(run_simulation=False):
     path = data_folder + "problem3/"
     xis = [1, 0.9, 0.8]
@@ -151,6 +152,26 @@ def problem3(run_simulation=False):
             plot_energy_prob3(particles, t, masses, N1, N2)
 
 
+def problem4(run_simulation=False):
+    path = data_folder + "problem4/"
+    xi = xi_p = 0.5
+    N = 700 + 1
+    T = 30_000
+    R = 0.005
+    radii = np.ones(N) * R
+    radii[0] = 0.1
+    masses = np.ones(N)
+    masses[0] = 25
+
+    kwargs = (projectile, N, T, radii, masses, xi, xi_p)
+    if run_simulation: simulate(path, kwargs)
+
+    else:
+        particles, t = read_data(path)
+        print("Animating particles")
+        anim_particles(particles, t, N, radii, title="projectile")
+
+
 if __name__ == "__main__":
     # test_case_many_particles()
     # test_case_collision_angle()
@@ -159,5 +180,5 @@ if __name__ == "__main__":
 
     # problem1()
     # problem2()
-    problem3()
-    
+    # problem3()
+    problem4(True)
