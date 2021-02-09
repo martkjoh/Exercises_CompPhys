@@ -106,9 +106,9 @@ def problem1(run_simulation = False):
 def problem2(run_simulation=False):
     path = data_folder + "problem2/"
     xi = xi_p = 1
-    N = 1000
-    T = 10_000
-    R = 0.002
+    N = 200
+    T = 2_000
+    R = 0.01
     radii = np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -121,9 +121,9 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        anim_particles(particles, t, N, radii)
-        plot_vel_dist(particles[:, :N1], 4000, 1000, masses[:N1])
-        plot_vel_dist(particles[:, N1:], 4000, 1000, masses[N1:])
+        # anim_particles(particles, t, N, radii)
+        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1])
+        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:])
 
 
 def problem3(run_simulation=False):
@@ -155,11 +155,11 @@ def problem3(run_simulation=False):
 def problem4(run_simulation=False):
     path = data_folder + "problem4/"
     xi = xi_p = 0.5
-    N = 700 + 1
-    T = 30_000
-    R = 0.005
+    N = 1000 + 1
+    T = 20_000
+    R = 0.0075
     radii = np.ones(N) * R
-    radii[0] = 0.1
+    radii[0] = 0.05
     masses = np.ones(N)
     masses[0] = 25
 
@@ -168,7 +168,6 @@ def problem4(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        print("Animating particles")
         anim_particles(particles, t, N, radii, title="projectile")
 
 
@@ -179,6 +178,8 @@ if __name__ == "__main__":
     # profile_run()
 
     # problem1()
+    # problem2(True)
     # problem2()
     # problem3()
     problem4(True)
+    problem4()

@@ -34,7 +34,7 @@ def plot_vel_dist(particles, n0, dn, masses):
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
  
     ax.plot(v, MaxBoltz(v, masses[0], temp))
-    ax.hist(np.sqrt(v2), bins=100, density=True)
+    ax.hist(np.sqrt(v2), bins=20, density=True)
     ax.set_title("$T={}$".format(temp))
 
     plt.show()
@@ -89,8 +89,6 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
 
 
 def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
-    dt = 0.1
-    steps = np.nonzero(np.diff(t // dt))[0]
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -103,14 +101,18 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
     patches.set_array(colors)
     ax.add_collection(patches)
 
+    dt = 0.002
+    steps = np.nonzero(np.diff(t//dt))[0]
+    frames = len(steps)
+    print("writing {} frames".format(frames))
     def anim(n):
+        n = steps[n]
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=10)
-    a.save("video/" + title + ".mp4", dpi=400)
+    a = FA(fig, anim, interval=50, frames=frames)
+    a.save("video/" + title + ".mp4", dpi=100)
     
     # plt.show()
-    
     

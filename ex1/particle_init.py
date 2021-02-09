@@ -54,7 +54,7 @@ def random_dist(N, radii, x=(0, 1), y=(0, 1)):
 
         # emergency break (heh)
         else: k += 1
-        if k > 10: 
+        if k > 100: 
             raise Exception("can't fit particles")
     
     return particles
