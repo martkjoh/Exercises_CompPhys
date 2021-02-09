@@ -39,8 +39,7 @@ def init_collisions(particles, radii):
 
 def simulate(dir_path, kwargs):
     random_dist, N, T, radii, masses, xi, xi_p = kwargs
-    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
-    print(os.getcwd())
+    particles, t, _ = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
     if not path.isdir(dir_path):
         mkdir(dir_path)
     np.save(dir_path + "particles.npy", particles)
@@ -114,7 +113,7 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
 Main Loop
 """
 
-def run_loop(init, N, T, radii, masses, xi, xi_p):
+def run_loop(init, N, T, radii, masses, xi, xi_p, condition=None, n_check=np.inf):
     tic = time.time()
     print("Placing particles")
     particles = np.empty((T+1, N, 4))
@@ -149,9 +148,11 @@ def run_loop(init, N, T, radii, masses, xi, xi_p):
                 push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
 
             n += 1
-            t[n] += 1e-9
+            if n%n_check==0: 
+                if condition(particles): break
+            # t[n] += 1e-9
             bar.next()
         
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))
-    return particles, t
+    return particles, t, n

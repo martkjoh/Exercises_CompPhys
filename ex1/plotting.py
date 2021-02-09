@@ -112,7 +112,7 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
         patches.set_paths(circles + arrows)
 
     a = FA(fig, anim, interval=50, frames=frames)
-    a.save("video/" + title + ".mp4", dpi=100)
+    a.save("video/" + title + ".mp4", dpi=300)
     
     # plt.show()
     

@@ -21,7 +21,7 @@ def test_case_one_particle():
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    particles, t = run_loop(init_one_testparticle, N, T, radii, masses, xi, xi_p)
+    particles, t, _ = run_loop(init_one_testparticle, N, T, radii, masses, xi, xi_p)
     anim_particles(particles, t, N, radii, title="test_case_one_particle")
     plot_energy(particles, t, masses)
 
@@ -34,7 +34,7 @@ def test_case_two_particles():
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    particles, t = run_loop(init_two_testparticles, N, T, radii, masses, xi, xi_p)
+    particles, t, _ = run_loop(init_two_testparticles, N, T, radii, masses, xi, xi_p)
     anim_particles(particles, t, N, radii, title="test_case_two_particles")
     plot_energy(particles, t, masses)
 
@@ -47,7 +47,7 @@ def test_case_many_particles():
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+    particles, t, _ = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
     anim_particles(particles, t, N, radii, "test_case_man_particles")
     plot_energy(particles, t, masses)
 
@@ -64,7 +64,7 @@ def test_case_collision_angle():
     theta = np.empty(m)
     for i, b in enumerate(bs):
         init = lambda N, radii : init_collision_angle(b, N, radii)
-        particles, t = run_loop(init, N, T, radii, masses, xi, xi_p)
+        particles, t, _ = run_loop(init, N, T, radii, masses, xi, xi_p)
         x, y = particles[2, 1, :2]
         x -= 0.5
         y -= 0.5
@@ -83,7 +83,7 @@ def profile_run():
     R = 0.002
     radii = np.ones(N) * R
     masses = np.ones(N)
-    particles, t = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
+    particles, t, _ = run_loop(random_dist, N, T, radii, masses, xi, xi_p)
 
 
 def problem1(run_simulation = False):
@@ -155,9 +155,9 @@ def problem3(run_simulation=False):
 def problem4(run_simulation=False):
     path = data_folder + "problem4/"
     xi = xi_p = 0.5
-    N = 1000 + 1
-    T = 20_000
-    R = 0.0075
+    N = 2000 + 1
+    T = 40_000
+    R = 0.005
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
