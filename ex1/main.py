@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt # to be removed
 
-from utillities import init_collisions, read_data, transelate, collide, push_next_collision, get_next_col, simulate, run_loop
+from utillities import init_collisions, read_data, transelate, collide, push_next_collision, get_next_col, simulate, run_loop, energy_condition
 from particle_init import *
 from plotting import anim_particles, plot_particles, plot_vel_dist, plot_energy, plot_energy_prob3
 
@@ -162,15 +162,19 @@ def problem4(run_simulation=False):
     path = data_folder + "problem4/"
     xi = xi_p = 0.5
     N = 2000 + 1
-    T = 40_000
+    T = 10_000
     R = 0.005
+
+    # N = 200 + 1
+    # T = 4_000
+    # R = 0.015
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
     masses[0] = 25
 
     args = (N, T, radii, masses, xi, xi_p)
-    if run_simulation: simulate(path, projectile, args)
+    if run_simulation: simulate(path, projectile, args, condition=energy_condition, n_check=n//10)
 
     else:
         particles, t = read_data(path)
@@ -190,6 +194,6 @@ if __name__ == "__main__":
     # problem2(True)
     # problem2()
     # problem3()
-    problem4(True)
+    # problem4(True)
     problem4()
  

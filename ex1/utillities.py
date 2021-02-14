@@ -37,8 +37,8 @@ def init_collisions(particles, radii):
     return collisions
 
 
-def simulate(dir_path, init, args):
-    particles, t, _ = run_loop(init, args)
+def simulate(dir_path, init, args, condition=None, n_check=np.inf):
+    particles, t, _ = run_loop(init, args, condition, n_check)
     if not path.isdir(dir_path):
         mkdir(dir_path)
     np.save(dir_path + "particles.npy", particles)
@@ -108,9 +108,19 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
         particles[n, j, 2:] += -a / masses[j] * dx
 
 
+def energy_condition(particles, args, n):
+    N, T, radii, masses, xi, xi_p = args
+    E0 = get_energy(particles, masses, 0)
+    E = get_energy(particles, masses, n)
+    ratio = E/E0
+    print(" ", ratio)
+    return ratio<0.1
+
+
 """
 Main Loop
 """
+
 
 def run_loop(init, args, condition=None, n_check=np.inf):
     tic = time.time()
@@ -149,8 +159,8 @@ def run_loop(init, args, condition=None, n_check=np.inf):
 
             n += 1
             if n%n_check==0: 
-                if condition(particles): break
-            # t[n] += 1e-10
+                if condition(particles, args, n): break
+            t[n] += 1e-12
             bar.next()
         
     bar.finish()

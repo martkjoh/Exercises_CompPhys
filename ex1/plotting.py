@@ -105,10 +105,13 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
     ax.text(0.8, 0.75, "t_f = {:.3f}".format(t[-1]))
 
     dt = 0.01
+
     steps = np.nonzero(np.diff(t//dt))[0]
     frames = len(steps)
+
     # skip = 100
     # frames = len(t) // skip
+
     print("writing {} frames".format(frames))
     def anim(n):
         n = steps[n]
