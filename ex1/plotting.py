@@ -100,18 +100,26 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
     colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
     patches.set_array(colors)
     ax.add_collection(patches)
+    txt1 = ax.text(0.8, 0.8, "t = {:.3f}".format(t[0]))
+    txt2 = ax.text(0.8, 0.9, "n = {}/{}".format(0, len(t)))
+    ax.text(0.8, 0.75, "t_f = {:.3f}".format(t[-1]))
 
-    dt = 0.002
+    dt = 0.01
     steps = np.nonzero(np.diff(t//dt))[0]
     frames = len(steps)
+    # skip = 100
+    # frames = len(t) // skip
     print("writing {} frames".format(frames))
     def anim(n):
         n = steps[n]
+        # n = n*skip
+        txt1.set_text("t = {:.3f}".format(t[n]))
+        txt2.set_text("n = {}/{}".format(n, len(t)))
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=50, frames=frames)
+    a = FA(fig, anim, interval=100, frames=frames)
     a.save("video/" + title + ".mp4", dpi=300)
     
     # plt.show()
