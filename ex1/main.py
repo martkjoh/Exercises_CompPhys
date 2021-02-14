@@ -1,9 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt # to be removed
 
-from utillities import init_collisions, read_data, transelate, collide, push_next_collision, get_next_col, simulate, run_loop, energy_condition
+from utillities import read_data, simulate, run_loop, energy_condition
 from particle_init import *
-from plotting import anim_particles, plot_particles, plot_vel_dist, plot_energy, plot_energy_prob3
+from plotting import *
 
 
 # Path for saving data
@@ -23,7 +22,7 @@ def test_case_one_particle():
     args = (N, T, radii, masses, xi, xi_p)
 
     particles, t, _ = run_loop(init_one_testparticle, args)
-    anim_particles(particles, t, N, radii, title="test_case_one_particle")
+    anim_particles(particles, t, N, radii, 0.01, title="test_case_one_particle")
     plot_energy(particles, t, masses)
 
 
@@ -37,7 +36,7 @@ def test_case_two_particles():
     args = (N, T, radii, masses, xi, xi_p)
 
     particles, t, _ = run_loop(init_two_testparticles, args)
-    anim_particles(particles, t, N, radii, title="test_case_two_particles")
+    anim_particles(particles, t, N, radii, 0.01, title="test_case_two_particles")
     plot_energy(particles, t, masses)
 
 
@@ -51,7 +50,7 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi, xi_p)
 
     particles, t, _ = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, "test_case_man_particles")
+    anim_particles(particles, t, N, radii, 0.03, intr=150, title="test_case_man_particles")
     plot_energy(particles, t, masses)
 
 
@@ -74,12 +73,7 @@ def test_case_collision_angle():
         x -= 0.5
         y -= 0.5
         theta[i] = np.arctan2(y, -x)
-
-    fig, ax = plt.subplots()
-    ax.plot(theta, bs)
-    ax.plot(theta, a *  np.sin(theta / 2), "k--")
-    plt.show()
-
+    plot_collision_angle(theta, bs, a)    
 
 def profile_run():
     # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
@@ -127,7 +121,7 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        # anim_particles(particles, t, N, radii)
+        # anim_particles(particles, t, N, radii, 0.01)
         plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1])
         plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:])
 
@@ -178,13 +172,13 @@ def problem4(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        anim_particles(particles, t, N, radii, title="projectile")
+        anim_particles(particles, t, N, radii, 0.01, title="projectile")
 
 
 if __name__ == "__main__":
     # test_case_one_particle()
     # test_case_two_particles()
-    test_case_many_particles()
+    # test_case_many_particles()
     # test_case_collision_angle()
 
     # profile_run()

@@ -40,6 +40,14 @@ def plot_vel_dist(particles, n0, dn, masses):
     plt.show()
 
 
+def plot_collision_angle(theta, bs, a):
+    fig, ax = plt.subplots()
+    ax.plot(theta, bs)
+    ax.plot(theta, a *  np.sin(theta / 2), "k--")
+    plt.show()
+
+
+
 def plot_energy_prob3(particles, t, masses, N1, N2):
     fig, ax = plt.subplots()
     T = len(t)
@@ -88,7 +96,7 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
     plt.show()
 
 
-def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
+def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=True):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -103,8 +111,6 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
     txt1 = ax.text(0.8, 0.8, "t = {:.3f}".format(t[0]))
     txt2 = ax.text(0.8, 0.9, "n = {}/{}".format(0, len(t)))
     ax.text(0.8, 0.75, "t_f = {:.3f}".format(t[-1]))
-
-    dt = 0.01
 
     steps = np.nonzero(np.diff(t//dt))[0]
     frames = len(steps)
@@ -122,7 +128,7 @@ def anim_particles(particles, t, N, radii, title="vid", plot_vel=True):
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=100, frames=frames)
+    a = FA(fig, anim, interval=intr, frames=frames)
     a.save("video/" + title + ".mp4", dpi=300)
     
     # plt.show()
