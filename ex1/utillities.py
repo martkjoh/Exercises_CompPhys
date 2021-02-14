@@ -37,8 +37,8 @@ def init_collisions(particles, radii):
     return collisions
 
 
-def simulate(dir_path, init, args, condition=None, n_check=np.inf):
-    particles, t, _ = run_loop(init, args, condition, n_check)
+def simulate(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
+    particles, t = run_loop(init, args, condition, n_check, TC=TC)
     if not path.isdir(dir_path):
         mkdir(dir_path)
     np.save(dir_path + "particles.npy", particles)
@@ -93,7 +93,7 @@ def transelate(particles, n, dt):
     particles[n, :, :2] = particles[n, :, :2] + particles[n, :, 2:] * dt
 
 
-def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
+def collide(particles, n, i, j,  collision_type, radii, masses, xi):
     if collision_type == "wall0":
         particles[n, i, 2:] = xi * np.array([-particles[n, i, 2], particles[n, i, 3]])
     if collision_type == "wall1":
@@ -103,13 +103,13 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi, xi_p):
         dx = particles[n, j, :2] - particles[n, i, :2]
         dv = particles[n, j, 2:] - particles[n, i, 2:]
         mu = masses[i] * masses[j] / (masses[i] + masses[j])
-        a = (1 + xi_p) * mu * (dv@dx)/R**2
+        a = (1 + xi) * mu * (dv@dx)/R**2
         particles[n, i, 2:] += a / masses[i] * dx
         particles[n, j, 2:] += -a / masses[j] * dx
 
 
 def energy_condition(particles, args, n):
-    N, T, radii, masses, xi, xi_p = args
+    N, T, radii, masses, xi = args
     E0 = get_energy(particles, masses, 0)
     E = get_energy(particles, masses, n)
     ratio = E/E0
@@ -117,12 +117,19 @@ def energy_condition(particles, args, n):
     return ratio<0.1
 
 
+def tc_check(i, n, t, last_collided, xi):
+    tc = 1e-8
+    dt = t[n] - last_collided[i]
+    if dt < tc: return 1
+    else: return xi
+
+
 """
 Main Loop
 """
 
 def setup_loop(init, args):
-    N, T, radii, masses, xi, xi_p = args
+    N, T, radii, masses, xi = args
     print("Placing particles")
     particles = np.empty((T+1, N, 4))
     particles[0] = init(N, radii)
@@ -136,15 +143,19 @@ def setup_loop(init, args):
     return t, particles, collisions, last_collided
 
 
-def execute_collision(n, t, particles, collisions, last_collided, args, col):
-    N, T, radii, masses, xi, xi_p = args
+def execute_collision(n, t, particles, collisions, last_collided, args, col, TC):
+    N, T, radii, masses, xi = args
     t_next, i, j, t_added, col_type  = col
     particles[n+1] = particles[n]
     dt = col[0] - t[n]
     t[n+1] = t_next
 
+    if TC:
+        xi = tc_check(i, n, t, last_collided, xi)
+        if j!=-1: xi = tc_check(j, n, t, last_collided, xi)
+
     transelate(particles, n+1, dt)
-    collide(particles, n+1, i, j, col_type, radii, masses, xi, xi_p)
+    collide(particles, n+1, i, j, col_type, radii, masses, xi)
 
     last_collided[i] = t[n+1]
     push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
@@ -156,11 +167,10 @@ def execute_collision(n, t, particles, collisions, last_collided, args, col):
     return n, t, particles, collisions, last_collided
 
 
-def run_loop(init, args, condition=None, n_check=np.inf):
+def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
     tic = time.time()
-    
     t, particles, collisions, last_collided = setup_loop(init, args)
-    N, T, radii, masses, xi, xi_p = args
+    N, T, radii, masses, xi = args
 
     n = 0
     bar = Bar("running simulation", max=T)
@@ -174,14 +184,13 @@ def run_loop(init, args, condition=None, n_check=np.inf):
 
         if valid_collision:
             n, t, particles, collisions, last_collided = \
-                execute_collision(n, t, particles, collisions, last_collided, args, col)
+                execute_collision(n, t, particles, collisions, last_collided, args, col, TC)
 
             if n%n_check==0: 
                 if condition(particles, args, n): break
+
             bar.next()
 
-        
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))
-    return particles, t, n
-    
+    return particles[:n+1], t[:n+1]
