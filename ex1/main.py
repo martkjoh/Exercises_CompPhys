@@ -122,7 +122,6 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        # anim_particles(particles, t, N, radii, 0.01)
         plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1])
         plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:])
 
@@ -153,30 +152,62 @@ def problem3(run_simulation=False):
             plot_energy_prob3(particles, t, masses, N1, N2)
 
 
-def problem4(run_simulation=False):
-    path = data_folder + "problem4/"
+def projectile(v_proj, path, args):
+    init = lambda N, radii : init_projectile(N, radii, v_proj)
+    simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
+
+    
+def single_projectile(run_simulation=False):
     xi = 0.5
     N = 2000 + 1
-    T = 10_000
-    R = 0.005
-
+    T = 100_000
+    R = 0.0054
     # Test values
-    # N = 200 + 1
-    # T = 4_000
-    # R = 0.017
-
+    N = 100 + 1
+    T = 1_000
+    R = 0.017
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
     masses[0] = 25
-
     args = (N, T, radii, masses, xi)
-    if run_simulation: 
-        simulate(path, projectile, args, condition=energy_condition, n_check=T//10, TC=True)
+
+    path = data_folder + "single_part/"
+
+    if run_simulation:
+        init = lambda N, radii : init_projectile(N, radii, 5)
+        simulate(path, init, args)
 
     else:
         particles, t = read_data(path)
         anim_particles(particles, t, N, radii, 0.01, title="projectile")
+
+
+def parametre_sweep(run_simulation=False):
+    xi = 0.5
+    N = 100 + 1
+    T = 1_000
+    R = 0.01
+    radii = np.ones(N) * R
+    radii[0] = 0.05
+    masses = np.ones(N)
+    masses[0] = 25
+    args = (N, T, radii, masses, xi)
+
+    vs = np.linspace(2, 10, 5)
+
+    if run_simulation:
+        for i, v in enumerate(vs):
+            path = data_folder + "problem4/sweep_{}/".format(i)
+            projectile(v, path, args)
+
+    else:
+        for i, v in enumerate(vs):
+            path = data_folder + "problem4/sweep_{}/".format(i)
+            particles, t = read_data(path)
+            plot_particles(particles, -1, N, radii)
+
+
 
 
 if __name__ == "__main__":
@@ -192,6 +223,9 @@ if __name__ == "__main__":
     # problem2(True)
     # problem2()
     # problem3()
-    problem4(True)
-    problem4()
- 
+
+    # single_projectile(True)
+    # single_projectile()
+
+    parametre_sweep(True)
+    parametre_sweep()

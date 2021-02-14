@@ -60,6 +60,6 @@ def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
     return particles
 
 
-def projectile(N, radii):
+def init_projectile(N, radii, v_proj):
     particles = random_dist(N-1, radii[1:], x=(0, 1), y=(0, 0.5), v=0)
-    return np.concatenate([np.array([[0.5, 0.75, 0, -5],]), particles])
+    return np.concatenate([np.array([[0.5, 0.75, 0, -1 * v_proj],]), particles])
