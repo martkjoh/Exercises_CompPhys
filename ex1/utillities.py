@@ -121,9 +121,7 @@ def energy_condition(particles, args, n):
 Main Loop
 """
 
-
-def run_loop(init, args, condition=None, n_check=np.inf):
-    tic = time.time()
+def setup_loop(init, args):
     N, T, radii, masses, xi, xi_p = args
     print("Placing particles")
     particles = np.empty((T+1, N, 4))
@@ -134,34 +132,54 @@ def run_loop(init, args, condition=None, n_check=np.inf):
     last_collided = -np.ones(N)
 
     t = np.zeros(T+1)
+
+    return t, particles, collisions, last_collided
+
+
+def execute_collision(n, t, particles, collisions, last_collided, args, col):
+    N, T, radii, masses, xi, xi_p = args
+    t_next, i, j, t_added, col_type  = col
+    particles[n+1] = particles[n]
+    dt = col[0] - t[n]
+    t[n+1] = t_next
+
+    transelate(particles, n+1, dt)
+    collide(particles, n+1, i, j, col_type, radii, masses, xi, xi_p)
+
+    last_collided[i] = t[n+1]
+    push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
+    if j !=-1: 
+        last_collided[j] = t[n+1]
+        push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
+
+    n += 1
+    return n, t, particles, collisions, last_collided
+
+
+def run_loop(init, args, condition=None, n_check=np.inf):
+    tic = time.time()
+    
+    t, particles, collisions, last_collided = setup_loop(init, args)
+    N, T, radii, masses, xi, xi_p = args
+
     n = 0
     bar = Bar("running simulation", max=T)
     while n < T:
-        t_next, i, j, t_added, col_type = get_next_col(collisions)
+        col = get_next_col(collisions)
+        t_next, i, j, t_added, col_type  = col
         
         # Skip invalid collisions
         valid_collision = (t_added >= last_collided[i]) \
             and (j==-1 or (t_added >= last_collided[j]))
 
         if valid_collision:
-            particles[n+1] = particles[n]
-            dt = t_next - t[n]
-            t[n+1] = t_next
+            n, t, particles, collisions, last_collided = \
+                execute_collision(n, t, particles, collisions, last_collided, args, col)
 
-            transelate(particles, n+1, dt)
-            collide(particles, n+1, i, j, col_type, radii, masses, xi, xi_p)
-
-            last_collided[i] = t[n+1]
-            push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
-            if j !=-1: 
-                last_collided[j] = t[n+1]
-                push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
-
-            n += 1
             if n%n_check==0: 
                 if condition(particles, args, n): break
-            t[n] += 1e-12
             bar.next()
+
         
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))

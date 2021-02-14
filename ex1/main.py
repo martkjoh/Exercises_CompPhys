@@ -184,7 +184,7 @@ def problem4(run_simulation=False):
 if __name__ == "__main__":
     # test_case_one_particle()
     # test_case_two_particles()
-    # test_case_many_particles()
+    test_case_many_particles()
     # test_case_collision_angle()
 
     # profile_run()
@@ -195,5 +195,5 @@ if __name__ == "__main__":
     # problem2()
     # problem3()
     # problem4(True)
-    problem4()
+    # problem4()
  
