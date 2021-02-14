@@ -47,7 +47,6 @@ def plot_collision_angle(theta, bs, a):
     plt.show()
 
 
-
 def plot_energy_prob3(particles, t, masses, N1, N2):
     fig, ax = plt.subplots()
     T = len(t)
@@ -115,13 +114,9 @@ def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=T
     steps = np.nonzero(np.diff(t//dt))[0]
     frames = len(steps)
 
-    # skip = 100
-    # frames = len(t) // skip
-
     print("writing {} frames".format(frames))
     def anim(n):
         n = steps[n]
-        # n = n*skip
         txt1.set_text("t = {:.3f}".format(t[n]))
         txt2.set_text("n = {}/{}".format(n, len(t)))
         circles = get_particles_plot(particles, n, N, radii)
@@ -130,6 +125,3 @@ def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=T
 
     a = FA(fig, anim, interval=intr, frames=frames)
     a.save("video/" + title + ".mp4", dpi=300)
-    
-    # plt.show()
-    
