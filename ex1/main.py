@@ -1,6 +1,6 @@
 import numpy as np
 
-from utillities import read_data, simulate, run_loop, energy_condition
+from utillities import cheack_crater_size, read_data, simulate, run_loop, energy_condition
 from particle_init import *
 from plotting import *
 
@@ -163,9 +163,7 @@ def single_projectile(run_simulation=False):
     T = 100_000
     R = 0.0054
     # Test values
-    N = 100 + 1
-    T = 1_000
-    R = 0.017
+
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
@@ -180,21 +178,22 @@ def single_projectile(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        anim_particles(particles, t, N, radii, 0.01, title="projectile")
+        anim_particles(particles, t, N, radii, 0.005, title="projectile")
 
 
 def parametre_sweep(run_simulation=False):
     xi = 0.5
-    N = 100 + 1
-    T = 1_000
-    R = 0.01
+    N = 500 + 1
+    T = 10_000
+    R = 0.011
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
     masses[0] = 25
     args = (N, T, radii, masses, xi)
 
-    vs = np.linspace(2, 10, 5)
+    m = 10
+    vs = np.linspace(1, 20, m)
 
     if run_simulation:
         for i, v in enumerate(vs):
@@ -202,13 +201,17 @@ def parametre_sweep(run_simulation=False):
             projectile(v, path, args)
 
     else:
+        crater_size = np.zeros(m)
         for i, v in enumerate(vs):
             path = data_folder + "problem4/sweep_{}/".format(i)
             particles, t = read_data(path)
+            dx = 0.04
+            y_max = 0.5
+            free_space = cheack_crater_size(particles, -1, y_max, dx)
+            crater_size[i] = dx**2 * np.sum(free_space)
             plot_particles(particles, -1, N, radii)
-
-
-
+            plot_crater(free_space, y_max, dx)
+        plot_crater_size(vs, crater_size)
 
 if __name__ == "__main__":
     # test_case_one_particle()
@@ -227,5 +230,5 @@ if __name__ == "__main__":
     # single_projectile(True)
     # single_projectile()
 
-    parametre_sweep(True)
+    # parametre_sweep(True)
     parametre_sweep()

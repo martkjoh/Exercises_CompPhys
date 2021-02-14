@@ -46,6 +46,7 @@ def simulate(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
 
 
 def read_data(path):
+    print("Reading particle data from " + path)
     particles = np.load(path + "particles.npy")
     t = np.load(path + "t.npy")
     return particles, t
@@ -122,6 +123,30 @@ def tc_check(i, n, t, last_collided, xi):
     dt = t[n] - last_collided[i]
     if dt < tc: return 1
     else: return xi
+
+
+def particle_insde(x, y, dx, particle):
+    # Rough measure. only checks for centre of particle
+    return x < particle[0]\
+    and (x + dx) > particle[0]\
+    and y < particle[1]\
+    and y + dx > particle[1]
+
+
+def cheack_crater_size(particles, n, y_max, dx):
+    Nx = int(1 / dx)
+    Ny = int(y_max / dx)
+    N = len(particles[0])
+    free_space = np.zeros((Nx, Ny))
+    for i in range(Nx):
+        for j in range(Ny):
+            is_inside = False
+            for k in range(N):
+                is_inside = particle_insde(i*dx, j*dx, dx, particles[n, k])
+                if is_inside:
+                    free_space[i, j] = 1. 
+                    break
+    return free_space
 
 
 """

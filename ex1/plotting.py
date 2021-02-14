@@ -69,6 +69,22 @@ def get_particles_plot(particles, n, N, radii):
     return circles
 
 
+def plot_crater(free_space, y_max, dx):
+    Nx, Ny = np.shape(free_space)
+    x = np.linspace(0, 1, Nx)
+    y = np.linspace(0, y_max, Ny)
+    x, y = np.meshgrid(x, y)
+    
+    fig, ax = plt.subplots()
+    ax.imshow(free_space.T)
+    
+    plt.show()
+
+def plot_crater_size(vs, crater_sizes):
+    fig, ax = plt.subplots()
+    ax.plot(vs, crater_sizes)
+    plt.show()
+
 def get_arrows_plot(particles, n, N, radii):
     arrows = [plt.Arrow(
         particles[n, i, 0], 
