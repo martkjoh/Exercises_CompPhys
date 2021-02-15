@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.animation import FuncAnimation as FA
 
-from utillities import get_energy, get_temp, get_vel2, MaxBoltz
+from utillities import get_energy, get_temp, get_vel2, MaxBoltz, check_dir
 
 
 def plot_energy(particles, t, masses):
@@ -69,21 +69,23 @@ def get_particles_plot(particles, n, N, radii):
     return circles
 
 
-def plot_crater(free_space, y_max, dx):
+def plot_crater(free_space, y_max, dx, fname="plot", dir_path="plots/"):
     Nx, Ny = np.shape(free_space)
     x = np.linspace(0, 1, Nx)
     y = np.linspace(0, y_max, Ny)
     x, y = np.meshgrid(x, y)
     
     fig, ax = plt.subplots()
-    ax.imshow(free_space.T)
+    ax.imshow(free_space.T[::-1])
+    check_dir(dir_path)
+    plt.savefig(dir_path + fname)
     
-    plt.show()
 
 def plot_crater_size(vs, crater_sizes):
     fig, ax = plt.subplots()
     ax.plot(vs, crater_sizes)
     plt.show()
+
 
 def get_arrows_plot(particles, n, N, radii):
     arrows = [plt.Arrow(
@@ -96,7 +98,7 @@ def get_arrows_plot(particles, n, N, radii):
     return arrows
 
 
-def plot_particles(particles, n, N, radii, plot_vel=True):
+def plot_particles(particles, n, N, radii, plot_vel=True, fname="plot", dir_path="plots/"):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -108,7 +110,8 @@ def plot_particles(particles, n, N, radii, plot_vel=True):
     ax.set_title(n)
     ax.add_collection(patches)
 
-    plt.show()
+    check_dir(dir_path)
+    plt.savefig(dir_path + fname)
 
 
 def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=True):

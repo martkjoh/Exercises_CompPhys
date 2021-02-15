@@ -39,16 +39,19 @@ def init_collisions(particles, radii):
 
 def make_dir(dir_path):
     """ recursively (!) creates the needed directories """
-    print(dir_path)
     if not path.isdir(dir_path):
         make_dir("/".join(dir_path.split("/")[:-2]) + "/")
         mkdir(dir_path)
 
 
-def simulate(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
-    particles, t = run_loop(init, args, condition, n_check, TC=TC)
+def check_dir(dir_path):
     if not path.isdir(dir_path):
         make_dir(dir_path)
+
+
+def simulate(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
+    particles, t = run_loop(init, args, condition, n_check, TC=TC)
+    check_dir(dir_path)
     np.save(dir_path + "particles.npy", particles)
     np.save(dir_path + "t.npy", t)
 
@@ -133,15 +136,31 @@ def tc_check(i, n, t, last_collided, xi):
     else: return xi
 
 
-def particle_insde(x, y, dx, particle):
-    # Rough measure. only checks for centre of particle
-    return x < particle[0]\
-    and (x + dx) > particle[0]\
-    and y < particle[1]\
-    and y + dx > particle[1]
+def particle_insde(x, y, dx, R, particle):
+    x0, y0 = particle[0], particle[1]
+    # Is the center of the particle inside an area around the square?
+    center_inside =  \
+        (x - R) < x0 and (x + dx + R) > x0 and\
+        (y - R) < y0 and (y + dx + R) > y0
+    # Is the center outside the square, at the corners?
+    centre_at_corners = \
+        (x > x0 and y > y0) or \
+        (x > x0 and y + dx < y0) or \
+        (x + dx < x0 and y > y0) or \
+        (x + dx < x0 and y + dx < y0)
+    corners = [(x, y), (x + dx, y), (x, y + dx), (x + dx, y + dx)]
+    # Does the particle overlap with a disk, centered at the corners?
+    overlap_corner = False
+    for corner in corners:
+        dist = (corner[0] - x0)**2 + (corner[1] - y0)**2
+        overlap_corner = overlap_corner or (dist < (R)**2)
+    
+    return center_inside
+    
+    return (center_inside and not centre_at_corners) or overlap_corner
 
 
-def cheack_crater_size(particles, n, y_max, dx):
+def check_crater_size(particles, radii, n, y_max, dx):
     Nx = int(1 / dx)
     Ny = int(y_max / dx)
     N = len(particles[0])
@@ -149,8 +168,8 @@ def cheack_crater_size(particles, n, y_max, dx):
     for i in range(Nx):
         for j in range(Ny):
             is_inside = False
-            for k in range(N):
-                is_inside = particle_insde(i*dx, j*dx, dx, particles[n, k])
+            for k in range(1, N):
+                is_inside = particle_insde(i*dx, j*dx, dx, radii[k], particles[n, k])
                 if is_inside:
                     free_space[i, j] = 1. 
                     break
@@ -189,7 +208,6 @@ def execute_collision(n, t, particles, collisions, last_collided, args, col, TC)
 
     transelate(particles, n+1, dt)
     collide(particles, n+1, i, j, col_type, radii, masses, xi)
-
     last_collided[i] = t[n+1]
     push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
     if j !=-1: 

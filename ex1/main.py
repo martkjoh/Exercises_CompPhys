@@ -1,6 +1,6 @@
 import numpy as np
 
-from utillities import cheack_crater_size, read_data, simulate, run_loop, energy_condition
+from utillities import check_crater_size, read_data, simulate, run_loop, energy_condition
 from particle_init import *
 from plotting import *
 
@@ -163,7 +163,6 @@ def single_projectile(run_simulation=False):
     N = 2000 + 1
     T = 100_000
     R = 0.0054
-    # Test values
 
     radii = np.ones(N) * R
     radii[0] = 0.05
@@ -184,8 +183,8 @@ def single_projectile(run_simulation=False):
 
 def parametre_sweep(run_simulation=False):
     xi = 0.5
-    N = 10 + 1
-    T = 10_0
+    N = 1000 + 1
+    T = 20_000
     R = 0.008
     radii = np.ones(N) * R
     radii[0] = 0.05
@@ -193,8 +192,8 @@ def parametre_sweep(run_simulation=False):
     masses[0] = 25
     args = (N, T, radii, masses, xi)
 
-    m = 10
-    vs = np.linspace(1, 20, m)
+    m = 2
+    vs = np.linspace(0.1, 100, m)
 
     if run_simulation:
         for i, v in enumerate(vs):
@@ -206,13 +205,15 @@ def parametre_sweep(run_simulation=False):
         for i, v in enumerate(vs):
             path = data_folder + "problem4/sweep_{}/".format(i)
             particles, t = read_data(path)
-            dx = 0.04
+            dx = 0.018
             y_max = 0.5
-            free_space = cheack_crater_size(particles, -1, y_max, dx)
+            free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = dx**2 * np.sum(free_space)
-            plot_particles(particles, -1, N, radii)
-            plot_crater(free_space, y_max, dx)
+            dir_path = "plots/para_sweep/"
+            plot_particles(particles, -1, N, radii, fname="particles{}".format(i), dir_path=dir_path)
+            plot_crater(free_space, y_max, dx, fname="crater{}".format(i), dir_path=dir_path)
         plot_crater_size(vs, crater_size)
+
 
 if __name__ == "__main__":
     # test_case_one_particle()
