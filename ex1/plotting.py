@@ -81,9 +81,9 @@ def plot_crater(free_space, y_max, dx, fname="plot", dir_path="plots/"):
     plt.savefig(dir_path + fname)
     
 
-def plot_crater_size(vs, crater_sizes):
+def plot_crater_size(Rs, crater_sizes):
     fig, ax = plt.subplots()
-    ax.plot(vs, crater_sizes)
+    ax.plot(Rs, crater_sizes, "x")
     plt.show()
 
 
