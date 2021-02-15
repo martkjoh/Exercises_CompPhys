@@ -75,6 +75,7 @@ def test_case_collision_angle():
         theta[i] = np.arctan2(y, -x)
     plot_collision_angle(theta, bs, a)    
 
+
 def profile_run():
     # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
     xi = 1
@@ -183,9 +184,9 @@ def single_projectile(run_simulation=False):
 
 def parametre_sweep(run_simulation=False):
     xi = 0.5
-    N = 500 + 1
-    T = 10_000
-    R = 0.011
+    N = 10 + 1
+    T = 10_0
+    R = 0.008
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
@@ -230,5 +231,5 @@ if __name__ == "__main__":
     # single_projectile(True)
     # single_projectile()
 
-    # parametre_sweep(True)
+    parametre_sweep(True)
     parametre_sweep()

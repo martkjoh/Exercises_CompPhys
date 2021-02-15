@@ -37,10 +37,18 @@ def init_collisions(particles, radii):
     return collisions
 
 
+def make_dir(dir_path):
+    """ recursively (!) creates the needed directories """
+    print(dir_path)
+    if not path.isdir(dir_path):
+        make_dir("/".join(dir_path.split("/")[:-2]) + "/")
+        mkdir(dir_path)
+
+
 def simulate(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
     particles, t = run_loop(init, args, condition, n_check, TC=TC)
     if not path.isdir(dir_path):
-        mkdir(dir_path)
+        make_dir(dir_path)
     np.save(dir_path + "particles.npy", particles)
     np.save(dir_path + "t.npy", t)
 
