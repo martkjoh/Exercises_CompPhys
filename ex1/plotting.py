@@ -81,15 +81,15 @@ def plot_crater(free_space, y_max, dir_path, fname):
     save_plot(fig, ax, fname, dir_path)
     
 
-def plot_crater_size(Rs, crater_sizes, dir_path, fname):
+def plot_crater_size(Rs, crater_sizes, dir_path):
     fig, ax = plt.subplots()
     ax.plot(Rs, crater_sizes, "x")
-    save_plot(fig, ax, fname, dir_path)
+    save_plot(fig, ax, "crater_size", dir_path)
 
 
 def get_particles_plot(particles, n, N, radii):
     circles =  [plt.Circle(
-        (particles[n, i, 0], particles[n, i, 1]),radius=radii[i], linewidth=0) 
+        (particles[n, i, 0], particles[n, i, 1]), radius=radii[i], linewidth=0) 
         for i in range(N)]
     return circles
 

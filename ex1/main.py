@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-from utillities import check_crater_size, read_data, simulate, run_loop, energy_condition
+from utillities import check_crater_size, read_data, simulate, run_loop, energy_condition, read_params
 from particle_init import *
 from plotting import *
 
@@ -14,14 +14,7 @@ plot_dir = "plots/"
 
 def test_case_one_particle():
     name = "test_case_one_particle"
-    # Elasticity parametre
-    xi = 1
-    # Number of particles
-    N = 1
-    # Number of timesteps
-    T = 100
-    # Radius
-    R = 0.1
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
@@ -33,10 +26,7 @@ def test_case_one_particle():
 
 def test_case_two_particles():
     name = "test_case_two_particles"
-    xi = 0.8
-    N = 2
-    T = 200
-    R = 0.1
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
@@ -48,10 +38,7 @@ def test_case_two_particles():
 
 def test_case_many_particles():
     name = "test_case_many_particles"
-    xi = 1
-    N = 100
-    T = 1000
-    R = 0.02
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
@@ -62,10 +49,9 @@ def test_case_many_particles():
 
 
 def test_case_collision_angle():
-    xi = 1
-    N = T = 2
+    name = "test_case_collision_angle"
+    xi, N, T, R = read_params(para_dir + name)
     a = 0.01
-    R = 1e-6
     radii = np.array([a, R])
     masses = np.array([1e6, 1])
     args = (N, T, radii, masses, xi)
@@ -85,10 +71,8 @@ def test_case_collision_angle():
 
 def profile_run():
     # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
-    xi = 1
-    N = 500
-    T = 1000
-    R = 0.002
+    name = "profile_run"
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
@@ -98,10 +82,7 @@ def profile_run():
 def problem1(run_simulation = False):
     name = "problem1"
     path = data_dir + name + "/" 
-    xi = 1
-    N = 200
-    T = 1000
-    R = 0.01
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
 
@@ -116,10 +97,7 @@ def problem1(run_simulation = False):
 def problem2(run_simulation=False):
     name = "problem2"
     path = data_dir + name + "/" 
-    xi = 1
-    N = 200
-    T = 2_000
-    R = 0.01
+    xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -139,10 +117,8 @@ def problem2(run_simulation=False):
 def problem3(run_simulation=False):
     name = "problem3"
     path = data_dir + name + "/" 
+    _, N, T, R = read_params(para_dir + name)
     xis = [1, 0.9, 0.8]
-    N = 500
-    T = 2_000
-    R = 0.01
     radii =np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -166,10 +142,7 @@ def problem3(run_simulation=False):
     
 def test_case_projectile(run_simulation=False):
     name = "test_case_projectile"
-    xi = 0.5
-    N = 2000 + 1
-    T = 100_000
-    R = 0.0054
+    xi, N, T, R = read_params(para_dir + name)
 
     radii = np.ones(N) * R
     radii[0] = 0.05
@@ -188,18 +161,12 @@ def test_case_projectile(run_simulation=False):
         anim_particles(particles, t, N, radii, 0.005, title=name)
 
 
-def problem4(vals, run_simulation=False):
+def problem4(i, j, run_simulation=False):
     name = "problem4"
-    xi = 0.5
-    T = 30_000
-    N = 2000 + 1
-    R = 0.0056
-
+    xi, N, T, R, all_Rs = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N) * R**2
-
-    m = 10
-    Rs = np.linspace(0.01, 0.03, m)
+    Rs = all_Rs[i:j]
 
     if run_simulation:
         for i, R in enumerate(Rs):
@@ -207,28 +174,28 @@ def problem4(vals, run_simulation=False):
             masses[0] = R**2
             args = (N, T, radii, masses, xi)
 
-            path = data_dir + name + "/sweep_{}/".format(i)
-            init = lambda N, radii : init_projectile(N, radii, 20)
+            path = data_dir + name + "/sweep_{}/".format(R)
+            init = lambda N, radii : init_projectile(N, radii, 1)
             simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
 
     else:
-        crater_size = np.zeros(m)
+        crater_size = np.zeros_like(Rs)
         for i, R in enumerate(Rs):
             radii[0] = R
             masses[0] = R**2
             args = (N, T, radii, masses, xi)
 
-            path = data_dir + name + "/sweep_{}/".format(i)
+            path = data_dir + name + "/sweep_{}/".format(R)
             particles, t = read_data(path)
             dx = 0.015
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = dx**2 * np.sum(free_space)
             dir_path = "plots/" + name + "/"
-            plot_particles(particles, -1, N, radii, dir_path, fname="particles{}".format(i))
-            plot_crater(free_space, y_max, dir_path, fname="crater{}".format(i))
+            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
+            plot_crater(free_space, y_max, dir_path, "crater{}".format(i))
         
-        plot_crater_size(Rs, crater_size)
+        plot_crater_size(Rs, crater_size, dir_path)
 
 
 tests = [
@@ -268,24 +235,12 @@ def cl_arguments(args):
                 problems[int(arg)]()
 
     elif args[1] == "sweep":
-        if args[2] == "run":
-            vals = args[2:]
-            problem4(vals, True)
+        i, j = int(args[2]), int(args[3])
+        if args[-1] == "run":
+            problem4(i, j, True)
+        else:
+            problem4(i, j)
 
 
 if __name__ == "__main__":
     cl_arguments(sys.argv)
-    # profile_run()
-
-    # problem1(True)
-    # problem1()
-    # problem2(True)
-    # problem2()
-    # problem3()
-
-    # test_case_projectile(True)
-    # test_case_projectile()
-
-    # problem4(True)
-    # problem4()
-

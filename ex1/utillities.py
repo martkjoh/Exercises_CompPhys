@@ -63,7 +63,13 @@ def read_data(path):
     return particles, t
 
 def read_params(path):
-    pass
+    params = np.loadtxt(path + ".txt")
+    xi, N, T, R = params[:4]
+    N, T = int(N), int(T)
+    if len(params) > 4:
+        return xi, N, T, R, params[4:]
+    else:
+        return xi, N, T, R
 
 
 """
