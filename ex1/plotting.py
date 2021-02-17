@@ -70,7 +70,7 @@ def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
     save_plot(fig, ax, "energy_ex3", dir_path)
 
 
-def plot_crater(free_space, y_max, fname, dir_path="plots/"):
+def plot_crater(free_space, y_max, dir_path, fname):
     Nx, Ny = np.shape(free_space)
     x = np.linspace(0, 1, Nx)
     y = np.linspace(0, y_max, Ny)
@@ -105,7 +105,7 @@ def get_arrows_plot(particles, n, N, radii):
     return arrows
 
 
-def plot_particles(particles, n, N, radii, plot_vel=True, dir_path, fname="particles"):
+def plot_particles(particles, n, N, radii, dir_path, fname="particles"):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
