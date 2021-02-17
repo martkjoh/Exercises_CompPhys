@@ -12,16 +12,16 @@ def save_plot(fig, ax, fname, dir_path):
     plt.cla()
 
 
-def plot_energy(particles, t, masses, fname="energy_plot", dir_path="plots/"):
+def plot_energy(particles, t, masses, dir_path):
     fig, ax = plt.subplots()
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
     T = len(particles)
     ax.plot(np.arange(T), E)
-    save_plot(fig, ax, fname, dir_path)
+    save_plot(fig, ax, "energy", dir_path)
 
 
-def plot_vel_dist(particles, n0, dn, masses, fname="vel_dist", dir_path="plots/"):
+def plot_vel_dist(particles, n0, dn, masses, dir_path):
     fig, ax = plt.subplots()
     T = len(particles)
     N = len(particles[0])
@@ -43,19 +43,19 @@ def plot_vel_dist(particles, n0, dn, masses, fname="vel_dist", dir_path="plots/"
     ax.hist(np.sqrt(v2), bins=20, density=True)
     ax.set_title("$T={}$".format(temp))
 
-    save_plot(fig, ax, fname, dir_path)
+    save_plot(fig, ax, "vel_dist", dir_path)
 
 
 
-def plot_collision_angle(theta, bs, a, fname="collision_angle", dir_path="plots/"):
+def plot_collision_angle(theta, bs, a, dir_path):
     fig, ax = plt.subplots()
     ax.plot(theta, bs)
     ax.plot(theta, a *  np.sin(theta / 2), "k--")
     
-    save_plot(fig, ax, fname, dir_path)
+    save_plot(fig, ax, "collision_angle", dir_path)
 
 
-def plot_energy_prob3(particles, t, masses, N1, N2, fname="energy_ex3", dir_path="plots/"):
+def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
     fig, ax = plt.subplots()
     T = len(t)
     E1 = np.array([get_energy(particles[:, :N1], masses[:N1], n) for n in range(T)]) / N1
@@ -67,6 +67,23 @@ def plot_energy_prob3(particles, t, masses, N1, N2, fname="energy_ex3", dir_path
     ax.plot(np.arange(T), Etot, label="All")
     ax.legend()
 
+    save_plot(fig, ax, "energy_ex3", dir_path)
+
+
+def plot_crater(free_space, y_max, fname, dir_path="plots/"):
+    Nx, Ny = np.shape(free_space)
+    x = np.linspace(0, 1, Nx)
+    y = np.linspace(0, y_max, Ny)
+    x, y = np.meshgrid(x, y)
+    
+    fig, ax = plt.subplots()
+    ax.imshow(free_space.T[::-1])
+    save_plot(fig, ax, fname, dir_path)
+    
+
+def plot_crater_size(Rs, crater_sizes, dir_path, fname):
+    fig, ax = plt.subplots()
+    ax.plot(Rs, crater_sizes, "x")
     save_plot(fig, ax, fname, dir_path)
 
 
@@ -75,24 +92,6 @@ def get_particles_plot(particles, n, N, radii):
         (particles[n, i, 0], particles[n, i, 1]),radius=radii[i], linewidth=0) 
         for i in range(N)]
     return circles
-
-
-def plot_crater(free_space, y_max, dx, fname="crater", dir_path="plots/"):
-    Nx, Ny = np.shape(free_space)
-    x = np.linspace(0, 1, Nx)
-    y = np.linspace(0, y_max, Ny)
-    x, y = np.meshgrid(x, y)
-    
-    fig, ax = plt.subplots()
-    ax.imshow(free_space.T[::-1])
-    check_dir(dir_path)
-    plt.savefig(dir_path + fname)
-    
-
-def plot_crater_size(Rs, crater_sizes, fname="crater_size", dir_path="plots/"):
-    fig, ax = plt.subplots()
-    ax.plot(Rs, crater_sizes, "x")
-    save_plot(fig, ax, fname, dir_path)
 
 
 def get_arrows_plot(particles, n, N, radii):
@@ -106,7 +105,7 @@ def get_arrows_plot(particles, n, N, radii):
     return arrows
 
 
-def plot_particles(particles, n, N, radii, plot_vel=True, fname="particles", dir_path="plots/"):
+def plot_particles(particles, n, N, radii, plot_vel=True, dir_path, fname="particles"):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)

@@ -7,9 +7,13 @@ from plotting import *
 
 
 # Path for saving data
-data_folder = "data/"
+data_dir = "data/"
+# Path for reading parameters
+para_dir = "parameters/"
+plot_dir = "plots/"
 
 def test_case_one_particle():
+    name = "test_case_one_particle"
     # Elasticity parametre
     xi = 1
     # Number of particles
@@ -23,11 +27,12 @@ def test_case_one_particle():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(init_one_testparticle, args)
-    anim_particles(particles, t, N, radii, 1, title="test_case_one_particle")
-    plot_energy(particles, t, masses, fname="energy_test_one")
+    anim_particles(particles, t, N, radii, 1, title=name)
+    plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
 def test_case_two_particles():
+    name = "test_case_two_particles"
     xi = 0.8
     N = 2
     T = 200
@@ -37,11 +42,12 @@ def test_case_two_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(init_two_testparticles, args)
-    anim_particles(particles, t, N, radii, 5, title="test_case_two_particles")
-    plot_energy(particles, t, masses, fname="energy_test_two")
+    anim_particles(particles, t, N, radii, 5, title=name)
+    plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
 def test_case_many_particles():
+    name = "test_case_many_particles"
     xi = 1
     N = 100
     T = 1000
@@ -51,8 +57,8 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.03, intr=150, title="test_case_many_particles")
-    plot_energy(particles, t, masses, fname="test_case_many")
+    anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
+    plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
 def test_case_collision_angle():
@@ -90,11 +96,12 @@ def profile_run():
 
 
 def problem1(run_simulation = False):
-    path = data_folder + "problem1/"
+    name = "problem1"
+    path = data_dir + name + "/" 
     xi = 1
-    N = 2_000
-    T = 50_000
-    R = 0.002
+    N = 200
+    T = 1000
+    R = 0.01
     radii = np.ones(N) * R
     masses = np.ones(N)
 
@@ -103,11 +110,12 @@ def problem1(run_simulation = False):
     
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles, 5*N, N, masses, fname="vel_dist_prob1")
+        plot_vel_dist(particles, 5*N, N, masses, plot_dir + name + "/")
 
 
 def problem2(run_simulation=False):
-    path = data_folder + "problem2/"
+    name = "problem2"
+    path = data_dir + name + "/" 
     xi = 1
     N = 200
     T = 2_000
@@ -124,16 +132,17 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1], fname="vel_dist_prob2_m=1")
-        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:], fname="vel_dist_prob2_m=4")
+        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1], plot_dir + name + "/m=1/")
+        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:], plot_dir + name + "/m=4/")
 
 
 def problem3(run_simulation=False):
-    path = data_folder + "problem3/"
+    name = "problem3"
+    path = data_dir + name + "/" 
     xis = [1, 0.9, 0.8]
-    N = 1_500
-    T = 20_000
-    R = 0.004
+    N = 500
+    T = 2_000
+    R = 0.01
     radii =np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -143,23 +152,20 @@ def problem3(run_simulation=False):
 
     if run_simulation: 
         for i, xi in enumerate(xis):
-            path_xi = path + str(i) + "/"
+            path_xi = path + "xi_" + str(i) + "/"
             args = (N, T, radii, masses, xi)
-            simulate(path_xi, random_dist, args)
+            simulate(path_xi, random_dist, args, TC=True)
 
     else:
         for i, xi in enumerate(xis):
-            path_xi = path + str(i) + "/"
+            dir = "xi_" + str(i) + "/"
+            path_xi = path + dir
             particles, t = read_data(path_xi)
-            plot_energy_prob3(particles, t, masses, N1, N2, fname="energy_prob_3")
-
-
-def projectile(v_proj, path, args):
-    init = lambda N, radii : init_projectile(N, radii, v_proj)
-    simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
+            plot_energy_prob3(particles, t, masses, N1, N2, plot_dir + name + "/" + dir)
 
     
 def test_case_projectile(run_simulation=False):
+    name = "test_case_projectile"
     xi = 0.5
     N = 2000 + 1
     T = 100_000
@@ -171,7 +177,7 @@ def test_case_projectile(run_simulation=False):
     masses[0] = 25
     args = (N, T, radii, masses, xi)
 
-    path = data_folder + "single_part/"
+    path = data_dir + name + "/"
 
     if run_simulation:
         init = lambda N, radii : init_projectile(N, radii, 5)
@@ -179,10 +185,11 @@ def test_case_projectile(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        anim_particles(particles, t, N, radii, 0.005, title="projectile")
+        anim_particles(particles, t, N, radii, 0.005, title=name)
 
 
-def problem4(run_simulation=False):
+def problem4(vals, run_simulation=False):
+    name = "problem4"
     xi = 0.5
     T = 30_000
     N = 2000 + 1
@@ -200,8 +207,9 @@ def problem4(run_simulation=False):
             masses[0] = R**2
             args = (N, T, radii, masses, xi)
 
-            path = data_folder + "problem4/sweep_{}/".format(i)
-            projectile(20, path, args)
+            path = data_dir + name + "/sweep_{}/".format(i)
+            init = lambda N, radii : init_projectile(N, radii, 20)
+            simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
 
     else:
         crater_size = np.zeros(m)
@@ -210,17 +218,59 @@ def problem4(run_simulation=False):
             masses[0] = R**2
             args = (N, T, radii, masses, xi)
 
-            path = data_folder + "problem4/sweep_{}/".format(i)
+            path = data_dir + name + "/sweep_{}/".format(i)
             particles, t = read_data(path)
             dx = 0.015
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = dx**2 * np.sum(free_space)
-            dir_path = "plots/para_sweep/"
-            plot_particles(particles, -1, N, radii, fname="particles{}".format(i), dir_path=dir_path)
-            plot_crater(free_space, y_max, dx, fname="crater{}".format(i), dir_path=dir_path)
+            dir_path = "plots/" + name + "/"
+            plot_particles(particles, -1, N, radii, dir_path, fname="particles{}".format(i))
+            plot_crater(free_space, y_max, dir_path, fname="crater{}".format(i))
         
         plot_crater_size(Rs, crater_size)
+
+
+tests = [
+    test_case_one_particle, 
+    test_case_two_particles, 
+    test_case_many_particles, 
+    test_case_collision_angle,
+    test_case_projectile
+    ]
+
+problems = [
+    problem1,
+    problem2,
+    problem3,
+]
+
+def cl_arguments(args):
+    """ function for processing arguments from the command line """
+    
+    # run the tests. syntax: python main.py test 0 2 (run) for test 0 and 2 (run simulation)
+    if args[1] == "test":
+        for arg in args[2:]:
+            if args[-1] == "run":
+                tests[int(arg)](True)
+            else:
+                tests[int(arg)]()
+
+    elif args[1] == "problem":
+        for arg in args[2:]:
+            try: 
+                int(arg)
+            except:
+                break
+            if args[-1] == "run":
+                problems[int(arg)](True)
+            else:
+                problems[int(arg)]()
+
+    elif args[1] == "sweep":
+        if args[2] == "run":
+            vals = args[2:]
+            problem4(vals, True)
 
 
 if __name__ == "__main__":

@@ -62,6 +62,9 @@ def read_data(path):
     t = np.load(path + "t.npy")
     return particles, t
 
+def read_params(path):
+    pass
+
 
 """
 Physics
