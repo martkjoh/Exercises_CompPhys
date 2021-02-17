@@ -6,16 +6,22 @@ from matplotlib.animation import FuncAnimation as FA
 from utillities import get_energy, get_temp, get_vel2, MaxBoltz, check_dir
 
 
-def plot_energy(particles, t, masses):
+def save_plot(fig, ax, fname, dir_path):
+    check_dir(dir_path)
+    plt.savefig(dir_path + fname)
+    plt.cla()
+
+
+def plot_energy(particles, t, masses, fname="energy_plot", dir_path="plots/"):
     fig, ax = plt.subplots()
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
     T = len(particles)
     ax.plot(np.arange(T), E)
-    plt.show()
+    save_plot(fig, ax, fname, dir_path)
 
 
-def plot_vel_dist(particles, n0, dn, masses):
+def plot_vel_dist(particles, n0, dn, masses, fname="vel_dist", dir_path="plots/"):
     fig, ax = plt.subplots()
     T = len(particles)
     N = len(particles[0])
@@ -37,17 +43,19 @@ def plot_vel_dist(particles, n0, dn, masses):
     ax.hist(np.sqrt(v2), bins=20, density=True)
     ax.set_title("$T={}$".format(temp))
 
-    plt.show()
+    save_plot(fig, ax, fname, dir_path)
 
 
-def plot_collision_angle(theta, bs, a):
+
+def plot_collision_angle(theta, bs, a, fname="collision_angle", dir_path="plots/"):
     fig, ax = plt.subplots()
     ax.plot(theta, bs)
     ax.plot(theta, a *  np.sin(theta / 2), "k--")
-    plt.show()
+    
+    save_plot(fig, ax, fname, dir_path)
 
 
-def plot_energy_prob3(particles, t, masses, N1, N2):
+def plot_energy_prob3(particles, t, masses, N1, N2, fname="energy_ex3", dir_path="plots/"):
     fig, ax = plt.subplots()
     T = len(t)
     E1 = np.array([get_energy(particles[:, :N1], masses[:N1], n) for n in range(T)]) / N1
@@ -59,7 +67,7 @@ def plot_energy_prob3(particles, t, masses, N1, N2):
     ax.plot(np.arange(T), Etot, label="All")
     ax.legend()
 
-    plt.show()
+    save_plot(fig, ax, fname, dir_path)
 
 
 def get_particles_plot(particles, n, N, radii):
@@ -69,7 +77,7 @@ def get_particles_plot(particles, n, N, radii):
     return circles
 
 
-def plot_crater(free_space, y_max, dx, fname="plot", dir_path="plots/"):
+def plot_crater(free_space, y_max, dx, fname="crater", dir_path="plots/"):
     Nx, Ny = np.shape(free_space)
     x = np.linspace(0, 1, Nx)
     y = np.linspace(0, y_max, Ny)
@@ -81,10 +89,10 @@ def plot_crater(free_space, y_max, dx, fname="plot", dir_path="plots/"):
     plt.savefig(dir_path + fname)
     
 
-def plot_crater_size(Rs, crater_sizes):
+def plot_crater_size(Rs, crater_sizes, fname="crater_size", dir_path="plots/"):
     fig, ax = plt.subplots()
     ax.plot(Rs, crater_sizes, "x")
-    plt.show()
+    save_plot(fig, ax, fname, dir_path)
 
 
 def get_arrows_plot(particles, n, N, radii):
@@ -98,7 +106,7 @@ def get_arrows_plot(particles, n, N, radii):
     return arrows
 
 
-def plot_particles(particles, n, N, radii, plot_vel=True, fname="plot", dir_path="plots/"):
+def plot_particles(particles, n, N, radii, plot_vel=True, fname="particles", dir_path="plots/"):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -110,8 +118,7 @@ def plot_particles(particles, n, N, radii, plot_vel=True, fname="plot", dir_path
     ax.set_title(n)
     ax.add_collection(patches)
 
-    check_dir(dir_path)
-    plt.savefig(dir_path + fname)
+    save_plot(fig, ax, fname, dir_path)
 
 
 def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=True):

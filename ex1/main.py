@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 from utillities import check_crater_size, read_data, simulate, run_loop, energy_condition
 from particle_init import *
@@ -23,7 +24,7 @@ def test_case_one_particle():
 
     particles, t = run_loop(init_one_testparticle, args)
     anim_particles(particles, t, N, radii, 1, title="test_case_one_particle")
-    plot_energy(particles, t, masses)
+    plot_energy(particles, t, masses, fname="energy_test_one")
 
 
 def test_case_two_particles():
@@ -37,7 +38,7 @@ def test_case_two_particles():
 
     particles, t = run_loop(init_two_testparticles, args)
     anim_particles(particles, t, N, radii, 5, title="test_case_two_particles")
-    plot_energy(particles, t, masses)
+    plot_energy(particles, t, masses, fname="energy_test_two")
 
 
 def test_case_many_particles():
@@ -50,8 +51,8 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.03, intr=150, title="test_case_man_particles")
-    plot_energy(particles, t, masses)
+    anim_particles(particles, t, N, radii, 0.03, intr=150, title="test_case_many_particles")
+    plot_energy(particles, t, masses, fname="test_case_many")
 
 
 def test_case_collision_angle():
@@ -73,7 +74,7 @@ def test_case_collision_angle():
         x -= 0.5
         y -= 0.5
         theta[i] = np.arctan2(y, -x)
-    plot_collision_angle(theta, bs, a)    
+    plot_collision_angle(theta, bs, a)
 
 
 def profile_run():
@@ -102,7 +103,7 @@ def problem1(run_simulation = False):
     
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles, 5*N, N, masses)
+        plot_vel_dist(particles, 5*N, N, masses, fname="vel_dist_prob1")
 
 
 def problem2(run_simulation=False):
@@ -123,8 +124,8 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1])
-        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:])
+        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1], fname="vel_dist_prob2_m=1")
+        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:], fname="vel_dist_prob2_m=4")
 
 
 def problem3(run_simulation=False):
@@ -150,7 +151,7 @@ def problem3(run_simulation=False):
         for i, xi in enumerate(xis):
             path_xi = path + str(i) + "/"
             particles, t = read_data(path_xi)
-            plot_energy_prob3(particles, t, masses, N1, N2)
+            plot_energy_prob3(particles, t, masses, N1, N2, fname="energy_prob_3")
 
 
 def projectile(v_proj, path, args):
@@ -158,7 +159,7 @@ def projectile(v_proj, path, args):
     simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
 
     
-def single_projectile(run_simulation=False):
+def test_case_projectile(run_simulation=False):
     xi = 0.5
     N = 2000 + 1
     T = 100_000
@@ -181,7 +182,7 @@ def single_projectile(run_simulation=False):
         anim_particles(particles, t, N, radii, 0.005, title="projectile")
 
 
-def parametre_sweep(run_simulation=False):
+def problem4(run_simulation=False):
     xi = 0.5
     T = 30_000
     N = 2000 + 1
@@ -211,22 +212,19 @@ def parametre_sweep(run_simulation=False):
 
             path = data_folder + "problem4/sweep_{}/".format(i)
             particles, t = read_data(path)
-            dx = 0.012
+            dx = 0.015
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = dx**2 * np.sum(free_space)
             dir_path = "plots/para_sweep/"
             plot_particles(particles, -1, N, radii, fname="particles{}".format(i), dir_path=dir_path)
             plot_crater(free_space, y_max, dx, fname="crater{}".format(i), dir_path=dir_path)
+        
         plot_crater_size(Rs, crater_size)
 
 
 if __name__ == "__main__":
-    # test_case_one_particle()
-    # test_case_two_particles()
-    # test_case_many_particles()
-    # test_case_collision_angle()
-
+    cl_arguments(sys.argv)
     # profile_run()
 
     # problem1(True)
@@ -235,8 +233,9 @@ if __name__ == "__main__":
     # problem2()
     # problem3()
 
-    # single_projectile(True)
-    # single_projectile()
+    # test_case_projectile(True)
+    # test_case_projectile()
 
-    # parametre_sweep(True)
-    parametre_sweep()
+    # problem4(True)
+    # problem4()
+
