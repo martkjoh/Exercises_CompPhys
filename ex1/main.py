@@ -20,7 +20,8 @@ def test_case_one_particle():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(init_one_testparticle, args)
-    anim_particles(particles, t, N, radii, 1, title=name)
+    plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
+    plot_particles(particles, -1, N, radii, plot_dir + name + "/", "particle-1")
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
 

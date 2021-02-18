@@ -8,7 +8,7 @@ from utillities import get_energy, get_temp, get_vel2, MaxBoltz, check_dir
 
 def save_plot(fig, ax, fname, dir_path):
     check_dir(dir_path)
-    plt.savefig(dir_path + fname)
+    plt.savefig(dir_path + fname + ".pdf")
     plt.cla()
 
 
