@@ -20,6 +20,7 @@ def test_case_one_particle():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(init_one_testparticle, args)
+
     plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", "particle-1")
     plot_energy(particles, t, masses, plot_dir + name + "/")
@@ -45,7 +46,8 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
+    # anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
+    plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
@@ -67,7 +69,7 @@ def test_case_collision_angle():
         x -= 0.5
         y -= 0.5
         theta[i] = np.arctan2(y, -x)
-    plot_collision_angle(theta, bs, a)
+    plot_collision_angle(theta, bs, a, plot_dir + name + "/")
 
 
 def profile_run():

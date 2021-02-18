@@ -50,7 +50,7 @@ def plot_vel_dist(particles, n0, dn, masses, dir_path):
 def plot_collision_angle(theta, bs, a, dir_path):
     fig, ax = plt.subplots()
     ax.plot(theta, bs)
-    ax.plot(theta, a *  np.sin(theta / 2), "k--")
+    ax.plot(theta, a  *  np.sin(theta / 2), "k--")
     
     save_plot(fig, ax, "collision_angle", dir_path)
 
