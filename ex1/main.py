@@ -21,6 +21,7 @@ def test_case_one_particle():
 
     particles, t = run_loop(init_one_testparticle, args)
 
+    plot_particles(particles, -3, N, radii, plot_dir + name + "/", "particle-3")
     plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", "particle-1")
     plot_energy(particles, t, masses, plot_dir + name + "/")
@@ -116,8 +117,9 @@ def problem2(run_simulation=False):
 
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles[:, :N1], 5*N, N, masses[:N1], plot_dir + name + "/m=1/")
-        plot_vel_dist(particles[:, N1:], 5*N, N, masses[N1:], plot_dir + name + "/m=4/")
+        dir = plot_dir + name + "/"
+        titles = ("$m = 1$", "$m = 4$")
+        plot_prob_2(particles, 3*N, N, N1, masses, dir, titles, "vel_dist")
 
 
 def problem3(run_simulation=False):
