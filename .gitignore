@@ -7,3 +7,4 @@ ex1/__pycache__/
 *.mp4
 *.png
 ex1/plots/*
+*/plots/*
