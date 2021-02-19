@@ -54,7 +54,21 @@
             \begin{equation*}
                 f(v) = \frac{m v}{T} \exp \left(-\frac{m v^2}{2 T}\right),
             \end{equation*}
-            when using units in which $k_b = 1$. The equipartition theorem gives the temperature $T = E$ in 2D.
+            when using units in which $k_b = 1$. The equipartition theorem gives the temperature $T = E$ in 2D. Figure \ref{problem1 av vel} was used to find a good starting point for when the simulation has reach equilibrium. After that, the simulation is sampled every $N$ event, where $N$ is the number of particles. This ensures somewhat independent samples. Figure \ref{problem1 dist} shows the velocity distribution, compared to the Maxwell Boltzmann distribution
+
+            \begin{figure}
+                \centering
+                \includegraphics[width=0.8\textwidth]{../plots/problem1/vel_dist.pdf}
+                \caption{The velocity distribution is a good fit with the Maxwell-Boltzmann distribution, shown as a blue line.}
+                \label{problem1 dist}
+            \end{figure}
+            \begin{figure}
+                \centering
+                \includegraphics[width=0.8\textwidth]{../plots/problem1/v_av.pdf}
+                \caption{Average velocity, as a function of collisions. The distribution reaches equilibrium around $6000$ collisions, or $3N$}
+                \label{problem1 av vel}
+            \end{figure}
+    
 
     \bibliography{report}
     \bibliographystyle{plain}   

@@ -5,24 +5,46 @@ from matplotlib.animation import FuncAnimation as FA
 
 from utillities import get_energy, get_temp, get_vel2, MaxBoltz, check_dir
 
+plt.rcParams['mathtext.fontset'] = 'cm'
+font = {'family' : 'serif', 
+        'size': 20}
+plt.rc('font', **font)
+plt.rc('lines', lw=2)
+
 
 def save_plot(fig, ax, fname, dir_path):
     check_dir(dir_path)
+    plt.tight_layout()
     plt.savefig(dir_path + fname + ".pdf")
     plt.cla()
 
 
 def plot_energy(particles, t, masses, dir_path):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
     T = len(particles)
     ax.plot(np.arange(T), E)
     save_plot(fig, ax, "energy", dir_path)
+    
+
+
+def plot_av_vel(particles, dir_path):
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    T = len(particles)
+    N = len(particles[0])
+    v = particles[:, :, 2:]
+    v_av = np.einsum("tn -> t", np.sqrt(v[:, :, 0]**2 + v[:, :, 1]**2)) / N
+    t = np.arange(T)
+    ax.plot(t, v_av)
+    ax.set_xlabel("# collisions")
+    ax.set_ylabel("$\\bar v$")
+    save_plot(fig, ax, "v_av", dir_path)
 
 
 def plot_vel_dist(particles, n0, dn, masses, dir_path):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 5))
     T = len(particles)
     N = len(particles[0])
     
@@ -40,8 +62,11 @@ def plot_vel_dist(particles, n0, dn, masses, dir_path):
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
  
     ax.plot(v, MaxBoltz(v, masses[0], temp))
-    ax.hist(np.sqrt(v2), bins=20, density=True)
+    ax.hist(np.sqrt(v2), bins=50, density=True)
     ax.set_title("$T={}$".format(temp))
+    ax.set_xlabel("$v$")
+    ax.set_ylabel("prob.dens.")
+    plt.tight_layout()
 
     save_plot(fig, ax, "vel_dist", dir_path)
 
@@ -106,7 +131,7 @@ def get_arrows_plot(particles, n, N, radii):
 
 
 def plot_particles(particles, n, N, radii, dir_path, fname="particles"):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 5))
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     circles  = get_particles_plot(particles, n, N, radii)

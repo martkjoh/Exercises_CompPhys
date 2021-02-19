@@ -94,7 +94,10 @@ def problem1(run_simulation = False):
     
     else:
         particles, t = read_data(path)
-        plot_vel_dist(particles, 5*N, N, masses, plot_dir + name + "/")
+        dir = plot_dir + name + "/"
+        plot_vel_dist(particles, 3*N, N, masses, dir)
+        plot_av_vel(particles, dir)
+        plot_particles(particles, -1, N, radii, dir)
 
 
 def problem2(run_simulation=False):
