@@ -164,8 +164,6 @@ def particle_insde(x, y, dx, R, particle):
         dist = (corner[0] - x0)**2 + (corner[1] - y0)**2
         overlap_corner = overlap_corner or (dist < (R)**2)
     
-    return center_inside
-    
     return (center_inside and not centre_at_corners) or overlap_corner
 
 

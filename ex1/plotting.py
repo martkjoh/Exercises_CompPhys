@@ -114,14 +114,18 @@ def plot_crater(free_space, y_max, dir_path, fname):
     y = np.linspace(0, y_max, Ny)
     x, y = np.meshgrid(x, y)
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 6))
     ax.imshow(free_space.T[::-1])
     save_plot(fig, ax, fname, dir_path)
     
 
 def plot_crater_size(Rs, crater_sizes, dir_path):
-    fig, ax = plt.subplots()
+    av_rise = np.sum(crater_sizes/ Rs) / len(Rs)
+    r = np.linspace(0, np.max(Rs))
+    fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(Rs, crater_sizes, "x")
+    ax.plot(r, av_rise * r, label="${:.3f} R$".format(av_rise))
+    ax.legend()
     save_plot(fig, ax, "crater_size", dir_path)
 
 

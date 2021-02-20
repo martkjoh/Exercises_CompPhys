@@ -3,7 +3,7 @@
 \usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage{graphicx}
 \usepackage{physics}
-
+\usepackage{algpseudocode}
 
 \title{Exercise 1, TFY4235 Computational physics}
 \author{Martin K. Johnsrud}
@@ -25,7 +25,7 @@
         To be expanded \dots
 
     \section*{Tests}
-        Several functions were developed to test the accuracy of the simulation. First, one particle, starting at in the middle of the box, all the way to the left, and with a velocity with at $45^\circ$ to the $x$-axis should move in a titled rectangle. With $\xi=1$ it should also conserve energy. Figure \ref{single particle} shows that this is still the case after $10,000$ events. To test the validity of the particle collision, one small, light particle is sent towards a single, large and heavy particle, with varying impact parameters. The relationship between the impact parameter is is (ref til goldstein, begunn hvorfor det blir cos) $\dv{s}{\theta} = a / 2 \sin(\theta / 2)$. The result is shown i Figure \ref{scattering}, and is in good agreement with the theory. Lastly, the energy from a simulation of $N$ particles over $T$ events is shown in
+        Several functions were developed to test the accuracy of the simulation. First, one particle, starting at in the middle of the box, all the way to the left, and with a velocity with at $45^\circ$ to the $x$-axis should move in a titled rectangle. With $\xi=1$ it should also conserve energy. Figure \ref{single particle} shows that this is still the case after $10,000$ events. 
 
         \begin{figure}
             \centering
@@ -35,6 +35,9 @@
             \caption{One ball being simulated. after $10 000$ steps, it still follows a regular pattern.}
             \label{single particle}
         \end{figure}
+        
+        To test the validity of the particle collision, one small, light particle is sent towards a single, large and heavy particle, with varying impact parameters. The relationship between the impact parameter is is (ref til goldstein, begunn hvorfor det blir cos) $\dv{s}{\theta} = a / 2 \sin(\theta / 2)$. The result is shown i Figure \ref{scattering}, and is in good agreement with the theory. Lastly, the energy from a simulation of $N$ particles over $T$ events is shown in
+
 
         \begin{figure}
             \centering
@@ -50,7 +53,7 @@
             \caption{On the left is a snapshot of the particles. The arrows represent the velocities. On the right, the energy is plotted as a function of events. The energy loss can be seen to be negligible.}
         \end{figure}
 
-        \section*{Statistical distribution}
+        \section*{Results}
             As the system equilibrates, it should reach the Maxwell-Boltzmann distribution, which in 2D is
             \begin{equation*}
                 f(v) = \frac{m v}{T} \exp \left(-\frac{m v^2}{2 T}\right),
@@ -92,7 +95,32 @@
                 \caption{The average energy, as a function of time, of resp. $\xi=1$, $\xi=0.9$ and $\xi=0.8$.}
                 \label{problem2 dist}
             \end{figure}
-    
+
+            To simulate the impact of a projectile, one disk is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$. The lower half of the square box is filled with small, light particles. The impact from the large disk into the densely packed disks will create a crater. To investigate the effect of the mass and radius on the size of the crater, the size of the crater must be measured. This is done by laying a grid with with a spacing $\Delta x$, and searching through each cell if there is a disk inside it. The process for checking if a disk is inside each square cell is illustrated in figure \ref{cheack if disk is inside}. Then, the size of the crater is given by $s = m \Delta x^2$, where $m$ is the number of unoccupied cells. This method relies on choosing a cell size $\Delta x$ large enough so that only cells within the crater are empty. This is done by inspecting the result, and comparing it to a plot of the crater.
+
+            \begin{figure}[ht]
+                \centering
+                \includegraphics[width=0.8\textwidth]{figure.pdf}
+                \caption{Checking if a disk of radius $R$ is inside of a square of side length $\Delta x$, is equivalent to checking if the center of the disk is inside the shape on the left side. Thus, the task is reduced to checking if the center is inside the larger square of side lengths $R + 2 \Delta x$, but not at the corners, or inside one of the circles of radius $R$ centered at the corners of the square.}
+                \label{cheack if disk is inside}
+            \end{figure}
+
+            To avoid inelastic, which was first observed when the projectile was approaching the bottom of the box, the simulation was implemented as at TC-model as described in~\cite{TC}. Good results, without inelastic collapse, were found with $t_c = 10^{-8}$.
+
+            \begin{figure}
+                \centering
+                \includegraphics[width=0.40\textwidth]{../plots/problem4/crater8.pdf}
+                \includegraphics[width=0.30\textwidth]{../plots/problem4/particles8.pdf}
+            \end{figure}
+
+            To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius. The mass of the projectile is proportional to $R^2$, so that the density is constant. Figure \ref{crater size} shows the size of the crater, 
+
+            \begin{figure}
+                \centering
+                \includegraphics[width=0.8\textwidth]{../plots/problem4/crater_size.pdf}
+                \caption{The size of the crater, as a function of the radius of the incoming projectile.}
+                \label{crater size}
+            \end{figure}
 
     \bibliography{report}
     \bibliographystyle{plain}   

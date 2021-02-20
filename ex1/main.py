@@ -195,15 +195,49 @@ def problem4(i, j, run_simulation=False):
 
             path = data_dir + name + "/sweep_{}/".format(R)
             particles, t = read_data(path)
-            dx = 0.015
+            dx = 0.018
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
-            crater_size[i] = dx**2 * np.sum(free_space)
+            crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
             dir_path = "plots/" + name + "/"
             plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
             plot_crater(free_space, y_max, dir_path, "crater{}".format(i))
         
         plot_crater_size(Rs, crater_size, dir_path)
+
+def problem4_2(i, j, run_simulation=False):
+    name = "problem4_2"
+    xi, N, T, R, all_vs = read_params(para_dir + name)
+    radii = np.ones(N) * R
+    masses = np.ones(N) * R**2
+    R0 = 0.01
+    radii[0] = R0
+    masses[0] = R0**2
+    args = (N, T, radii, masses, xi)
+
+    vs = all_vs[i:j]
+
+    if run_simulation:
+        for i, v in enumerate(vs):
+            path = data_dir + name + "/sweep_{}/".format(v)
+            init = lambda N, radii : init_projectile(N, radii, v)
+            simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
+
+    else:
+        crater_size = np.zeros_like(vs)
+        for i, v in enumerate(vs):
+
+            path = data_dir + name + "/sweep_{}/".format(v)
+            particles, t = read_data(path)
+            dx = 0.018
+            y_max = 0.5
+            free_space = check_crater_size(particles, radii, -1, y_max, dx)
+            crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
+            dir_path = "plots/" + name + "/"
+            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
+            plot_crater(free_space, y_max, dir_path, "crater{}".format(i))
+        
+        plot_crater_size(vs, crater_size, dir_path)
 
 
 tests = [
@@ -242,12 +276,19 @@ def cl_arguments(args):
             else:
                 problems[int(arg)]()
 
-    elif args[1] == "sweep":
+    elif args[1] == "sweepR":
         i, j = int(args[2]), int(args[3])
         if args[-1] == "run":
             problem4(i, j, True)
         else:
             problem4(i, j)
+
+    elif args[1] == "sweepv":
+        i, j = int(args[2]), int(args[3])
+        if args[-1] == "run":
+            problem4_2(i, j, True)
+        else:
+            problem4_2(i, j)
 
 
 if __name__ == "__main__":
