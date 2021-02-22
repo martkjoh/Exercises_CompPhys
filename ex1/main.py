@@ -1,7 +1,8 @@
+from matplotlib.pyplot import title
 import numpy as np
 import sys
 
-from utillities import check_crater_size, read_data, run_loop_np, simulate, run_loop_np, energy_condition, read_params
+from utillities import check_crater_size, read_data, run_loop_np, simulate_np, run_loop_np, energy_condition, read_params
 from particle_init import *
 from plotting import *
 
@@ -47,7 +48,7 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop_np(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
+    anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -91,7 +92,7 @@ def problem1(run_simulation = False):
     masses = np.ones(N)
 
     args = (N, T, radii, masses, xi)
-    if run_simulation: simulate(path, random_dist, args)
+    if run_simulation: simulate_np(path, random_dist, args)
     
     else:
         particles, t = read_data(path)
@@ -113,13 +114,13 @@ def problem2(run_simulation=False):
     masses[N//2:] = 4 * np.ones(N2)
 
     args = (N, T, radii, masses, xi)
-    if run_simulation: simulate(path, random_dist, args)
+    if run_simulation: simulate_np(path, random_dist, args)
 
     else:
         particles, t = read_data(path)
         dir = plot_dir + name + "/"
         titles = ("$m = 1$", "$m = 4$")
-        plot_prob_2(particles, 3*N, N, N1, masses, dir, titles, "vel_dist")
+        plot_prob_2(particles, 5*N, N, N1, masses, dir, titles, "vel_dist")
 
 
 def problem3(run_simulation=False):
@@ -138,7 +139,7 @@ def problem3(run_simulation=False):
         for i, xi in enumerate(xis):
             path_xi = path + "xi_" + str(i) + "/"
             args = (N, T, radii, masses, xi)
-            simulate(path_xi, random_dist, args, TC=True)
+            simulate_np(path_xi, random_dist, args, TC=True)
 
     else:
         for i, xi in enumerate(xis):
@@ -162,7 +163,7 @@ def test_case_projectile(run_simulation=False):
 
     if run_simulation:
         init = lambda N, radii : init_projectile(N, radii, 5)
-        simulate(path, init, args)
+        simulate_np(path, init, args)
 
     else:
         particles, t = read_data(path)
@@ -184,7 +185,7 @@ def problem4(i, j, run_simulation=False):
 
             path = data_dir + name + "/sweep_{}/".format(R)
             init = lambda N, radii : init_projectile(N, radii, 1)
-            simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
+            simulate_np(path, init, args, condition=energy_condition, n_check=100, TC=True)
 
     else:
         crater_size = np.zeros_like(Rs)
@@ -221,7 +222,7 @@ def problem4_2(i, j, run_simulation=False):
         for i, v in enumerate(vs):
             path = data_dir + name + "/sweep_{}/".format(v)
             init = lambda N, radii : init_projectile(N, radii, v)
-            simulate(path, init, args, condition=energy_condition, n_check=100, TC=True)
+            simulate_np(path, init, args, condition=energy_condition, n_check=100, TC=True)
 
     else:
         crater_size = np.zeros_like(vs)

@@ -61,7 +61,7 @@ def get_plot_vel_dist(ax, particles, n0, dn, masses, title):
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
  
     ax.plot(v, MaxBoltz(v, masses[0], temp))
-    ax.hist(np.sqrt(v2), bins=50, density=True)
+    ax.hist(np.sqrt(v2), bins=100, density=True)
     ax.set_title(title)
     ax.set_xlabel("$v$")
     ax.set_ylabel("prob.dens.")
@@ -125,7 +125,6 @@ def plot_crater_size(Rs, crater_sizes, dir_path):
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(Rs, crater_sizes, "x")
     ax.plot(r, av_rise * r, label="${:.3f} R$".format(av_rise))
-    ax.legend()
     save_plot(fig, ax, "crater_size", dir_path)
 
 
