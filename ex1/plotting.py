@@ -170,9 +170,9 @@ def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=T
     colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
     patches.set_array(colors)
     ax.add_collection(patches)
-    txt1 = ax.text(0.8, 0.8, "t = {:.3f}".format(t[0]))
-    txt2 = ax.text(0.8, 0.9, "n = {}/{}".format(0, len(t)))
-    ax.text(0.8, 0.75, "t_f = {:.3f}".format(t[-1]))
+    txt1 = ax.text(0.8, 0.8, "t = {:.3f}".format(t[0]), size=12)
+    txt2 = ax.text(0.8, 0.9, "n = {}/{}".format(0, len(t)), size=12)
+    ax.text(0.8, 0.75, "t_f = {:.3f}".format(t[-1]), size=12)
 
     steps = np.nonzero(np.diff(t//dt))[0]
     frames = len(steps)

@@ -2,7 +2,7 @@ from matplotlib.pyplot import title
 import numpy as np
 import sys
 
-from utillities import check_crater_size, read_data, run_loop_np, save_data, simulate_np, run_loop_np, energy_condition, read_params
+from utillities import check_crater_size, read_data, run_loop, save_data, energy_condition, read_params
 from particle_init import *
 from plotting import *
 
@@ -20,7 +20,7 @@ def test_case_one_particle():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop_np(init_one_testparticle, args)
+    particles, t = run_loop(init_one_testparticle, args)
 
     plot_particles(particles, -3, N, radii, plot_dir + name + "/", "particle-3")
     plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
@@ -35,7 +35,7 @@ def test_case_two_particles():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop_np(init_two_testparticles, args)
+    particles, t = run_loop(init_two_testparticles, args)
     anim_particles(particles, t, N, radii, 5, title=name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -47,7 +47,7 @@ def test_case_many_particles():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop_np(random_dist, args)
+    particles, t = run_loop(random_dist, args)
     anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
@@ -66,7 +66,7 @@ def test_case_collision_angle():
     theta = np.empty(m)
     for i, b in enumerate(bs):
         init = lambda N, radii : init_collision_angle(b, N, radii)
-        particles, t = run_loop_np(init, args)
+        particles, t = run_loop(init, args)
         x, y = particles[2, 1, :2]
         x -= 0.5
         y -= 0.5
@@ -82,7 +82,7 @@ def profile_run():
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
-    particles, t = run_loop_np(random_dist, args)
+    particles, t = run_loop(random_dist, args)
 
 
 def problem1(run_simulation = False):
@@ -97,11 +97,11 @@ def problem1(run_simulation = False):
     skip = T//N_save # values to skip to save N_save values
 
     if run_simulation: 
-        particles, t = run_loop_np(random_dist, args)
-        save_data(particles, t, T, path, skip)
+        particles, t = run_loop(random_dist, args)
+        save_data(particles, t, path, skip)
 
     else:
-        particles, t, T = read_data(path)
+        particles, t = read_data(path)
         dir = plot_dir + name + "/"
         start = 3*N // skip
         plot_vel_dist(particles[start:], masses, dir)
@@ -119,18 +119,17 @@ def problem2(run_simulation=False):
     N2 = N - N1
     masses[:N//2] = np.ones(N1)
     masses[N//2:] = 4 * np.ones(N2)
+    args = (N, T, radii, masses, xi)
 
     N_save = 200
     skip = T//N_save
 
-    args = (N, T, radii, masses, xi)
     if run_simulation:
-        particles, t = run_loop_np(random_dist, args)
-        save_data(particles, t, T, path, skip)
-
+        particles, t = run_loop(random_dist, args)
+        save_data(particles, t, path, skip)
 
     else:
-        particles, t, T = read_data(path)
+        particles, t = read_data(path)
         start = 3*N // skip
         dir = plot_dir + name + "/"
         titles = ("$m = 1$", "$m = 4$")
@@ -156,21 +155,20 @@ def problem3(run_simulation=False):
         for i, xi in enumerate(xis):
             path_xi = path + "xi_" + str(i) + "/"
             args = (N, T, radii, masses, xi)
-            particles, t = run_loop_np(random_dist, args, TC=True)
-            save_data(particles, t, T, path_xi, skip)
+            particles, t = run_loop(random_dist, args, TC=True)
+            save_data(particles, t, path_xi, skip)
 
     else:
         for i, xi in enumerate(xis):
             dir = "xi_" + str(i) + "/"
             path_xi = path + dir
-            particles, t, T = read_data(path_xi)
+            particles, t = read_data(path_xi)
             plot_energy_prob3(particles, t, masses, N1, N2, plot_dir + name + "/" + dir)
 
     
 def test_case_projectile(run_simulation=False):
     name = "test_case_projectile"
     xi, N, T, R = read_params(para_dir + name)
-
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
@@ -183,12 +181,11 @@ def test_case_projectile(run_simulation=False):
 
     if run_simulation:
         init = lambda N, radii : init_projectile(N, radii, 5)
-        particles, t = run_loop_np(init, args, TC=True)
-        save_data(particles, t, T, path, skip)
-
+        particles, t = run_loop(init, args, TC=True)
+        save_data(particles, t,  path, skip)
 
     else:
-        particles, t, T = read_data(path)
+        particles, t = read_data(path)
         anim_particles(particles, t, N, radii, 0.005, title=name)
 
 
@@ -210,8 +207,8 @@ def problem4(i, j, run_simulation=False):
 
             path = data_dir + name + "/sweep_{}/".format(R)
             init = lambda N, radii : init_projectile(N, radii, 1)
-            particles, t = run_loop_np(init, args, TC=True, n_check=100, condition=energy_condition)
-            save_data(particles[-1][None], t, T, path, skip)
+            particles, t = run_loop(init, args, TC=True, n_check=100, condition=energy_condition)
+            save_data(particles[-1][None], t, path, skip)
             # The None is a hack to make sure the list have the right amount of indices
 
     else:
@@ -222,8 +219,8 @@ def problem4(i, j, run_simulation=False):
             args = (N, T, radii, masses, xi)
 
             path = data_dir + name + "/sweep_{}/".format(R)
-            particles, t, T = read_data(path)
-            dx = 0.01
+            particles, t = read_data(path)
+            dx = 0.015
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
@@ -256,6 +253,7 @@ def cl_arguments(args):
     if args[1] == "test":
         for arg in args[2:]:
             if args[-1] == "run":
+                if arg == "run" : break # not very elegant
                 tests[int(arg)](True)
             else:
                 tests[int(arg)]()

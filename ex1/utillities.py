@@ -21,19 +21,19 @@ def get_next_col(collisions):
 
 
 def push_all_wall_collisions(particles, n, t, colllisions, radii):
-    wall0, cond0 = check_wall_collisions_np(particles[n, :, 0], particles[n, :, 2], radii)
-    wall1, cond1 = check_wall_collisions_np(particles[n, :, 1], particles[n, :, 3], radii)
+    wall0, cond0 = check_wall_collisions(particles[n, :, 0], particles[n, :, 2], radii)
+    wall1, cond1 = check_wall_collisions(particles[n, :, 1], particles[n, :, 3], radii)
     for i in range(len(wall0)):
         if cond0[i]: heapq.heappush(colllisions, (t+wall0[i], i, -1, t, "wall0"))
         if cond1[i]: heapq.heappush(colllisions, (t+wall1[i], i, -1, t, "wall1"))
 
 
-def push_next_collision_np(particles, n, i, t, collisions, radii):
+def push_next_collision(particles, n, i, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
     if wall0 != np.inf: heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     if wall1 != np.inf: heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
-    dts, cond = check_particle_collisions_np(particles, n, i, radii)
+    dts, cond = check_particle_collisions(particles, n, i, radii)
     for j, a in enumerate(cond):
         if a:
             j_true = j
@@ -41,12 +41,12 @@ def push_next_collision_np(particles, n, i, t, collisions, radii):
             heapq.heappush(collisions, (t+dts[j], i, j_true, t, "particle"))
 
 
-def init_collisions_np(particles, radii):
+def init_collisions(particles, radii):
     collisions = []
     N = len(particles[0])
     push_all_wall_collisions(particles, 0, 0, collisions, radii)
     for i in range(N):
-        dts, cond = check_particle_collisions_np(particles, 0, i, radii)
+        dts, cond = check_particle_collisions(particles, 0, i, radii)
         for j, a in enumerate(cond):
             if a:
                 j_true = j
@@ -67,23 +67,21 @@ def check_dir(dir_path):
         make_dir(dir_path)
 
 
-def simulate_np(dir_path, init, args,  condition=None, n_check=np.inf, TC=False):
-    return run_loop_np(init, args, condition=None, n_check=np.inf, TC=TC)
+def simulate(dir_path, init, args,  condition=None, n_check=np.inf, TC=False):
+    return run_loop(init, args, condition=None, n_check=np.inf, TC=TC)
 
 
-def save_data(particles, t, T, dir_path, skip):
+def save_data(particles, t, dir_path, skip):
     check_dir(dir_path)
     np.save(dir_path + "particles.npy", particles[::skip])
     np.save(dir_path + "t.npy", t[::skip])
-    np.save(dir_path + "T.npy", T)
 
 
 def read_data(path):
     print("Reading particle data from " + path)
     particles = np.load(path + "particles.npy")
     t = np.load(path + "t.npy")
-    T = np.load(path + "T.npy")
-    return particles, t, T
+    return particles, t
 
 def read_params(path):
     params = np.loadtxt(path + ".txt")
@@ -124,7 +122,7 @@ def check_wall_collison(x, v, r):
     return dt
 
 
-def check_wall_collisions_np(xs, vs, rs):
+def check_wall_collisions(xs, vs, rs):
     dts = np.full_like(xs, np.inf)
     cond1 = vs>0
     cond2 = vs<0
@@ -143,7 +141,7 @@ def check_particle_collision(particles, n, i, j, radii):
     else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
 
 
-def check_particle_collisions_np(particles, n, i, radii):
+def check_particle_collisions(particles, n, i, radii):
     N = len(radii)
     mask = np.arange(N) != i # remove the particle we are checking against
     one = np.ones_like(particles[n, mask, 0])
@@ -241,13 +239,13 @@ Main Loop
 """
 
 
-def setup_loop_np(init, args):
+def setup_loop(init, args):
     N, T, radii, masses, xi = args
     print("Placing particles")
     particles = np.empty((T+1, N, 4))
     particles[0] = init(N, radii)
     print("Finding inital collisions")
-    collisions = init_collisions_np(particles, radii)
+    collisions = init_collisions(particles, radii)
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
 
@@ -256,7 +254,7 @@ def setup_loop_np(init, args):
     return t, particles, collisions, last_collided
 
 
-def execute_collision_np(n, t, particles, collisions, last_collided, args, col, TC):
+def execute_collision(n, t, particles, collisions, last_collided, args, col, TC):
     N, T, radii, masses, xi = args
     t_next, i, j, t_added, col_type  = col
     particles[n+1] = particles[n]
@@ -270,18 +268,18 @@ def execute_collision_np(n, t, particles, collisions, last_collided, args, col, 
     transelate(particles, n+1, dt)
     collide(particles, n+1, i, j, col_type, radii, masses, xi)
     last_collided[i] = t[n+1]
-    push_next_collision_np(particles, n+1, i, t[n+1], collisions, radii)
+    push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
     if j !=-1: 
         last_collided[j] = t[n+1]
-        push_next_collision_np(particles, n+1, j, t[n+1], collisions, radii)
+        push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
 
     n += 1
     return n, t, particles, collisions, last_collided
 
 
-def run_loop_np(init, args, condition=None, n_check=np.inf, TC=False):
+def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
     tic = time.time()
-    t, particles, collisions, last_collided = setup_loop_np(init, args)
+    t, particles, collisions, last_collided = setup_loop(init, args)
     N, T, radii, masses, xi = args
 
     n = 0
@@ -296,7 +294,7 @@ def run_loop_np(init, args, condition=None, n_check=np.inf, TC=False):
 
         if valid_collision:
             n, t, particles, collisions, last_collided = \
-                execute_collision_np(n, t, particles, collisions, last_collided, args, col, TC)
+                execute_collision(n, t, particles, collisions, last_collided, args, col, TC)
 
             if n%n_check==0: 
                 if condition(particles, args, n): break
