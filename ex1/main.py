@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-from utillities import check_crater_size, read_data, simulate, run_loop, energy_condition, read_params
+from utillities import check_crater_size, read_data, run_loop_np, simulate, run_loop_np, energy_condition, read_params
 from particle_init import *
 from plotting import *
 
@@ -19,7 +19,7 @@ def test_case_one_particle():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop(init_one_testparticle, args)
+    particles, t = run_loop_np(init_one_testparticle, args)
 
     plot_particles(particles, -3, N, radii, plot_dir + name + "/", "particle-3")
     plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
@@ -34,7 +34,7 @@ def test_case_two_particles():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop(init_two_testparticles, args)
+    particles, t = run_loop_np(init_two_testparticles, args)
     anim_particles(particles, t, N, radii, 5, title=name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -46,8 +46,8 @@ def test_case_many_particles():
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
 
-    particles, t = run_loop(random_dist, args)
-    # anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
+    particles, t = run_loop_np(random_dist, args)
+    anim_particles(particles, t, N, radii, 0.03, intr=150, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -65,7 +65,7 @@ def test_case_collision_angle():
     theta = np.empty(m)
     for i, b in enumerate(bs):
         init = lambda N, radii : init_collision_angle(b, N, radii)
-        particles, t = run_loop(init, args)
+        particles, t = run_loop_np(init, args)
         x, y = particles[2, 1, :2]
         x -= 0.5
         y -= 0.5
@@ -80,7 +80,7 @@ def profile_run():
     radii = np.ones(N) * R
     masses = np.ones(N)
     args = (N, T, radii, masses, xi)
-    particles, t = run_loop(random_dist, args)
+    particles, t = run_loop_np(random_dist, args)
 
 
 def problem1(run_simulation = False):

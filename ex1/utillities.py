@@ -36,8 +36,8 @@ def push_next_collision_np(particles, n, i, t, collisions, radii):
     dts, cond = check_particle_collisions_np(particles, n, i, radii)
     for j, a in enumerate(cond):
         if a:
-            if j >= i: j+=1
-            heapq.heappush(collisions, (t+dts[i], i, j, t, "particle"))
+            if j >= i: j-=1
+            heapq.heappush(collisions, (t+dts[j], i, j, t, "particle"))
 
 
 def push_next_collision(particles, n, i, t, collisions, radii):
@@ -59,13 +59,14 @@ def init_collisions(particles, radii):
 
 def init_collisions_np(particles, radii):
     collisions = []
+    N = len(particles[0])
     push_all_wall_collisions(particles, 0, 0, collisions, radii)
-    for i in range(particles[0]):
+    for i in range(N):
         dts, cond = check_particle_collisions_np(particles, 0, i, radii)
         for j, a in enumerate(cond):
             if a:
-                if j >= i: j+=1
-                heapq.heappush(collisions, (dts[i], i, j, 0, "particle"))
+                if j >= i: j-=1
+                heapq.heappush(collisions, (dts[j], i, j, 0, "particle"))
     return collisions
 
 
@@ -160,19 +161,21 @@ def check_particle_collision(particles, n, i, j, radii):
 
 def check_particle_collisions_np(particles, n, i, radii):
     N = len(radii)
-    one = np.ones(N-1)
-    R = radii[i] * one  - radii[:i:]
-    dx = particles[n, :i:, :2] - particles[n, i, :2] * one
-    dv = particles[n, :i:, 2:] - particles[n, i, 2:] * one
-    dvdx = np.einsum("ij, ij -> i", dv, dx)
-    dxdx = np.einsum("ij -> i", dx**2)
-    dvdv = np.einsum("ij -> i", dv**2)
-    d = dvdx**2 - dvdx * (dxdx - R**2)
+    mask = np.arange(N) != i # remove the particle we are checking against
+    one = np.ones_like(particles[n, mask, 0])
+    one_v = np.array([one, one]).T
+    R = radii[i] * one - radii[mask]
+    dx = particles[n, mask, :2] - particles[n, i, :2] * one_v
+    dv = particles[n, mask, 2:] - particles[n, i, 2:] * one_v
+    dvdx = np.einsum("ij,ij -> i", dv, dx)
+    dxdx = np.einsum("ij, ij -> i", dx, dx)
+    dvdv = np.einsum("ij, ij -> i", dv, dv)
+    d = dvdx**2 - dvdv * (dxdx - R**2)
     cond1 = d<=0
     cond2 =  dvdx**2 >= 0
-    cond = np.logical_or(cond1, cond2)
+    cond = np.logical_not(np.logical_or(cond1, cond2))
     dt = one * np.inf
-    dt[cond] = (dvdx[cond] + np.sqrt(d[cond])) / dvdv
+    dt[cond] = (dvdx[cond] + np.sqrt(d[cond])) / dvdv[cond]
     return dt, cond
 
 
