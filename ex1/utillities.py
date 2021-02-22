@@ -67,18 +67,23 @@ def check_dir(dir_path):
         make_dir(dir_path)
 
 
-def simulate_np(dir_path, init, args, condition=None, n_check=np.inf, TC=False):
-    particles, t = run_loop_np(init, args, condition, n_check, TC=TC)
+def simulate_np(dir_path, init, args,  condition=None, n_check=np.inf, TC=False):
+    return run_loop_np(init, args, condition=None, n_check=np.inf, TC=TC)
+
+
+def save_data(particles, t, T, dir_path, skip):
     check_dir(dir_path)
-    np.save(dir_path + "particles.npy", particles)
-    np.save(dir_path + "t.npy", t)
+    np.save(dir_path + "particles.npy", particles[::skip])
+    np.save(dir_path + "t.npy", t[::skip])
+    np.save(dir_path + "T.npy", T)
 
 
 def read_data(path):
     print("Reading particle data from " + path)
     particles = np.load(path + "particles.npy")
     t = np.load(path + "t.npy")
-    return particles, t
+    T = np.load(path + "T.npy")
+    return particles, t, T
 
 def read_params(path):
     params = np.loadtxt(path + ".txt")

@@ -23,27 +23,25 @@ def plot_energy(particles, t, masses, dir_path):
     fig, ax = plt.subplots(figsize=(12, 8))
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
-    T = len(particles)
-    ax.plot(np.arange(T), E)
+    ax.plot(t, E)
     save_plot(fig, ax, "energy", dir_path)
     
 
 
-def plot_av_vel(particles, dir_path):
+def plot_av_vel(particles, T, skip, dir_path):
     fig, ax = plt.subplots(figsize=(12, 5))
 
-    T = len(particles)
     N = len(particles[0])
     v = particles[:, :, 2:]
     v_av = np.einsum("tn -> t", np.sqrt(v[:, :, 0]**2 + v[:, :, 1]**2)) / N
-    t = np.arange(T)
+    t = np.arange(0, T+1, skip)
     ax.plot(t, v_av)
     ax.set_xlabel("# collisions")
     ax.set_ylabel("$\\bar v$")
     save_plot(fig, ax, "v_av", dir_path)
 
 
-def get_plot_vel_dist(ax, particles, n0, dn, masses, title):
+def get_plot_vel_dist(ax, particles, masses, title, n0=1, dn=1):
     T = len(particles)
     N = len(particles[0])
     
@@ -67,18 +65,18 @@ def get_plot_vel_dist(ax, particles, n0, dn, masses, title):
     ax.set_ylabel("prob.dens.")
     
 
-def plot_vel_dist(particles, n0, dn, masses, dir_path, title="", fname="vel_dist"):
+def plot_vel_dist(particles, masses, dir_path, n0=1, dn=1, title="", fname="vel_dist"):
     fig, ax = plt.subplots(figsize=(12, 5))
-    get_plot_vel_dist(ax, particles, n0, dn, masses, title)
+    get_plot_vel_dist(ax, particles, masses, title)
 
     save_plot(fig, ax, fname, dir_path)
 
 
-def plot_prob_2(particles, n0, dn, N1, masses, dir_path, titles, fname):
+def plot_prob_2(particles, N1, masses, dir_path, titles, fname):
     fig, ax = plt.subplots(1, 2, figsize=(16, 5))
 
-    get_plot_vel_dist(ax[0], particles[:, :N1], n0, dn, masses[:N1], titles[0])
-    get_plot_vel_dist(ax[1], particles[:, N1:], n0, dn, masses[N1:], titles[1])
+    get_plot_vel_dist(ax[0], particles[:, :N1], masses[:N1], titles[0])
+    get_plot_vel_dist(ax[1], particles[:, N1:], masses[N1:], titles[1])
     
     save_plot(fig, ax, fname, dir_path)
 
@@ -98,9 +96,9 @@ def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
     E2 = np.array([get_energy(particles[:, N1:], masses[N1:], n) for n in range(T)])  / N2
     Etot = np.array([get_energy(particles, masses, n) for n in range(T)]) / (N1 + N2)
 
-    ax.plot(np.arange(T), E1, label="$m = 1$")
-    ax.plot(np.arange(T), E2, label="$m = 4$")
-    ax.plot(np.arange(T), Etot, label="All particles")
+    ax.plot(t, E1, label="$m = 1$")
+    ax.plot(t, E2, label="$m = 4$")
+    ax.plot(t, Etot, label="All particles")
     ax.set_ylabel("$\\langle E \\rangle$")
     ax.set_xlabel("$t$")
     ax.legend()
