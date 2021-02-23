@@ -131,15 +131,6 @@ def check_wall_collisions(xs, vs, rs):
     return dts, np.logical_or(cond1, cond2)
 
 
-def check_particle_collision(particles, n, i, j, radii):
-    R = radii[i] + radii[j]
-    dx = particles[n, j, :2] - particles[n, i, :2]
-    dv = particles[n, j, 2:] - particles[n, i, 2:]
-    d = (dv @ dx)**2 - (dv @ dv) * ((dx @ dx) - R**2)
-    if (d <= 0 or dv @ dx >= 0): return np.inf
-    else: return - (dv @ dx + np.sqrt(d)) / (dv @ dv)
-
-
 def check_particle_collisions(particles, n, i, radii):
     N = len(radii)
     mask = np.arange(N) != i # remove the particle we are checking against

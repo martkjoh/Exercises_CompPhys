@@ -21,10 +21,9 @@ def test_case_one_particle():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(init_one_testparticle, args)
-
-    plot_particles(particles, -3, N, radii, plot_dir + name + "/", "particle-3")
-    plot_particles(particles, -2, N, radii, plot_dir + name + "/", "particle-2")
-    plot_particles(particles, -1, N, radii, plot_dir + name + "/", "particle-1")
+    
+    for i in [-4, -3, -2, -1]:
+        plot_particles(particles, i, N, radii, plot_dir + name + "/", "particle{}".format(i))
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
