@@ -16,14 +16,17 @@ def save_plot(fig, ax, fname, dir_path):
     check_dir(dir_path)
     plt.tight_layout()
     plt.savefig(dir_path + fname + ".pdf")
-    plt.cla()
+    plt.close(fig)
 
 
 def plot_energy(particles, t, masses, dir_path):
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(10, 7))
     N = len(t)
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
-    ax.plot(t, E)
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$E$")
+    ax.plot(t, E, label="$E_\mathrm{tot}$")
+    ax.legend()
     save_plot(fig, ax, "energy", dir_path)
 
 
@@ -106,14 +109,17 @@ def plot_prob_2(particles, start, N1, masses, t, dir_path, titles, fname):
 
 def plot_collision_angle(theta, bs, a, dir_path):
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(theta, bs)
-    ax.plot(theta, a * np.sin(theta / 2), "k--")
+    ax.plot(theta, bs, label="$\\theta_m$")
+    ax.plot(theta, a * np.sin(theta / 2), "k--", label="$a/2 \sin(\\theta/2)$")
+    ax.set_xlabel("$\\theta$")
+    ax.set_ylabel("$s$")
+    ax.legend()
     
     save_plot(fig, ax, "collision_angle", dir_path)
 
 
 def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
-    fig, ax = plt.subplots(figsize=(9, 7))
+    fig, ax = plt.subplots(figsize=(7, 5))
     T = len(t)
     E1 = np.array([get_energy(particles[:, :N1], masses[:N1], n) for n in range(T)]) / N1
     E2 = np.array([get_energy(particles[:, N1:], masses[N1:], n) for n in range(T)])  / N2
@@ -121,7 +127,7 @@ def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
 
     ax.plot(t, E1, label="$m = 1,$")
     ax.plot(t, E2, label="$m = 4,$")
-    ax.plot(t, Etot, label="All particles")
+    ax.plot(t, Etot, label="Total")
     ax.set_ylabel("$\\langle E \\rangle$")
     ax.set_xlabel("$t$")
     ax.legend()
@@ -143,9 +149,12 @@ def plot_crater(free_space, y_max, dir_path, fname):
 def plot_crater_size(Rs, crater_sizes, dir_path):
     av_rise = np.sum(crater_sizes/ Rs) / len(Rs)
     r = np.linspace(0, np.max(Rs))
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(Rs, crater_sizes, "x")
-    ax.plot(r, av_rise * r, label="${:.3f} R$".format(av_rise))
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.plot(Rs, crater_sizes, "rx", label="Sampled sizes")
+    ax.plot(r, av_rise * r, "k--", label="${:.3f} R$".format(av_rise))
+    ax.legend()
+    ax.set_xlabel("$R$")
+    ax.set_ylabel("Crater area")
     save_plot(fig, ax, "crater_size", dir_path)
 
 
@@ -168,7 +177,7 @@ def get_arrows_plot(particles, n, N, radii):
 
 
 def plot_particles(particles, n, N, radii, dir_path, fname="particles"):
-    fig, ax = plt.subplots(figsize=(8, 8))
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     circles  = get_particles_plot(particles, n, N, radii)

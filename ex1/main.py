@@ -222,13 +222,13 @@ def problem4(i, j, run_simulation=False):
 
             path = data_dir + name + "/sweep_{}/".format(R)
             particles, t = read_data(path)
-            dx = 0.015
+            dx = 0.012
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
             dir_path = "plots/" + name + "/"
-            plot_particles(particles, 0, N, radii, dir_path, "particles{}".format(i))
-            plot_crater(free_space, y_max, dir_path, "crater{}".format(i))
+            plot_particles(particles, 0, N, radii, dir_path, "particles{}".format(R))
+            plot_crater(free_space, y_max, dir_path, "crater{}".format(R))
         
         plot_crater_size(Rs, crater_size, dir_path)
 

@@ -43,8 +43,14 @@
             \end{figure}
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.40\textwidth]{../plots/problem4/crater9.pdf}
-                \includegraphics[width=0.22\textwidth]{../plots/problem4/particles9.pdf}
+                \begin{subfigure}{.4\textwidth}                    
+                    \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.01.pdf}
+                    \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.035.pdf}
+                \end{subfigure}
+                \begin{subfigure}{.59\textwidth}                    
+                    \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.01.pdf}
+                    \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.035.pdf}
+                \end{subfigure}
                 \caption{The grid cells with a particle inside is marked yellow, while the ones without a particle inside, i.e. those counted as making up the grid, are purple. The plot to the right shows the crater.}
                 \label{crater}
             \end{figure}
@@ -60,12 +66,12 @@
                 \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-3.pdf}
                 \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-2.pdf}
                 \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-1.pdf}
-                \caption{One ball being simulated. after $10 000$ steps, it still follows a regular pattern.}
+                \caption{After $10 000$ steps, the disk still follows a regular pattern}
                 \label{single particle}
             \end{subfigure}
             \begin{subfigure}{.65\textwidth}
                 \includegraphics[width=.8\textwidth]{../plots/test_case_one_particle/energy.pdf}
-                \caption{single particle energy}
+                \caption{The energy of a single particle is constant.}
                 \label{single particle energy}
             \end{subfigure}
         \end{figure}
@@ -74,8 +80,9 @@
 
         \begin{figure}
             \centering
-            \includegraphics[width=0.8\textwidth]{../plots/test_case_collision_angle/collision_angle.pdf}
-            \caption{The }
+            \hspace{-10mm}
+            \includegraphics[width=0.7\textwidth]{../plots/test_case_collision_angle/collision_angle.pdf}
+            \caption{The impact parameter $S$, as a function of scattering angle. The dashed lines are the theoretical values, $\theta_m$ are the values from the simulation.}
             \label{scattering}
         \end{figure}
 
@@ -110,7 +117,7 @@
 
             Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$. As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium). Figure \ref{problem2 av vel} shows how the average speed evolves over time. After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature. The peak will nonetheless be at different velocities. This is, however, only the case when the restitution coefficient $\xi$ is set to 1. For values less than one, the two sub systems approach each other in temperature, but does not come into equilibrium, as shown in Figure \ref{problem1 dist}.
 
-            \begin{figure}[h]
+            \begin{figure}
                 \centering
                 \includegraphics[width=0.9\textwidth]{../plots/problem2/vel_dist.pdf}
                 \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
@@ -118,11 +125,11 @@
             \end{figure}
             \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.9\textwidth]{../plots/problem2/v_av.pdf}
+                \includegraphics[width=0.7\textwidth]{../plots/problem2/v_av.pdf}
                 \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
                 \label{problem2 av vel}
             \end{figure}
-            \begin{figure}[h]
+            \begin{figure}
                 \centering
                 \hspace{-5mm}
                 \includegraphics[width=0.35\textwidth]{../plots/problem3/xi_0/energy_ex3.pdf}
@@ -136,14 +143,17 @@
             \end{figure}
 
             \subsection*{Projectile}
-            To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$. The lower half of the square box is filled with small, light particles. The impact from the large disk into the densely packed disks will create a crater. To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius. The crater is measured as described in the implementation section. The mass of the projectile is proportional to $R^2$, so that the density is constant. Figure \ref{crater size} shows the size of the crater, as a function of the radius of the projectile. The relationship is close to linear. Since the mass, and thus the energy, scales as the square of the radius
+            To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$. The lower half of the square box is filled with small, light particles. The impact from the large disk into the densely packed disks will create a crater. To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius. The crater is measured as described in the implementation section. The mass of the projectile is proportional to $R^2$, so that the density is constant. The simulation uses the value $\xi = 0.5$, and it is run until the total energy of the system is $10\%$ of the original value. There are placed out 2000 particles, of mass radius $R=0.0063$ and mass $R^2$. This means the packing fraction is $2000 \cdot \pi R^2 / 0.5 \approx 0.500$. Figure \ref{crater size} shows the size of the crater, as a function of the radius of the projectile. The relationship is close to linear.
 
-            \begin{figure}
+            \begin{figure}[h!]
                 \centering
-                \includegraphics[width=0.8\textwidth]{../plots/problem4/crater_size.pdf}
+                \includegraphics[width=0.7\textwidth]{../plots/problem4/crater_size.pdf}
                 \caption{The size of the crater, as a function of the radius of the incoming projectile.}
                 \label{crater size}
             \end{figure}
+
+            \section*{Discussion and conclusion}
+            The simulation implemented yields accurate results. A good indication of this is how well the energy is conserved, as show by Figure \ref{test many particles}. The fluctuations here are mostly due to numerical inaccuracies, an negligible for the purposes of these simulations. Discrepancies between the histograms and the Maxwell-Boltzmann distribution comes from the fact that the simulated system is finite, and thus subject to stochastic fluctuations away from perfect equilibrium. The most straight forward way to get better samples would be to simulate more particles, for longer periods of time. At this point, however, the simulation will become increasingly slow, even with the measures taken to speed it up. The larges bottleneck at this time is pushing the collisions to the priority queue. Some measures could be taken to limit this, for example given particle $i$, only push the next collision with, say $j$. Then, if $j$ is involved in another collision, find particle $i$'s next collision. This, however, might lead to a large amount of test reducing the possible gain.
 
     \bibliography{report}
     \bibliographystyle{plain}   
