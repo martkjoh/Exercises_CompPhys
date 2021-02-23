@@ -233,7 +233,9 @@ def setup_loop(init, args):
     N, T, radii, masses, xi = args
     print("Placing particles")
     particles = np.empty((T+1, N, 4))
+    tic = time.time()
     particles[0] = init(N, radii)
+    print("Time placing particles: {}".format(time.time() - tic))
     print("Finding inital collisions")
     collisions = init_collisions(particles, radii)
     # When has particle i last collided? Used to remove invalid collisions

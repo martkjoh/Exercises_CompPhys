@@ -47,7 +47,7 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi)
 
     particles, t = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
+    # anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -72,6 +72,29 @@ def test_case_collision_angle():
         theta[i] = np.arctan2(y, -x)
     
     plot_collision_angle(theta, bs, a, plot_dir + name + "/")
+
+
+def test_case_projectile(run_simulation=False):
+    name = "test_case_projectile"
+    xi, N, T, R = read_params(para_dir + name)
+    radii = np.ones(N) * R
+    radii[0] = 0.05
+    masses = np.ones(N)
+    masses[0] = 25
+    args = (N, T, radii, masses, xi)
+
+    path = data_dir + name + "/"
+    N_save = 1000
+    skip = T//N_save
+
+    if run_simulation:
+        init = lambda N, radii : init_projectile(N, radii, 5)
+        particles, t = run_loop(init, args, TC=True)
+        save_data(particles, t,  path, skip)
+
+    else:
+        particles, t = read_data(path)
+        anim_particles(particles, t, N, radii, 0.005, title=name)
 
 
 def profile_run():
@@ -165,29 +188,6 @@ def problem3(run_simulation=False):
             plot_energy_prob3(particles, t, masses, N1, N2, plot_dir + name + "/" + dir)
 
     
-def test_case_projectile(run_simulation=False):
-    name = "test_case_projectile"
-    xi, N, T, R = read_params(para_dir + name)
-    radii = np.ones(N) * R
-    radii[0] = 0.05
-    masses = np.ones(N)
-    masses[0] = 25
-    args = (N, T, radii, masses, xi)
-
-    path = data_dir + name + "/"
-    N_save = 1000
-    skip = T//N_save
-
-    if run_simulation:
-        init = lambda N, radii : init_projectile(N, radii, 5)
-        particles, t = run_loop(init, args, TC=True)
-        save_data(particles, t,  path, skip)
-
-    else:
-        particles, t = read_data(path)
-        anim_particles(particles, t, N, radii, 0.005, title=name)
-
-
 def problem4(i, j, run_simulation=False):
     name = "problem4"
     xi, N, T, R, all_Rs = read_params(para_dir + name)
