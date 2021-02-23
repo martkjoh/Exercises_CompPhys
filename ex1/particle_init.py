@@ -46,8 +46,8 @@ def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
                 break
         
         if not overlap:
-            vel = np.random.rand(2) - 0.5
-            vel = vel/np.sqrt(vel[0]**2 + vel[1]**2) * v
+            theta = np.random.random() * (2 * np.pi)
+            vel = v * np.array([np.cos(theta), np.sin(theta)])
             particles[i] = np.array([pos[0], pos[1], vel[0], vel[1]])
             i+=1
             k = 0
