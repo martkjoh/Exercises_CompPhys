@@ -88,36 +88,41 @@
         \end{figure}
 
         \section*{Results}
+        \subsection*{Velocity distribution}
             When the system is first initiated, all particles have the same magnitude of velocity. As the system equilibrates, it should reach the Maxwell-Boltzmann distribution, which in 2D is
             \begin{equation*}
                 f(v) = \frac{m v}{T} \exp \left(-\frac{m v^2}{2 T}\right),
             \end{equation*}
             when using units in which $k_b = 1$. The equipartition theorem gives the temperature $T = E$ in 2D. Figure \ref{problem1 av vel} shows the average velocity as a function of time. It is a indication of when the system has reached equilibrium, and was used to find a good point to start sampling. After that, the simulation is sampled every $N$ event, where $N$ is the number of particles. This ensures somewhat independent samples. Figure \ref{problem1 dist} shows the velocity distribution, compared to the Maxwell Boltzmann distribution. 
-            \begin{figure}
+            \begin{figure}[h]
                 \centering
                 \includegraphics[width=0.8\textwidth]{../plots/problem1/v_av.pdf}
                 \caption{Average velocity, as a function of collisions. The distribution reaches equilibrium around $6000$ collisions, or $3N$}
                 \label{problem1 av vel}
             \end{figure}
-            \begin{figure}
+            \begin{figure}[h]
                 \centering
-                \includegraphics[width=0.8\textwidth]{../plots/problem1/vel_dist.pdf}
+                \includegraphics[width=0.49\textwidth]{../plots/problem1/2/vel_dist.pdf}
+                \includegraphics[width=0.49\textwidth]{../plots/problem1/vel_dist.pdf}
                 \caption{The velocity distribution is a good fit with the Maxwell-Boltzmann distribution, shown as a blue line.}
                 \label{problem1 dist}
             \end{figure}
 
-            Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$. As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium). However, after the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature. The peak will nonetheless be at different velocities.
+            Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$. As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium). Figure \ref{problem2 av vel} shows how the average speed evolves over time. After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature. The peak will nonetheless be at different velocities. This is, however, only the case when the restitution coefficient $\xi$ is set to 1. For values less than one, the two sub systems approach each other in temperature, but does not come into equilibrium, as shown in Figure \ref{problem1 dist}.
 
-            \begin{figure}
+            \begin{figure}[h]
                 \centering
                 \includegraphics[width=0.9\textwidth]{../plots/problem2/vel_dist.pdf}
                 \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
                 \label{problem2 dist}
             \end{figure}
-
-            This is, however, only the case when the restitution coefficient $\xi$ is set to 1. For values less than one, the two sub systems approach each other in temperature, but does not come into equilibrium. This is shown in Figure \ref{problem1 dist}.
-
-            \begin{figure}
+            \begin{figure}[h]
+                \centering
+                \includegraphics[width=0.9\textwidth]{../plots/problem2/v_av.pdf}
+                \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
+                \label{problem2 av vel}
+            \end{figure}
+            \begin{figure}[h]
                 \centering
                 \hspace{-5mm}
                 \includegraphics[width=0.35\textwidth]{../plots/problem3/xi_0/energy_ex3.pdf}
@@ -130,8 +135,8 @@
                 \label{problem2 dist}
             \end{figure}
 
-            To simulate the impact of a projectile, one disk is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$. The lower half of the square box is filled with small, light particles. The impact from the large disk into the densely packed disks will create a crater. To investigate the effect of the mass and radius on the size of the crater, the size of the crater must be measured. T
-            To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius. The mass of the projectile is proportional to $R^2$, so that the density is constant. Figure \ref{crater size} shows the size of the crater, 
+            \subsection*{Projectile}
+            To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$. The lower half of the square box is filled with small, light particles. The impact from the large disk into the densely packed disks will create a crater. To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius. The crater is measured as described in the implementation section. The mass of the projectile is proportional to $R^2$, so that the density is constant. Figure \ref{crater size} shows the size of the crater, as a function of the radius of the projectile. The relationship is close to linear. Since the mass, and thus the energy, scales as the square of the radius
 
             \begin{figure}
                 \centering

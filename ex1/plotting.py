@@ -25,7 +25,6 @@ def plot_energy(particles, t, masses, dir_path):
     E = np.array([get_energy(particles, masses, n) for n in range(N)])
     ax.plot(t, E)
     save_plot(fig, ax, "energy", dir_path)
-    
 
 
 def plot_av_vel(particles, T, skip, dir_path):
@@ -37,11 +36,11 @@ def plot_av_vel(particles, T, skip, dir_path):
     t = np.arange(0, T+1, skip)
     ax.plot(t, v_av)
     ax.set_xlabel("# collisions")
-    ax.set_ylabel("$\\bar v$")
+    ax.set_ylabel("$\\langle v \\rangle$")
     save_plot(fig, ax, "v_av", dir_path)
 
 
-def get_plot_vel_dist(ax, particles, masses, title, n0=1, dn=1):
+def get_plot_vel_dist(ax, particles, masses, title, bins=100, graph=True, n0=0, dn=1):
     T = len(particles)
     N = len(particles[0])
     
@@ -58,27 +57,51 @@ def get_plot_vel_dist(ax, particles, masses, title, n0=1, dn=1):
     v2 = np.concatenate(v2)
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
  
-    ax.plot(v, MaxBoltz(v, masses[0], temp))
-    ax.hist(np.sqrt(v2), bins=100, density=True)
-    ax.set_title(title)
+    if graph:
+        label = "$f(v) = \\frac{mv}{T} \exp\left( - \\frac{m v^2}{2 T}\\right)$"
+        ax.plot(v, MaxBoltz(v, masses[0], temp), label=label)
+    
+
+    ax.hist(np.sqrt(v2), bins=bins, density=True)
+    ax.set_title(title + "$\, T = {:.3f}$".format(temp))
     ax.set_xlabel("$v$")
     ax.set_ylabel("prob.dens.")
+    if graph: ax.legend()
     
 
-def plot_vel_dist(particles, masses, dir_path, n0=1, dn=1, title="", fname="vel_dist"):
+def plot_vel_dist(particles, masses, dir_path, bins=100, graph=True, n0=1, dn=1, title="", fname="vel_dist"):
+    fig, ax = plt.subplots(figsize=(8, 5))
+    get_plot_vel_dist(ax, particles, masses, title, bins=bins, graph=graph)
+
+    save_plot(fig, ax, fname, dir_path)
+
+
+def plot_prob_2(particles, start, N1, masses, t, dir_path, titles, fname):
+    fig, ax = plt.subplots(2, 2, figsize=(16, 6), sharex=True)
+
+    v = np.sqrt(get_vel2(particles, -1))
+    bins = np.linspace(np.min(v), np.max(v), 100)
+    get_plot_vel_dist(ax[0, 0], particles[0:1, :N1], masses[:N1], titles[0], graph=False, bins=bins)
+    get_plot_vel_dist(ax[0, 1], particles[0:1, N1:], masses[N1:], titles[1], graph=False, bins=bins)
+
+    get_plot_vel_dist(ax[1, 0], particles[start:, :N1], masses[:N1], titles[0])
+    get_plot_vel_dist(ax[1, 1], particles[start:, N1:], masses[N1:], titles[1])
+    
+    save_plot(fig, ax, fname, dir_path)
+
     fig, ax = plt.subplots(figsize=(12, 5))
-    get_plot_vel_dist(ax, particles, masses, title)
 
-    save_plot(fig, ax, fname, dir_path)
-
-
-def plot_prob_2(particles, N1, masses, dir_path, titles, fname):
-    fig, ax = plt.subplots(1, 2, figsize=(16, 5))
-
-    get_plot_vel_dist(ax[0], particles[:, :N1], masses[:N1], titles[0])
-    get_plot_vel_dist(ax[1], particles[:, N1:], masses[N1:], titles[1])
+    N = len(particles[0])
+    v = particles[:, :, 2:]
+    v_av1 = np.einsum("tn -> t", np.sqrt(v[:, :N1, 0]**2 + v[:, :N1, 1]**2)) / N1
+    v_av2 = np.einsum("tn -> t", np.sqrt(v[:, N1:, 0]**2 + v[:, N1:, 1]**2)) / (N - N1)
+    ax.plot(t, v_av1, label="$m=1$")
+    ax.plot(t, v_av2, label="$m=4$")
+    ax.legend()
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$\\langle v \\rangle$")
     
-    save_plot(fig, ax, fname, dir_path)
+    save_plot(fig, ax, "v_av", dir_path)
 
 
 def plot_collision_angle(theta, bs, a, dir_path):
@@ -96,8 +119,8 @@ def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
     E2 = np.array([get_energy(particles[:, N1:], masses[N1:], n) for n in range(T)])  / N2
     Etot = np.array([get_energy(particles, masses, n) for n in range(T)]) / (N1 + N2)
 
-    ax.plot(t, E1, label="$m = 1$")
-    ax.plot(t, E2, label="$m = 4$")
+    ax.plot(t, E1, label="$m = 1,$")
+    ax.plot(t, E2, label="$m = 4,$")
     ax.plot(t, Etot, label="All particles")
     ax.set_ylabel("$\\langle E \\rangle$")
     ax.set_xlabel("$t$")

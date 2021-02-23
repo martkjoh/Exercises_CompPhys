@@ -127,6 +127,9 @@ def problem1(run_simulation = False):
         dir = plot_dir + name + "/"
         start = 3*N // skip
         plot_vel_dist(particles[start:], masses, dir)
+        v = np.sqrt(get_vel2(particles, -1))
+        bins = np.linspace(np.min(v), np.max(v), 100)
+        plot_vel_dist(particles[0:1], masses, dir + "2/", graph=False, bins=bins)
         plot_av_vel(particles, T, skip, dir)
         plot_particles(particles, -1, N, radii, dir)
 
@@ -154,8 +157,8 @@ def problem2(run_simulation=False):
         particles, t = read_data(path)
         start = 3*N // skip
         dir = plot_dir + name + "/"
-        titles = ("$m = 1$", "$m = 4$")
-        plot_prob_2(particles[start:],  N1, masses, dir, titles, "vel_dist")
+        titles = ("$m = 1,$", "$m = 4,$")
+        plot_prob_2(particles, start, N1, masses, t, dir, titles, "vel_dist")
 
 
 def problem3(run_simulation=False):
