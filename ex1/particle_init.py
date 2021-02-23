@@ -1,5 +1,6 @@
+import time
 import numpy as np
-
+from numba import njit
 
 # Sides of the box
 L = 1 
@@ -25,6 +26,7 @@ def init_collision_angle(b, N, radii):
 
 
 # Particles must wholly inside the box, and not overlapping
+@njit()
 def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
     # particle_no, (x, y, vx, vy)
     particles = np.zeros((N, 4))
