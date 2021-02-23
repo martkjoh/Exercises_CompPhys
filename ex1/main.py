@@ -61,7 +61,7 @@ def test_case_collision_angle():
     args = (N, T, radii, masses, xi)
 
     m = 100
-    bs = np.linspace(-a , a, m)
+    bs = np.linspace(0, a, m)
     theta = np.empty(m)
     for i, b in enumerate(bs):
         init = lambda N, radii : init_collision_angle(b, N, radii)
@@ -69,7 +69,7 @@ def test_case_collision_angle():
         x, y = particles[2, 1, :2]
         x -= 0.5
         y -= 0.5
-        theta[i] = np.arctan2(y, -x)
+        theta[i] = np.arctan2(y, x)
     
     plot_collision_angle(theta, bs, a, plot_dir + name + "/")
 

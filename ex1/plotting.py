@@ -109,8 +109,8 @@ def plot_prob_2(particles, start, N1, masses, t, dir_path, titles, fname):
 
 def plot_collision_angle(theta, bs, a, dir_path):
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(theta, bs, label="$\\theta_m$")
-    ax.plot(theta, a * np.sin(theta / 2), "k--", label="$a/2 \sin(\\theta/2)$")
+    ax.plot(theta, bs, "bx", label="$\\theta_m$")
+    ax.plot(theta, a * np.cos(theta / 2), "k-", label="$a \cos(\\theta/2)$")
     ax.set_xlabel("$\\theta$")
     ax.set_ylabel("$s$")
     ax.legend()
