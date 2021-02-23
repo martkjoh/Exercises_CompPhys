@@ -16,23 +16,15 @@ L = 1
 utillities
 """
 
-def get_next_col(collisions):
-    return heapq.heappop(collisions)
 
-
-def push_all_wall_collisions(particles, n, t, colllisions, radii):
-    wall0, cond0 = check_wall_collisions(particles[n, :, 0], particles[n, :, 2], radii)
-    wall1, cond1 = check_wall_collisions(particles[n, :, 1], particles[n, :, 3], radii)
-    for i in range(len(wall0)):
-        if cond0[i]: heapq.heappush(colllisions, (t+wall0[i], i, -1, t, "wall0"))
-        if cond1[i]: heapq.heappush(colllisions, (t+wall1[i], i, -1, t, "wall1"))
-
-
-def push_next_collision(particles, n, i, t, collisions, radii):
+def push_wall_collision(particles, i, n, t, collisions, radii):
     wall0 = check_wall_collison(particles[n, i, 0], particles[n, i, 2], radii[i])
     wall1 = check_wall_collison(particles[n, i, 1], particles[n, i, 3], radii[i])
     if wall0 != np.inf: heapq.heappush(collisions, (t+wall0, i, -1, t, "wall0"))
     if wall1 != np.inf: heapq.heappush(collisions, (t+wall1, i, -1, t, "wall1"))
+
+
+def push_particle_collision(particles, n, i, t, collisions, radii):
     dts, cond = check_particle_collisions(particles, n, i, radii)
     for j, a in enumerate(cond):
         if a:
@@ -41,17 +33,16 @@ def push_next_collision(particles, n, i, t, collisions, radii):
             heapq.heappush(collisions, (t+dts[j], i, j_true, t, "particle"))
 
 
+def push_next_collision(particles, n, i, t, collisions, radii):
+    push_wall_collision(particles, i, n, t, collisions, radii)
+    push_particle_collision(particles, n, i, t, collisions, radii)
+
+
 def init_collisions(particles, radii):
     collisions = []
     N = len(particles[0])
-    push_all_wall_collisions(particles, 0, 0, collisions, radii)
     for i in range(N):
-        dts, cond = check_particle_collisions(particles, 0, i, radii)
-        for j, a in enumerate(cond):
-            if a:
-                j_true = j
-                if j >= i: j_true += 1
-                heapq.heappush(collisions, (dts[j], i, j_true, 0, "particle"))
+        push_next_collision(particles, 0, i, 0, collisions, radii)
     return collisions
 
 
@@ -67,10 +58,6 @@ def check_dir(dir_path):
         make_dir(dir_path)
 
 
-def simulate(dir_path, init, args,  condition=None, n_check=np.inf, TC=False):
-    return run_loop(init, args, condition=None, n_check=np.inf, TC=TC)
-
-
 def save_data(particles, t, dir_path, skip):
     check_dir(dir_path)
     np.save(dir_path + "particles.npy", particles[::skip])
@@ -82,6 +69,7 @@ def read_data(path):
     particles = np.load(path + "particles.npy")
     t = np.load(path + "t.npy")
     return particles, t
+
 
 def read_params(path):
     params = np.loadtxt(path + ".txt")
@@ -120,15 +108,6 @@ def check_wall_collison(x, v, r):
     elif v < 0:
         dt = (r - x) / v
     return dt
-
-
-def check_wall_collisions(xs, vs, rs):
-    dts = np.full_like(xs, np.inf)
-    cond1 = vs>0
-    cond2 = vs<0
-    dts[cond1] = (L * np.ones_like(xs[cond1]) - rs[cond1] - xs[cond1]) / vs[cond1]
-    dts[cond2] = (rs[cond2] - xs[cond2]) / vs[cond2]
-    return dts, np.logical_or(cond1, cond2)
 
 
 def check_particle_collisions(particles, n, i, radii):
@@ -277,7 +256,7 @@ def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
     n = 0
     bar = Bar("running simulation", max=T)
     while n < T:
-        col = get_next_col(collisions)
+        col = heapq.heappop(collisions)
         t_next, i, j, t_added, col_type  = col
         
         # Skip invalid collisions
