@@ -22,20 +22,20 @@
     \section*{Theory}
     The Hamiltonian in question is, in units of the coupling constant $J$, 
     \begin{equation*}
-        \mathcal{H}(S; d_z, a, B) = -\frac{1}{2} \sum_{\langle i, j \rangle, a} S_{i, a} S_{j, a} - d_z \sum_{j} (S_{j,3})^2 - \mu \sum_{j, a} B_{j, a} S_{j,a}.
+        \mathcal{H}(S; d_z, a, B) = -\frac{1}{2} \sum_{\langle i, j \rangle, a} S_{i, a} S_{j, a} - d_z \sum_{j} (S_{j,3})^2 -  \sum_{j, a} B_{j, a} S_{j,a}.
     \end{equation*}
-    $S$ are the spins, the dynamical variables, $i\in\{1, ..., N\}$ is the site index, $a$ is vector component index. $d_z, \, a$ and $B_{i, a}$ are respectivley the inisotropy strength, the coupling strength, the magnetic moment and the external magnetic field. These appear as parameters in the Hamiltonian. The dynamics of the system at zero temprature is governd by the Landau-Lifshitz-Gilbert equation,
+    $S$ are the spins, the dynamical variables, $i\in\{1, ..., N\}$ is the site index, $a$ is vector component index. $d_z, \, a$ and $B_{i, a}$ are respectivley the inisotropy strength, the coupling strength, the magnetic moment and the external magnetic field. The magnetic field is given in units of $\mu/J[B_0]$, where $\mu$ magnetic moment. These appear as parameters in the Hamiltonian. The dynamics of the system at zero temprature is governd by the Landau-Lifshitz-Gilbert equation,
     \begin{align*}
-        \dv{t} S_{j, a} = - \frac{\gamma}{\mu(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \\
-        H_{k, b} = - \pdv{\mathcal{H}}{S_{k, b}} = \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) + 2 d_z \sum_{j} S_{j,3} \delta_{b, 3}\delta_{j, k} + \mu \sum_{j, a} B_{j, a} \delta_{k,b}.
+        \dv{t} S_{j, a} = - \frac{1}{(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \\
+        H_{k, b} = - \pdv{\mathcal{H}}{S_{k, b}} = \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) + 2 d_z \sum_{j} S_{j,3} \delta_{b, 3}\delta_{j, k} +  \sum_{j, a} B_{j, a} \delta_{k,b}.
     \end{align*}
-    The triple product identity $\vec A \times (\vec B \times \vec C) = (\vec A \cdot \vec B) \vec C - (\vec A \cdot \vec C) \vec B$ has been used for the convinience of implementation. The first sum of the $H$-term can be written as
+    The time units are given by $\gamma$. The triple product identity $\vec A \times (\vec B \times \vec C) = (\vec A \cdot \vec B) \vec C - (\vec A \cdot \vec C) \vec B$ has been used for the convinience of implementation. The first sum of the $H$-term can be written as
     \begin{equation*}
-        \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) = \frac{1}{2}\sum_{\langle i, j \rangle} (S_{i, b}\delta_{j,k} + S_{j, b}\delta_{i,k}) = \frac{1}{2}\sum_{\langle j, i \rangle} 2S_{i, b} \delta_{j, k} = \sum_{j \in N_k} S_{i, b},
+        \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) = \frac{1}{2}\sum_{\langle i, j \rangle} (S_{i, b}\delta_{j,k} + S_{j, b}\delta_{i,k}) = \frac{1}{2}\sum_{\langle j, i \rangle} 2S_{i, b} \delta_{j, k} = \sum_{j \in \mathrm{NN}_k} S_{i, b},
     \end{equation*}
-    where $N_k$ are the set of nearest negihbours of lattice point $k$. This gives the expression for the effective field
+    where $\mathrm{NN}_k$ are the set of nearest negihbours of lattice point $k$. This gives the expression for the effective field
     \begin{equation*}
-        H_{k, b} = \sum_{j \in N_k} S_{i, b} + 2d_z S_{j, 3} \delta_{j, 3} + \mu B_{k, b}.
+        H_{k, b} = \sum_{j \in \mathrm{NN}_k} S_{i, b} + 2d_z S_{j, 3} \delta_{j, 3} +  B_{k, b}.
     \end{equation*}
     \bibliography{report}
     \bibliographystyle{plain}
