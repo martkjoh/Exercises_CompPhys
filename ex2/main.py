@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from numpy import cos, sin, exp, pi
-from numba import njit
 
 
 dim = 3
@@ -12,20 +11,18 @@ eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
 eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
 
 
-@njit()
 def heun_step(f, y, h, n, args):
     y[n+1] = y[n] + h * f(y[n], *args)
     y[n+1] = y[n] + (h / 2) * (f(y[n], *args) + f(y[n+1], *args))
 
 
-@njit()
+
 def NN(S):
     NNsum = np.zeros_like(S)
     NNsum = np.roll(S, 1) + np.roll(S, -1)
     return NNsum
 
 
-@njit()
 def get_H(S, J, dz, B):
     """ returns the field """
     NNsum = NN(S)
@@ -34,7 +31,6 @@ def get_H(S, J, dz, B):
     return J * NNsum + 2*dz*aniso + B 
 
 
-@njit()
 def LLG(S, J, dz, B, a):
     H = get_H(S, J, dz, B)
     dtS = np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)
@@ -47,7 +43,6 @@ def LLG(S, J, dz, B, a):
     return dtS
 
 
-@njit()
 def integrate(f, S, h, step, args):
     for n in range(len(S)-1):
         step(f, S, h, n, args)
@@ -160,5 +155,5 @@ def magnon():
     plt.show()
 
 # one_spin()
-spin_chain()
+# spin_chain()
 # magnon()
