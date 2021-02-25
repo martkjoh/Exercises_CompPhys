@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from numpy import cos, sin, exp, pi
+from numba import njit
 
 
 dim = 3
@@ -11,17 +12,20 @@ eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
 eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
 
 
+@njit()
 def heun_step(f, y, h, n, args):
     y[n+1] = y[n] + h * f(y[n], *args)
     y[n+1] = y[n] + (h / 2) * (f(y[n], *args) + f(y[n+1], *args))
 
 
+@njit()
 def NN(S):
     NNsum = np.zeros_like(S)
-    NNsum = np.roll(S, 1, 0) + np.roll(S, -1, 0)
+    NNsum = np.roll(S, 1) + np.roll(S, -1)
     return NNsum
 
 
+@njit()
 def get_H(S, J, dz, B):
     """ returns the field """
     NNsum = NN(S)
@@ -30,9 +34,10 @@ def get_H(S, J, dz, B):
     return J * NNsum + 2*dz*aniso + B 
 
 
+@njit()
 def LLG(S, J, dz, B, a):
     H = get_H(S, J, dz, B)
-    dtS = J*np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)
+    dtS = np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)
     if a:
         sum1 = np.einsum("...b, ...b -> ...", S, S)
         sum2 = np.einsum("...b, ...b -> ...", S, H)
@@ -42,6 +47,7 @@ def LLG(S, J, dz, B, a):
     return dtS
 
 
+@njit()
 def integrate(f, S, h, step, args):
     for n in range(len(S)-1):
         step(f, S, h, n, args)
@@ -58,6 +64,7 @@ def get_S1(n):
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
+
 def get_S2(n):
     theta = np.ones(n) * 0.1
     phi = np.zeros(n)
@@ -66,14 +73,14 @@ def get_S2(n):
 
 def one_spin():
 
-    T = 100
+    T = 1000
     N = 1
     S = np.empty([T, N, dim])
 
     theta = 0.1
     phi = 0
     np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)])
-    S[0] = get_S(1)
+    S[0] = get_S1(1)
 
     h = 0.1
     a = 0.05
@@ -97,7 +104,7 @@ def one_spin():
 
 
 def spin_chain():
-    T = 1_000
+    T = 10_000
     N = 10
     S = np.empty([T, N, dim])
 
@@ -107,7 +114,7 @@ def spin_chain():
     a = 0.05
     dz = 0.1
     J = 1
-    B = np.array([0, 0, 0])
+    B = np.array([0, 0, 1])
     args = (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
@@ -131,11 +138,11 @@ def magnon():
 
     S[0] = get_S1(N)
 
-    h = 0.01
+    h = 0.1
     a = 0.05
-    dz = 0.1
-    J = 0
-    B = np.array([0, 0,0])
+    dz = 0.01
+    J = -1
+    B = np.array([0, 0, 0])
     args = (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
@@ -143,13 +150,13 @@ def magnon():
 
 
     spins = [str(i) for i in range(N)]
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(dim)
     for i in range(N):
-        ax.plot(t, S[:, i, 0], 
-        label="$S_"+spins[i]+"$",
-        color=cm.viridis(i/N))
+        for j in range(dim):
+            ax[j].plot(t, S[:, i, j], 
+            label="$S_"+spins[i]+"$",
+            color=cm.viridis(i/N))
 
-    ax.legend()
     plt.show()
 
 # one_spin()
