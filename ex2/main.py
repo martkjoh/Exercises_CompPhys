@@ -1,8 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
 from numpy import cos, sin, exp, pi
 
+from plotting import *
 
 dim = 3
 
@@ -19,7 +18,7 @@ def heun_step(f, y, h, n, args):
 
 def NN(S):
     NNsum = np.zeros_like(S)
-    NNsum = np.roll(S, 1) + np.roll(S, -1)
+    NNsum = np.roll(S, 1, 0) + np.roll(S, -1, 0)
     return NNsum
 
 
@@ -55,7 +54,7 @@ def get_S(n):
 
 def get_S1(n):
     theta = np.zeros(n)
-    theta[0] = 0.1
+    theta[0] = 1
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
@@ -67,93 +66,41 @@ def get_S2(n):
 
 
 def one_spin():
-
-    T = 1000
-    N = 1
+    T, N, h = 1000, 1, 0.01
     S = np.empty([T, N, dim])
-
-    theta = 0.1
-    phi = 0
-    np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)])
     S[0] = get_S1(1)
-
-    h = 0.1
-    a = 0.05
-    dz = 0
-    J = 1
-    B = np.array([0, 0, 1])
-    args = (J, dz, B, a)
+    args = (1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    t = np.linspace(0, T*h, T)
 
-
-    coo = ["x", "y", "z"]
-    fig, ax = plt.subplots()
-    for i in range(dim):
-        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$")
-    ax.plot(t, S[0, 0, 0]*exp(-t*a), "--")
-
-    ax.legend()
-    plt.show()
+    plot_decay(S, h, args)
 
 
 def spin_chain():
-    T = 10_000
-    N = 10
+    T, N, h = 5_000, 50, 0.1
     S = np.empty([T, N, dim])
-
     S[0] = get_S(N)
 
-    h = 0.1
-    a = 0.05
-    dz = 0.1
-    J = 1
-    B = np.array([0, 0, 1])
-    args = (J, dz, B, a)
+    args = (-1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    t = np.linspace(0, T*h, T)
+    plot_coords(S, h)
+    anim_spins(S)
 
-
-    spins = [str(i) for i in range(N)]
-    fig, ax = plt.subplots(dim)
-    for i in range(N):
-        for j in range(dim):
-            ax[j].plot(t, S[:, i, j], 
-            label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N))
-
-    plt.show()
 
 def magnon():
-    T = 1_000
-    N = 10
+    T, N, h = 10_000, 50, 0.01
     S = np.empty([T, N, dim])
-
     S[0] = get_S1(N)
 
-    h = 0.1
-    a = 0.05
-    dz = 0.01
-    J = -1
-    B = np.array([0, 0, 0])
-    args = (J, dz, B, a)
+    args = (-1, 0.1, [0, 0, 1], 0.0) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    t = np.linspace(0, T*h, T)
+    plot_coords(S, h)
+    anim_spins(S, 5)
 
 
-    spins = [str(i) for i in range(N)]
-    fig, ax = plt.subplots(dim)
-    for i in range(N):
-        for j in range(dim):
-            ax[j].plot(t, S[:, i, j], 
-            label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N))
-
-    plt.show()
 
 # one_spin()
 # spin_chain()
-# magnon()
+magnon()
