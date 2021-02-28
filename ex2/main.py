@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import cos, sin, exp, pi
-
+from tqdm import trange
 from plotting import *
 
 dim = 3
@@ -13,7 +13,6 @@ eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
 def heun_step(f, y, h, n, args):
     y[n+1] = y[n] + h * f(y[n], *args)
     y[n+1] = y[n] + (h / 2) * (f(y[n], *args) + f(y[n+1], *args))
-
 
 
 def NN(S):
@@ -43,7 +42,7 @@ def LLG(S, J, dz, B, a):
 
 
 def integrate(f, S, h, step, args):
-    for n in range(len(S)-1):
+    for n in trange(len(S)-1):
         step(f, S, h, n, args)
 
 
@@ -54,7 +53,7 @@ def get_S(n):
 
 def get_S1(n):
     theta = np.zeros(n)
-    theta[0] = 1
+    theta[0] = 0.5
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
@@ -66,38 +65,39 @@ def get_S2(n):
 
 
 def one_spin():
-    T, N, h = 1000, 1, 0.01
+    T, N, h = 1000, 1, 0.1
     S = np.empty([T, N, dim])
-    S[0] = get_S1(1)
+    S[0] = get_S2(N)
     args = (1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
 
-    plot_decay(S, h, args)
-
-
-def spin_chain():
-    T, N, h = 5_000, 50, 0.1
-    S = np.empty([T, N, dim])
-    S[0] = get_S(N)
-
-    args = (-1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
-
-    integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h)
+    # plot_decay(S, h, args)
     anim_spins(S)
 
 
-def magnon():
-    T, N, h = 10_000, 50, 0.01
+def spin_chain():
+    T, N, h = 50_000, 100, 0.01
     S = np.empty([T, N, dim])
-    S[0] = get_S1(N)
+    S[0] = get_S(N)
 
-    args = (-1, 0.1, [0, 0, 1], 0.0) # (J, dz, B, a)
+    args = (1, 0.1, [0, 0, 1], 0.01) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
     plot_coords(S, h)
-    anim_spins(S, 5)
+    anim_spins(S, 10)
+
+
+def magnon():
+    T, N, h = 100_000, 100, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S1(N)
+
+    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h)
+    anim_spins(S, 10)
 
 
 

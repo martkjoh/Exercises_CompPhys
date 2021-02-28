@@ -33,10 +33,10 @@ def plot_coords(S, h):
         for j in range(dim):
             ax[j].plot(t, S[:, i, j], 
             label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N))
+            color=cm.viridis(i/N),
+            alpha=0.5)
 
     plt.show()
-
 
 
 def plot_spins(S):
@@ -55,7 +55,12 @@ def anim_spins(S, skip=1):
     x, y, z= np.mgrid[-l:l:N*1j, 0:0:1j, 0:0:1j]
     S = S[:, :, :, np.newaxis, np.newaxis]
     print(S.shape)
-    quiver = mlab.quiver3d(x, y, z, S[0, :, 0], S[0, :, 1], S[0, :, 2])
+    mlab.plot3d(x, y, z)
+    quiver = mlab.quiver3d(
+        x, y, z, S[0, :, 0], S[0, :, 1], S[0, :, 2],
+        mode="arrow", scalars=np.arange(N)/N, colormap="plasma",
+        resolution=16)
+    quiver.glyph.color_mode = "color_by_scalar"
     
     @mlab.animate(delay=10)
     def anim():
