@@ -1,6 +1,6 @@
 *.insyncdl
 ex1/data/*
-ex1/__pycache__/
+__pycache__/
 *.lprof
 *.vscode
 *.ipynb_checkpoints/*
