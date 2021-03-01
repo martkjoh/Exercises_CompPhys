@@ -17,35 +17,86 @@ path = "plots/"
 
 dim=3
 
-def plot_decay(S, h, args):
-    a = args[3]
+def plot_single(S, h, args, name):
+    J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
-    coo = ["x", "y", "z"]
+    coo = ["x", "y"]
+    col = ["g", "b"]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 6))
     for i in range(2):
-        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$")
-    ax.plot(t, S[0, 0, 0]*exp(-t*a), "--")
+        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
+    ax.plot(t, S[0, 0, 0] * np.cos(t), "k--")
+    ax.legend()
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$S$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    plt.savefig(path + name + ".pdf")
+
+
+def plot_err_afh(Sx, hs, Ts, S0, args, name):
+    J, dz, B, a = args
+    N = 1
+    
+    fig, ax = plt.subplots(figsize=(8, 5))
+    delta = np.abs(Sx - S0*np.cos(Ts * hs))
+    ax.loglog(hs, delta, "kx", label="$|S_x - S_0 \cos(\omega t_0)|$")
+
+    c = delta[0] / hs[0]
+    ax.loglog(hs, c*hs, "--", label="$c h$")
+
+    ax.set_xlabel("$h$")
+    ax.set_ylabel("$\Delta S$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(path + name + ".pdf")
+
+
+def plot_decay(S, h, args, name):
+    J, dz, B, a = args
+    T = len(S)
+    N = len(S[0])
+    t = np.linspace(0, T*h, T)
+    coo = ["x", "y"]
+    col = ["g", "b"]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for i in range(2):
+        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
+    ax.plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
 
     ax.legend()
-    plt.show()
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$S$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    plt.savefig(path + name + ".pdf")
 
 
-def plot_coords(S, h, name):
+def plot_coords(S, h, name, args):
+    J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
     spins = [str(i) for i in range(N)]
 
-    fig, ax = plt.subplots(dim, figsize=(12, 12))
+    fig, ax = plt.subplots(dim, sharex=True, sharey=True, figsize=(16, 12))
     for i in range(N):
         for j in range(dim):
             ax[j].plot(t, S[:, i, j], 
             label="$S_"+spins[i]+"$",
             color=cm.viridis(i/N))
 
+
+    ax[2].set_xlabel("$t$")
+    ax[2].set_ylabel("$S$")
+    ax[0].set_title("$S_x$")
+    ax[1].set_title("$S_y$")
+    ax[2].set_title("$S_z$")
+    fig.suptitle("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 
