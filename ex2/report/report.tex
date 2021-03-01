@@ -20,23 +20,41 @@
     This report documents the simluation of magnons, as described in~\cite{exercise}.
 
     \section*{Theory}
-    The Hamiltonian in question is, in units of the coupling constant $J$, 
+    \subsection*{Units}
+    The Hamiltonian, as well as the equations of motion inc \cite{exercise} defines some natural units for the problem: 
+    \begin{itemize}
+        \item Energy: $[\mathcal H] = [J \hbar^2 s^2]$
+        \item Magnetic field: $[\vec B] = [\mu \vec S ]$
+        \item Anisotropy: $[d_z] = [J]$
+        \item Time : $[t] = [\gamma J \hbar s]^{-1}$
+    \end{itemize}
+     where $s$ is the spin of the particles. ($s=1/2$ for electrons) This is included so that $|\vec S|\in[0, 1]$. The defining dimensionfull constants of the system is thus the spin $\hbar s$, the cupling $J$, the magnetic moment $\mu$ and the gyromacnetic ratio $\gamma$.
+    \subsection*{Indices}
+    For easy implementation, the Hamiltonian can be written on index form and using the units as described above
     \begin{equation*}
         \mathcal{H}(S; d_z, a, B) = -\frac{1}{2} J \sum_{\langle i, j \rangle, a} S_{i, a} S_{j, a} - d_z \sum_{j} (S_{j,3})^2 -  \sum_{j, a} B_{j, a} S_{j,a}.
     \end{equation*}
-    $S$ are the spins, the dynamical variables, $i\in\{1, ..., N\}$ is the site index, $a$ is vector component index. $d_z, \, a$ and $B_{i, a}$ are respectivley the inisotropy strength, the coupling strength, the magnetic moment and the external magnetic field. The magnetic field is given in units of $\mu/J[B_0]$, where $\mu$ magnetic moment. These appear as parameters in the Hamiltonian. The dynamics of the system at zero temprature is governd by the Landau-Lifshitz-Gilbert equation,
+    Here, $J\in\{-1, 0, 1\}$, $i\in\{1, ..., N\}$ is the site index, $a$ is vector component index. The effective field can be written
     \begin{align*}
-        \dv{t} S_{j, a} = - \frac{1}{(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \\
-        H_{k, b} = - \pdv{\mathcal{H}}{S_{k, b}} = \frac{1}{2} J \sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) + 2 d_z \sum_{j} S_{j,3} \delta_{b, 3}\delta_{j, k} +  \sum_{j, a} B_{j, a} \delta_{k,b}.
+        H_{k, b} = - \pdv{\mathcal{H}}{S_{k, b}} = \frac{1}{2} J \sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) + 2 d_z \sum_{j} S_{j,3} \delta_{b, 3}\delta_{j, k} +  \sum_{j, a} B_{j, a} \delta_{k,b},
     \end{align*}
-    The time units are given by $\gamma$. The triple product identity $\vec A \times (\vec B \times \vec C) = (\vec A \cdot \vec B) \vec C - (\vec A \cdot \vec C) \vec B$ has been used for the convinience of implementation. The first sum of the $H$-term can be written as
+    using the vector triple product identity $\vec A \times (\vec B \times \vec C) = (\vec A \cdot \vec B) \vec C - (\vec A \cdot \vec C) \vec B$. The first sum becomes
     \begin{equation*}
         \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) = \frac{1}{2}\sum_{\langle i, j \rangle} (S_{i, b}\delta_{j,k} + S_{j, b}\delta_{i,k}) = \frac{1}{2}\sum_{\langle j, i \rangle} 2S_{i, b} \delta_{j, k} = \sum_{j \in \mathrm{NN}_k} S_{j, b},
     \end{equation*}
-    where $\mathrm{NN}_k$ are the set of nearest negihbours of lattice point $k$. This gives the expression for the effective field
-    \begin{equation*}
-        H_{k, b} = J\sum_{j \in \mathrm{NN}_k} S_{j, b} + 2d_z S_{k, 3} \delta_{k, 3} +  B_{k, b}.
-    \end{equation*}
+    where $\mathrm{NN}_k$ are the set of nearest negihbours of lattice point $k$. The Landua-Lifshitz-Gilbert equation for the time evolution of the system is then
+    \begin{align}
+        \dv{t} S_{j, a} &= - \frac{1}{(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \label{LLG} \\
+        H_{k, b} &= J\sum_{j \in \mathrm{NN}_k} S_{j, b} + 2d_z S_{k, 3} \delta_{k, 3} +  B_{k, b}. \label{effective field}
+    \end{align}
+    
+    \section*{Implementation}
+    The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|. This contains the components of each of the $N$ spins at each timestep. The function \verb|integrate| then runs a loop, calling the implementation of the Heun method \verb|heun_step|. The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function. \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) using two nested \verb|einsum|-functions, as well as an implementation of the Levi-Civita tensor. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest negihbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$.
+
+
+    \section*{Results}
+    
+
     \bibliography{report}
     \bibliographystyle{plain}
 
