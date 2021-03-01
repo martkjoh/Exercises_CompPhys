@@ -54,7 +54,6 @@ def anim_spins(S, skip=1):
     l = N/2
     x, y, z= np.mgrid[-l:l:N*1j, 0:0:1j, 0:0:1j]
     S = S[:, :, :, np.newaxis, np.newaxis]
-    print(S.shape)
     mlab.plot3d(x, y, z)
     quiver = mlab.quiver3d(
         x, y, z, S[0, :, 0], S[0, :, 1], S[0, :, 2],
