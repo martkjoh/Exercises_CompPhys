@@ -5,6 +5,16 @@ from matplotlib import cm
 # pip install myavi; pip install PyQt5
 from mayavi import mlab
 # from main import dim
+
+plt.rcParams['mathtext.fontset'] = 'cm'
+font = {'family' : 'serif', 
+        'size': 20}
+plt.rc('font', **font)
+plt.rc('lines', lw=1)
+
+
+path = "plots/"
+
 dim=3
 
 def plot_decay(S, h, args):
@@ -15,7 +25,7 @@ def plot_decay(S, h, args):
     coo = ["x", "y", "z"]
 
     fig, ax = plt.subplots()
-    for i in range(dim):
+    for i in range(2):
         ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$")
     ax.plot(t, S[0, 0, 0]*exp(-t*a), "--")
 
@@ -23,20 +33,20 @@ def plot_decay(S, h, args):
     plt.show()
 
 
-def plot_coords(S, h):
+def plot_coords(S, h, name):
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
     spins = [str(i) for i in range(N)]
-    fig, ax = plt.subplots(dim)
+
+    fig, ax = plt.subplots(dim, figsize=(12, 12))
     for i in range(N):
         for j in range(dim):
             ax[j].plot(t, S[:, i, j], 
             label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N),
-            alpha=0.5)
+            color=cm.viridis(i/N))
 
-    plt.show()
+    plt.savefig(path + name + ".pdf")
 
 
 def plot_spins(S):

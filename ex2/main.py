@@ -72,20 +72,20 @@ def one_spin():
 
     integrate(LLG, S, h, heun_step, args)
 
-    # plot_decay(S, h, args)
+    plot_decay(S, h, args)
     anim_spins(S)
 
 
 def spin_chain():
-    T, N, h = 50_000, 100, 0.01
+    T, N, h = 6_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S(N)
 
-    args = (1, 0.1, [0, 0, 1], 0.01) # (J, dz, B, a)
+    args = (1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h)
-    anim_spins(S, 10)
+    plot_coords(S, h, "chain")
+    # anim_spins(S, 10)
 
 
 def magnon():
@@ -103,4 +103,4 @@ def magnon():
 
 # one_spin()
 # spin_chain()
-magnon()
+# magnon()
