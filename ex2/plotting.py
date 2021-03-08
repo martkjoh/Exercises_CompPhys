@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 # pip install myavi; pip install PyQt5
 from mayavi import mlab
-from pyface.api import GUI
+from scipy.optimize import curve_fit
+from matplotlib.colors import LogNorm
 # from main import dim
 
 plt.rcParams['mathtext.fontset'] = 'cm'
@@ -116,9 +117,9 @@ def plot_coords(S, h, name, args, alpha=1):
     for i in range(N):
         for j in range(dim):
             ax[j].plot(t, S[:, i, j], 
-            label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N), alpha=alpha)
-
+            color=cm.viridis(i/N), alpha=alpha
+            )
+    
 
     ax[2].set_xlabel("$t$")
     ax[2].set_ylabel("$S$")
@@ -126,6 +127,21 @@ def plot_coords(S, h, name, args, alpha=1):
     ax[1].set_title("$S_y$")
     ax[2].set_title("$S_z$")
     fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    
+    
+    def f(x, a, w, t):
+        return a * np.cos(w * x) * np.exp(-x/t)
+
+    Ssum = np.einsum("tnx -> tx", S)[:, 0]/N
+
+    (a, w, tau), _ = curve_fit(f, t, Ssum, (0.1, 0.1, 0.1), maxfev=int(1e5))
+    ax[0].plot(t, Ssum, "r,")
+    ax[0].plot(
+        t, f(t, a, w, tau), "k--", 
+        label="${:.2e}\cos({:.2e} \exp(-t/{:.2e}))$".format(a, w, tau)
+        )
+    ax[0].legend()
+
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
@@ -135,18 +151,15 @@ def plot_spec(S, spec, name, args, alpha=1):
     T = len(spec)
     N = len(spec[0])
 
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots(figsize=(12,8))
     fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
 
-    # f, t, sxx = spec
-    # print(sxx[:10, :10])
-    # im = ax.imshow(sxx)
-    # fig.colorbar(im)
+    f, t, sxx = spec
+    im = ax.imshow(sxx, norm=LogNorm())
+    fig.colorbar(im)
 
     # plt.specgram(np.einsum("tn->t", S[:, :, 0]))
 
-
-    ax.plot(np.linspace(0, 1, len(S)), np.einsum("tn -> t", S[:, :, 0]))
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 

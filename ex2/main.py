@@ -74,7 +74,6 @@ def get_S1(n):
 EXERCISES
 """
 
-
 def ex211():
     T, N, h = 1000, 1, 0.01
     S = np.empty([T, N, dim])
@@ -157,7 +156,7 @@ def ex2221():
 
 
 def ex2222():
-    T, N, h = 10_000, 10, 0.01
+    T, N, h = 10_000, 100, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
@@ -168,7 +167,7 @@ def ex2222():
 
 
 def ex2224():
-    T, N, h = 50_000, 10, 0.01
+    T, N, h = 40_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
@@ -177,8 +176,8 @@ def ex2224():
     integrate(LLG, S, h, heun_step, args)
     plot_coords(S, h, "2224", args)
 
-    spec = spectrogram(np.einsum("tn -> t",S[:, :, 1]), 1e5)
-    plot_spec(S, spec, "spec", args)
+    # spec = spectrogram(S[:, 0, 0], 1e-5)
+    # plot_spec(S, spec, "spec", args)
     # anim_spins(S, 10)
 
 
