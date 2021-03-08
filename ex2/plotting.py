@@ -69,7 +69,7 @@ def plot_decay(S, h, args, name):
     coo = ["x", "y"]
     col = ["g", "b"]
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(6, 5))
     for i in range(2):
         ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
     ax.plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
@@ -78,6 +78,7 @@ def plot_decay(S, h, args, name):
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
     ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) +  "$")
+    plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 

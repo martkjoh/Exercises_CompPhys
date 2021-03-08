@@ -53,10 +53,8 @@
 
 
     \section*{Results}
-
+    \subsection*{Single spin}
     The first test of the simulation is to initialize a single spin, in a magnetic fiel $B = (0, 0, 1)$. This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$. The expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$, (REFERANSE) due to the units as described in the subsection on units. Figure \ref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
-
-    To analyze the error, the simulation is run with differnt step lengths $h$, for the same simulation time $t_0 = 0.1$. The result is shown in \ref{error}. 
 
     \begin{figure}
         \centering
@@ -65,6 +63,8 @@
         \label{single spin}
     \end{figure}
 
+    To analyze the error, the simulation is run with differnt step lengths $h$, for the same simulation time $t_0 = 5$. The result is shown in figure \ref{error}. As Heun's method is of higher order than Euler's method, it converges faster. It is, however, necessery to make 2 function calls when using Heun's method, while Euler's method only require one. This should make Euler's method twice as fast, which was observed. Euler's method ran at around 16000 iterations per second, while Heun's method only ran at 8000. The large gain in prescision, however, makes Heun's method prefered for this application. 
+
     \begin{figure}
         \centering
         \includegraphics[width=0.8\textwidth]{../plots/err.pdf}
@@ -72,11 +72,21 @@
         \label{error}
     \end{figure}
 
+    When including $\alpha > 0$, one should expect the the oscillations to die away, with a lifetime given by
+    \begin{equation*}
+        \tau = \frac{1}{\alpha \omega}
+    \end{equation*}
+    Larger $\alpha$ should give a shorter lifetimes, and thus faster decay. Figure \ref{decay} shows this. Furthermore, we se that the amplitude is proportional to $\exp(-t/\tau)$. We should expect this, not only is this a common form for decay, but as no time is special, the decay should be proportional to the amplitude, which gives exponential decay.
+
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/decay.pdf}
+        \includegraphics[width=0.33\textwidth]{../plots/decay_a=0.1.pdf}
+        \includegraphics[width=0.32\textwidth]{../plots/decay_a=0.05.pdf}
+        \includegraphics[width=0.33\textwidth]{../plots/decay_a=0.01.pdf}
+        \caption{caption}
+        \label{decay}
     \end{figure}
-
+    \subsection*{Spin chain}
     \begin{figure}
         \centering
         \includegraphics[width=0.8\textwidth]{../plots/ground_state.pdf}
