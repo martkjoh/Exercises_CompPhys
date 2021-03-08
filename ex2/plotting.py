@@ -28,29 +28,35 @@ def plot_single(S, h, args, name):
     fig, ax = plt.subplots(figsize=(12, 6))
     for i in range(2):
         ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
-    ax.plot(t, S[0, 0, 0] * np.cos(t), "k--")
+    ax.plot(t, S[0, 0, 0] * np.cos(t), "k", linestyle=(0, (5, 10)), label="$S_0 \cos(\omega t)$")
     ax.legend()
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) + "$")
     plt.savefig(path + name + ".pdf")
 
 
-def plot_err_afh(Sx, hs, Ts, S0, args, name):
+def plot_err_afh(Sx, hs, Ts, S0, args, pows, names, name):
     J, dz, B, a = args
-    N = 1
-    
-    fig, ax = plt.subplots(figsize=(8, 5))
-    delta = np.abs(Sx - S0*np.cos(Ts * hs))
-    ax.loglog(hs, delta, "kx", label="$|S_x - S_0 \cos(\omega t_0)|$")
 
-    c = delta[0] / hs[0]
-    ax.loglog(hs, c*hs, "--", label="$c h$")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for i, pow in enumerate(pows):
+        delta = np.abs(Sx[i] - S0*np.cos((Ts[i] - 1) * hs))
+        ax.loglog(
+            hs, delta, "x", label="$\Delta S_\\mathrm{" + names[i] + "}$",
+            color=cm.hot(i/len(pows))
+            )
 
-    ax.set_xlabel("$h$")
-    ax.set_ylabel("$\Delta S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
-    ax.legend()
+        c = delta[-1] * hs[-1]**(-pow)
+        ax.loglog(
+            hs, c*hs**pow, "--", label="$c h^{}$".format(pow),
+            color=cm.winter(i/len(pows))
+            )
+
+        ax.set_xlabel("$h$")
+        ax.set_ylabel("$\Delta S$")
+        ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+        ax.legend()
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
@@ -71,7 +77,7 @@ def plot_decay(S, h, args, name):
     ax.legend()
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) +  "$")
     plt.savefig(path + name + ".pdf")
 
 
@@ -95,7 +101,7 @@ def plot_coords(S, h, name, args):
     ax[0].set_title("$S_x$")
     ax[1].set_title("$S_y$")
     ax[2].set_title("$S_z$")
-    fig.suptitle("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + "$")
+    fig.suptitle("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) +  "$")
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 

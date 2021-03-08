@@ -54,15 +54,22 @@
 
     \section*{Results}
 
+    The first test of the simulation is to initialize a single spin, in a magnetic fiel $B = (0, 0, 1)$. This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$. The expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$, (REFERANSE) due to the units as described in the subsection on units. Figure \ref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
+
+    To analyze the error, the simulation is run with differnt step lengths $h$, for the same simulation time $t_0 = 0.1$. The result is shown in \ref{error}. 
+
     \begin{figure}
         \centering
         \includegraphics[width=0.8\textwidth]{../plots/single.pdf}
+        \caption{caption}
+        \label{single spin}
     \end{figure}
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.49\textwidth]{../plots/err_euler.pdf}
-        \includegraphics[width=0.49\textwidth]{../plots/err_heun.pdf}
+        \includegraphics[width=0.8\textwidth]{../plots/err.pdf}
+        \caption{caption}
+        \label{error}
     \end{figure}
 
     \begin{figure}

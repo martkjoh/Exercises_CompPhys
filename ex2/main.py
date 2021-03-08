@@ -23,6 +23,14 @@ def heun_step(f, y, h, n, args):
 def euler_step(f, y, h, n, args):
     y[n+1] = y[n] + h * f(y[n], *args)
 
+def RK4(f, y, h, n, args):
+    k1 = f(y[n], *args) * h
+    k2 = f(y[n] + k1 / 2, *args) * h
+    k3 = f(y[n] + k2 / 2, *args) * h
+    k4 = f(y[n] + k3, *args) * h
+    delta = 1 / 6 * (k1 + 2*k2 + 2*k3 + k4)
+    y[n+1] = y[n] + delta
+
 
 def get_H(S, J, dz, B):
     """ returns the field """
@@ -44,8 +52,9 @@ def LLG(S, J, dz, B, a):
     return dtS
 
 
-def integrate(f, S, h, step, args):
+def integrate(f, S, h, tmax, step, args):
     for n in trange(len(S)-1):
+        h = min(h, tmax - n*h)
         step(f, S, h, n, args)
 
 """
@@ -77,34 +86,41 @@ EXERCISES
 
 def ex211():
     T, N, h = 1000, 1, 0.01
+    tmax = h*T
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
-    args = (1, 0, [0, 0, 1], 0) # (J, dz, B, a)
+    args = (0, 0, [0, 0, 1], 0) # (J, dz, B, a)
 
-    integrate(LLG, S, h, heun_step, args)
+    integrate(LLG, S, h, tmax, heun_step, args)
 
     plot_single(S, h, args, "single")
 
 
-def ex212(step, name):
-    time = 0.1
+def ex212():
+    steps = [euler_step, heun_step]
+    names = ["e", "h"]
+    pows = [1, 2]
+    time = 5
     N = 1
+    args = (0, 0, [0, 0, 1], 0) # (J, dz, B, a)
 
-    args = (1, 0, [0, 0, 1], 0) # (J, dz, B, a)
-
-    hs = 10**(-np.linspace(1, 5, 20))[::-1]
-    Sx = np.empty_like(hs)
-    Ts = np.empty_like(hs)
+    n = 40
+    hs = 10**(-np.linspace(0, 4, n))
+    Sx = np.empty((2, n))
+    Ts = np.empty((2, n))
     S0 = get_S1(N)[0, 0]
-    for i, h in enumerate(hs):
-        T = int(time/h)
-        Ts[i] = T
-        S = np.empty([T, N, dim])
-        S[0] = get_S1(N)
-        integrate(LLG, S, h, step, args)
-        Sx[i] = S[-1, 0, 0]
 
-    plot_err_afh(Sx, hs, Ts, S0, args, name)
+    for i, step in enumerate(steps):
+        for j, h in enumerate(hs):
+            T = int(time/h)
+            Ts[i, j] = T
+            S = np.empty([T, N, dim])
+            S[0] = get_S1(N)
+            integrate(LLG, S, h, time, step, args)
+            Sx[i, j] = S[-1, 0, 0]
+
+    plot_err_afh(Sx, hs, Ts, S0, args, pows, names, "err")
+
 
 
 def ex213():
@@ -128,6 +144,7 @@ def ex221a():
 
     integrate(LLG, S, h, heun_step, args)
     plot_coords(S, h, "ground_state", args)
+    anim_spins(S, 10)
 
 
 def magnon():
@@ -144,8 +161,7 @@ def magnon():
 
 
 # ex211()
-# ex212(heun_step, "err_heun")
-# ex212(euler_step, "err_euler")
+ex212()
 # ex213()
-ex221a()
+# ex221a()
 # magnon()
