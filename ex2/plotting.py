@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 # pip install myavi; pip install PyQt5
 from mayavi import mlab
+from pyface.api import GUI
 # from main import dim
 
 plt.rcParams['mathtext.fontset'] = 'cm'
@@ -77,7 +78,29 @@ def plot_decay(S, h, args, name):
     ax.legend()
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) +  "$")
+    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + "$")
+    plt.tight_layout()
+    plt.savefig(path + name + ".pdf")
+
+
+def plot_zs(S, h, name, args):
+    J, dz, B, a = args
+    T = len(S)
+    N = len(S[0])
+    t = np.linspace(0, T*h, T)
+    spins = [str(i) for i in range(N)]
+
+    fig, ax = plt.subplots(sharex=True, sharey=True, figsize=(8, 5))
+    for i in range(N):
+        ax.plot(t, S[:, i, 2], 
+        label="$S_"+spins[i]+"$",
+        color=cm.viridis(i/N))
+
+        
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$S$")
+    fig.suptitle("$ J = " + str(J) +  "$")
+
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
@@ -102,17 +125,33 @@ def plot_coords(S, h, name, args):
     ax[0].set_title("$S_x$")
     ax[1].set_title("$S_y$")
     ax[2].set_title("$S_z$")
-    fig.suptitle("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) +  "$")
+    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 
-def plot_spins(S):
+def plot_spins(S, name):
     N = len(S)
     l = N/2
+    mlab.figure(
+        size = (1200, 600),
+        bgcolor = (1,1,1), 
+        fgcolor = (0.5, 0.5, 0.5)
+        )
     x, y, z= np.mgrid[-l:l:N*1j, 0:0:1j, 0:0:1j]
+    mlab.plot3d(x, y, z)
     S = S[:, :, np.newaxis, np.newaxis]
-    mlab.quiver3d(x, y, z, S[:, 0], S[:, 1], S[:, 2])
+    quiver = mlab.quiver3d(
+        x, y, z, S[:, 0], S[:, 1], S[:, 2],
+        mode="arrow", scalars=np.arange(N)/N, colormap="plasma",
+        resolution=16)
+    quiver.glyph.color_mode = "color_by_scalar"
+
+    mlab.roll(240)
+    mlab.view(azimuth=90)
+    mlab.orientation_axes()
+
+    # mlab.savefig(path + name + ".png", magnification=4, size=(1200, 800))
     mlab.show()
 
 

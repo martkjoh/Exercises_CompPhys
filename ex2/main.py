@@ -125,16 +125,23 @@ def ex213():
 
 
 
-def ex221a():
+def ex221():
+    T, N, h = 30_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S(N)
+    args = (1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
+    integrate(LLG, S, h, heun_step, args)
+    plot_zs(S, h, "ground_state_f", args)
+    plot_spins(S[-1], "ground_state_f3D")
+
     T, N, h = 5_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S(N)
-
-    args = (1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
-
+    args = (-1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h, "ground_state", args)
-    anim_spins(S, 10)
+    plot_zs(S, h, "ground_state_af", args)
+    plot_spins(S[-1], "ground_state_af3D")
+
 
 
 def magnon():
@@ -152,6 +159,6 @@ def magnon():
 
 # ex211()
 # ex212()
-ex213()
-# ex221a()
+# ex213()
+# ex221()
 # magnon()
