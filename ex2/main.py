@@ -2,6 +2,8 @@ import numpy as np
 from numpy import cos, sin, exp, pi
 from tqdm import trange
 from plotting import *
+from scipy.signal import spectrogram
+
 
 """
 PHYSICS
@@ -9,6 +11,7 @@ PHYSICS
 
 dim = 3
 
+""" Levi-Civita symbol """
 eijk = np.zeros((3, 3, 3))
 eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
 eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
@@ -29,7 +32,7 @@ def get_H(S, J, dz, B):
     NNsum = np.roll(S, 1, 0) + np.roll(S, -1, 0)
     Sz = np.zeros_like(S)
     Sz[:, 2] = S[:, 2]
-    return J * NNsum + 2*dz*Sz + B 
+    return J * NNsum + 2*dz*Sz + B
 
 
 def LLG(S, J, dz, B, a):
@@ -48,24 +51,21 @@ def integrate(f, S, h, step, args):
     for n in trange(len(S)-1):
         step(f, S, h, n, args)
 
+
 """
 INITIALIZATION
 """
 
 def get_S(n):
+    """ randomly distributed spins """
     theta = np.random.random(n) * pi
     phi = np.random.random(n) * 2 * pi
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
 def get_S1(n):
+    """ one spin tilted """
     theta = np.zeros(n)
-    theta[0] = 0.5
-    phi = np.zeros(n)
-    return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
-
-
-def get_S2(n):
-    theta = np.ones(n) * 0.5
+    theta[0] = 1
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
@@ -144,21 +144,48 @@ def ex221():
 
 
 
-def magnon():
-    T, N, h = 100_000, 100, 0.01
+
+def ex2221():
+    T, N, h = 7_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
-    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, B, a)
+    args = (0, 0.1, [0, 0, 0], 0.0) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h)
-    anim_spins(S, 10)
+    plot_coords(S, h, "2221", args)
 
+
+def ex2222():
+    T, N, h = 10_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S1(N)
+
+    args = (1, 0.1, [0, 0, 0], 0.0) # (J, dz, B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "2222", args)
+
+
+def ex2224():
+    T, N, h = 50_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S1(N)
+
+    args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "2224", args)
+
+    spec = spectrogram(np.einsum("tn -> t",S[:, :, 1]), 1e5)
+    plot_spec(S, spec, "spec", args)
+    # anim_spins(S, 10)
 
 
 # ex211()
 # ex212()
 # ex213()
 # ex221()
-# magnon()
+# ex2221()
+# ex2222()
+ex2224()

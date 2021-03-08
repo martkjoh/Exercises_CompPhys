@@ -88,7 +88,7 @@
     \end{figure}
 
     \subsection*{Spin chain}
-    The simulation now now includes several spins, in a ferromagnetic or anti-ferromagnetic cupling, depending on if $J = 1$ or $J = -1$, respectivley. When including damping $\alpha > 0$, both these 
+    The simulation now now includes several spins, in a ferromagnetic or anti-ferromagnetic cupling, depending on if $J = 1$ or $J = -1$, respectivley. When including damping $\alpha > 0$, both these settel into the ground state of the system, after some time. This is shown in figure \ref{ground states}. However, the two systems have differnt ground states. In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the anti-ferrromagnetic case the spins are oppositley aligned. The final configuration is shown in figure \ref{ground states 3D}.
 
     \begin{figure}
         \centering
@@ -102,8 +102,28 @@
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_f3D.png}
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_af3D.png}
         \caption{caption}
-        \label{ground states}
+        \label{ground states 3D}
     \end{figure}
+
+    When the coupling is turned of, $J = 0$, but $d_z>0$ and initializes one spin tilted, it will precess alone, as shown in to the left in figure \ref{one tilted}. However, if the coupling is turned on again, as shown on the right, the distrubance will ripple through the chain, in a wave. This happens as the tilted spin makes it energetically advantageous for its negihbours to tilt towards it, starting a chain reaction that propagate through the chain. 
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.49\textwidth]{../plots/2221.pdf}
+        \includegraphics[width=0.49\textwidth]{../plots/2222.pdf}
+        \caption{caption}
+        \label{one tilted}
+    \end{figure}
+
+    We can see that the vibrations in the chain is dominated by high frequency oscillations. By back on the damping, as shown in figure \ref{one tilted dampend}, the energetically costly high frequencies die out fast, and we are left with the fundametal frequencies of the system.    
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\textwidth]{../plots/2224.pdf}
+        \caption{caption}
+        \label{one tilted dampend}
+    \end{figure}
+
 
     \bibliography{report}
     \bibliographystyle{plain}

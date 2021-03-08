@@ -105,19 +105,19 @@ def plot_zs(S, h, name, args):
     plt.savefig(path + name + ".pdf")
 
 
-def plot_coords(S, h, name, args):
+def plot_coords(S, h, name, args, alpha=1):
     J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
     spins = [str(i) for i in range(N)]
 
-    fig, ax = plt.subplots(dim, sharex=True, sharey=True, figsize=(16, 12))
+    fig, ax = plt.subplots(dim, sharex=True, figsize=(12, 10))
     for i in range(N):
         for j in range(dim):
             ax[j].plot(t, S[:, i, j], 
             label="$S_"+spins[i]+"$",
-            color=cm.viridis(i/N))
+            color=cm.viridis(i/N), alpha=alpha)
 
 
     ax[2].set_xlabel("$t$")
@@ -126,6 +126,27 @@ def plot_coords(S, h, name, args):
     ax[1].set_title("$S_y$")
     ax[2].set_title("$S_z$")
     fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    plt.tight_layout()
+    plt.savefig(path + name + ".pdf")
+
+
+def plot_spec(S, spec, name, args, alpha=1):
+    J, dz, B, a = args
+    T = len(spec)
+    N = len(spec[0])
+
+    fig, ax = plt.subplots(figsize=(10,10))
+    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+
+    # f, t, sxx = spec
+    # print(sxx[:10, :10])
+    # im = ax.imshow(sxx)
+    # fig.colorbar(im)
+
+    # plt.specgram(np.einsum("tn->t", S[:, :, 0]))
+
+
+    ax.plot(np.linspace(0, 1, len(S)), np.einsum("tn -> t", S[:, :, 0]))
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
@@ -151,6 +172,7 @@ def plot_spins(S, name):
     mlab.view(azimuth=90)
     mlab.orientation_axes()
 
+    # I am not able to get the figuresize right w/o doing it manually
     # mlab.savefig(path + name + ".png", magnification=4, size=(1200, 800))
     mlab.show()
 
