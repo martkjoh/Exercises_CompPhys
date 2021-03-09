@@ -106,62 +106,68 @@ def plot_zs(S, h, name, args):
     plt.savefig(path + name + ".pdf")
 
 
-def plot_coords(S, h, name, args, alpha=1):
+def plot_coords(S, h, name, args, alpha=1, coords=(0, 1, 2)):
     J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
-    spins = [str(i) for i in range(N)]
 
-    fig, ax = plt.subplots(dim, sharex=True, figsize=(12, 10))
+    fig, ax = plt.subplots(len(coords), sharex=True, figsize=(12, 2*len(coords) + 4))
+    if len(coords) == 1: ax = [ax, ]
     for i in range(N):
-        for j in range(dim):
-            ax[j].plot(t, S[:, i, j], 
+        for n, j in enumerate(coords):
+            ax[n].plot(t, S[:, i, j],
             color=cm.viridis(i/N), alpha=alpha
             )
     
-
-    ax[2].set_xlabel("$t$")
-    ax[2].set_ylabel("$S$")
-    ax[0].set_title("$S_x$")
-    ax[1].set_title("$S_y$")
-    ax[2].set_title("$S_z$")
+    ax[-1].set_xlabel("$t$")
+    ax[-1].set_ylabel("$S$")
+    coord_name=["x", "y", "z"]
+    for n, i in enumerate(coords):
+        ax[n].set_title("$S_" + coord_name[i] + "$")
     fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
-    
-    
+
+    plt.tight_layout()
+    plt.savefig(path + name + ".pdf")
+
+
+def plot_fit_to_sum(S, h, args, name):
+    J, dz, B, a = args
+    T = len(S)
+    N = len(S[0])
+    t = np.linspace(0, T*h, T)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$S$")
+    ax.set_ylim(np.min(S[:, :, 0]), np.max(S[:, :, 0]))
+
     def f(x, a, w, t):
         return a * np.cos(w * x) * np.exp(-x/t)
 
-    Ssum = np.einsum("tnx -> tx", S)[:, 0]/N
+    def sci(x):
+        a = "{:.2e}".format(x).split("e")
+        return a[0] + "\cdot 10^{" + str(int(a[1])) + "}"
 
-    (a, w, tau), _ = curve_fit(f, t, Ssum, (0.1, 0.1, 0.1), maxfev=int(1e5))
-    ax[0].plot(t, Ssum, "r,")
-    ax[0].plot(
+    Ssum1 = np.einsum("tnx -> tx", S)[:, 0]/N
+    # Can you figure this out?
+    Ssum = [Ssum1[i] for i in range(len(Ssum1)) if i%5==0 or i%11==0]
+    t2 = [t[i] for i in range(len(t)) if i%5==0 or i%11==0]
+
+    (a, w, tau), _ = curve_fit(f, t2, Ssum, maxfev=int(1e5))
+    ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}$")
+    ax.plot(
         t, f(t, a, w, tau), "k--", 
-        label="${:.2e}\cos({:.2e} \exp(-t/{:.2e}))$".format(a, w, tau)
+        label="$"+sci(a)+"\cos("+sci(w)+")\exp(-t/"+sci(w)+")$"
         )
-    ax[0].legend()
+    ax.legend()
 
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 
-def plot_spec(S, spec, name, args, alpha=1):
-    J, dz, B, a = args
-    T = len(spec)
-    N = len(spec[0])
-
-    fig, ax = plt.subplots(figsize=(12,8))
-    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
-
-    f, t, sxx = spec
-    im = ax.imshow(sxx, norm=LogNorm())
-    fig.colorbar(im)
-
-    # plt.specgram(np.einsum("tn->t", S[:, :, 0]))
-
-    plt.tight_layout()
-    plt.savefig(path + name + ".pdf")
 
 
 def plot_spins(S, name):

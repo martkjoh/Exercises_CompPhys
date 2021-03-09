@@ -9,7 +9,7 @@
 
 
 \title{Exercise 2, TFY4235 Computational physics}
-\author{Martin a. Johnsrud}
+\author{Martin Johnsrud}
 \vspace{-8ex}
 \date{}
 
@@ -115,14 +115,30 @@
         \label{one tilted}
     \end{figure}
 
-    We can see that the vibrations in the chain is dominated by high frequency oscillations. By back on the damping, as shown in figure \ref{one tilted dampend}, the energetically costly high frequencies die out fast, and we are left with the fundametal frequencies of the system.
+    We can see that the vibrations in the chain is dominated by high frequency oscillations. By back on the damping, as shown in figure \ref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundametal frequencies of the system. The plot on the right ilustrates the sum of the $x$-component of all the spins. This follows the long-term pattern imediatly. The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/2224.pdf}
+        \includegraphics[width=0.55\textwidth]{../plots/2224.pdf}
+        \includegraphics[width=0.44\textwidth]{../plots/2224fit.pdf}
         \caption{caption}
         \label{one tilted dampend}
     \end{figure}
+
+    The left plot in figure \ref{one tilted dampend af} shows the same situation, but with a antiferromagnetic coupling $J = -1$. This system starts in a much higher energy state, and thus becomes highly exitated. However, the exitation dies out much faster than in the ferromagnetic case. The right plot shows the same system, but starting in the ground state, except one tilted spin. Here too, the exitation dies out much faster, without a surviving oscillation.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.49\textwidth]{../plots/2225.pdf}
+        \includegraphics[width=0.49\textwidth]{../plots/22252.pdf}
+        \caption{caption}
+        \label{one tilted dampend af}
+    \end{figure}
+
+    The magnetization of the state is given by
+    \begin{equation*}
+        M
+    \end{equation*}
 
 
     \bibliography{report}

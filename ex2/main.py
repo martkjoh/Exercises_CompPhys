@@ -70,6 +70,14 @@ def get_S1(n):
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
 
+def get_S2(n):
+    """ one spin tilted, af """
+    theta = np.zeros(n)
+    theta[::2] = np.ones(n//2) * np.pi
+    theta[0] = np.pi - 1
+    phi = np.zeros(n)
+    return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
+
 """
 EXERCISES
 """
@@ -142,8 +150,6 @@ def ex221():
     plot_spins(S[-1], "ground_state_af3D")
 
 
-
-
 def ex2221():
     T, N, h = 7_000, 10, 0.01
     S = np.empty([T, N, dim])
@@ -156,7 +162,7 @@ def ex2221():
 
 
 def ex2222():
-    T, N, h = 10_000, 100, 0.01
+    T, N, h = 10_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
@@ -171,14 +177,35 @@ def ex2224():
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
-    args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, B, a)
+    args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h, "2224", args)
+    # plot_coords(S, h, "2224", args, coords=[0])
+    # plot_fit_to_sum(S, h, args, "2224fit")
+    anim_spins(S, 10)
 
-    # spec = spectrogram(S[:, 0, 0], 1e-5)
-    # plot_spec(S, spec, "spec", args)
-    # anim_spins(S, 10)
+
+def ex2225():
+    T, N, h = 40_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S1(N)
+
+    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "2225", args)
+
+
+def ex22252():
+    T, N, h = 40_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S2(N)
+
+    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "22252", args)
+
 
 
 # ex211()
@@ -187,4 +214,5 @@ def ex2224():
 # ex221()
 # ex2221()
 # ex2222()
-ex2224()
+# ex2224()
+ex22252()
