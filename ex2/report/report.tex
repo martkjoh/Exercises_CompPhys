@@ -17,18 +17,20 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    This report documents the simluation of magnons, as described in~\cite{exercise}.
+    This report documents the simluation of magnons, as described in~\cite{exercise}. Using Heun's method, the Landua-Lifshitz-Gilbert equations for a clssical, interacting ensemble of spins are integrated in time. The algorithm is first investigated by simulating one spin, for which the exact solution is known. The algorithm is the used to investigate the formation of collective modes, magnons, the difference between ferromagnetic and anti-ferromagnetic materials and magnetization. 
 
     \section*{Theory}
     \subsection*{Units}
     The Hamiltonian, as well as the equations of motion inc \cite{exercise} defines some natural units for the problem: 
     \begin{itemize}
         \item Energy: $[\mathcal H] = [J \hbar^2 s^2]$
-        \item Magnetic field: $[\vec B] = [\mu \vec S ]$
+        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\mu \vec S ]$
         \item Anisotropy: $[d_z] = [J]$
         \item Time : $[t] = [\gamma J \hbar s]^{-1}$
     \end{itemize}
-     where $s$ is the spin of the particles. ($s=1/2$ for electrons) This is included so that $|\vec S|\in[0, 1]$. The defining dimensionfull constants of the system is thus the spin $\hbar s$, the cupling $J$, the magnetic moment $\mu$ and the gyromacnetic ratio $\gamma$.
+     where $s$ is the spin of the particles. ($s=1/2$ for electrons) This is included so that $|\vec S|\in[0, 1]$. The defining dimensionfull constants of the system is thus the spin $\hbar s$, the coupling $J$, the magnetic moment $\mu$ and the gyromacnetic ratio $\gamma$. These units are used throughout the exercise, including in all figures. Physical values for a given, actual system is then dependent on its values for $s, J, \mu$ and $\gamma$.
+
+
     \subsection*{Indices}
     For easy implementation, the Hamiltonian can be written on index form and using the units as described above
     \begin{equation*}
@@ -47,14 +49,25 @@
         \dv{t} S_{j, a} &= - \frac{1}{(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \label{LLG} \\
         H_{k, b} &= J\sum_{j \in \mathrm{NN}_k} S_{j, b} + 2d_z S_{k, 3} \delta_{k, 3} +  B_{k, b}. \label{effective field}
     \end{align}
+
     
     \section*{Implementation}
-    The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|. This contains the components of each of the $N$ spins at each timestep. The function \verb|integrate| then runs a loop, calling the implementation of the Heun method \verb|heun_step|. The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function. \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) using two nested \verb|einsum|-functions, as well as an implementation of the Levi-Civita tensor. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest negihbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$.
+    The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|. This contains the components of each of the $N$ spins at each timestep. The function \verb|integrate| then runs a loop, calling the implementation of Heun's method \verb|heun_step|. The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function. For example, using a array \verb|eijk[a, b, c]| for the Levi Civita symbol, 
+    $$
+    \sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c}
+    $$
+    becomes
+    \begin{center}
+        \verb|np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)|.        
+    \end{center}
+
+    \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) as shown above. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest negihbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$. This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|. The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest negihbours in all dimensions.
+
+    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. 
 
 
     \section*{Results}
     \subsection*{Single spin}
-    The first test of the simulation is to initialize a single spin, in a magnetic fiel $B = (0, 0, 1)$. This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$. The expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$, (REFERANSE) due to the units as described in the subsection on units. Figure \ref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
 
     \begin{figure}
         \centering
@@ -62,8 +75,7 @@
         \caption{caption}
         \label{single spin}
     \end{figure}
-
-    To analyze the error, the simulation is run with differnt step lengths $h$, for the same simulation time $t_0 = 5$. The result is shown in figure \ref{error}. As Heun's method is of higher order than Euler's method, it converges faster. It is, however, necessery to make 2 function calls when using Heun's method, while Euler's method only require one. This should make Euler's method twice as fast, which was observed. Euler's method ran at around 16000 iterations per second, while Heun's method only ran at 8000. The large gain in prescision, however, makes Heun's method prefered for this application. 
+    The first test of the simulation is to initialize a single spin, in a magnetic fiel $B = (0, 0, 1)$. This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$. The expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$, (REFERANSE) due to the units as described in the subsection on units. Figure \ref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
 
     \begin{figure}
         \centering
@@ -71,6 +83,9 @@
         \caption{caption}
         \label{error}
     \end{figure}
+
+    
+    To analyze the error, the simulation is run with differnt step lengths $h$, for the same simulation time $t_0 = 5$. The result is shown in figure \ref{error}. As Heun's method is of higher order than Euler's method, it converges faster. It is, however, necessery to make 2 function calls when using Heun's method, while Euler's method only require one. This should make Euler's method twice as fast, which was observed. Euler's method ran at around 16000 iterations per second, while Heun's method only ran at 8000. The large gain in prescision, however, makes Heun's method prefered for this application. 
 
     When including $\alpha > 0$, one should expect the the oscillations to die away, with a lifetime given by
     \begin{equation*}
@@ -147,6 +162,9 @@
         \caption{caption}
         \label{mag}
     \end{figure}
+
+    \section*{Conclusion}
+    Using Heun's method, and the LLG equations materials of interacting spins have been investigated. Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagneti reaches its groundstate almost 10 times faster through dissipation than its ferromagnetic counterpart. Collective modes, magnons, is shown to exist in ferromagnetic materials. These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation. They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state. The simulation confirmes this.
 
     \bibliography{report}
     \bibliographystyle{plain}

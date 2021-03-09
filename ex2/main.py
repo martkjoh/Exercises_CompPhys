@@ -28,7 +28,7 @@ def euler_step(f, y, h, n, args):
 
 
 def get_H(S, J, dz, B):
-    """ returns the field """
+    """ returns the effective field, given spin conf. """
     NNsum = np.roll(S, 1, 0) + np.roll(S, -1, 0)
     Sz = np.zeros_like(S)
     Sz[:, 2] = S[:, 2]
@@ -36,6 +36,7 @@ def get_H(S, J, dz, B):
 
 
 def LLG(S, J, dz, B, a):
+    """ returns the time derivative of S, as given by the LLG eqs. """
     H = get_H(S, J, dz, B)
     dtS = np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)
     if a:
@@ -52,13 +53,10 @@ def integrate(f, S, h, step, args):
         step(f, S, h, n, args)
 
 
-def get_magz(S):
-    return np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
-
-
 """
 INITIALIZATION
 """
+
 
 def get_S(n):
     """ randomly distributed spins """
@@ -66,10 +64,10 @@ def get_S(n):
     phi = np.random.random(n) * 2 * pi
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
-def get_S1(n):
+def get_S1(n, offset=0.5):
     """ one spin tilted """
     theta = np.zeros(n)
-    theta[0] = 1
+    theta[0] = offset
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
@@ -81,6 +79,7 @@ def get_S2(n):
     theta[0] = np.pi - 1
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
+
 
 """
 EXERCISES
@@ -123,17 +122,15 @@ def ex212():
     plot_err_afh(Sx, hs, Ts, S0, args, pows, names, "err")
 
 
-
 def ex213():
-    T, N, h = 5_000, 1, 0.01
+    T, N, h = 10_000, 1, 0.01
     S = np.empty([T, N, dim])
-    S[0] = get_S1(N)
+    S[0] = get_S1(N, offset=0.2)
     alphas = [0.1, 0.05, 0.01]
     for a in alphas:
         args = (1, 0, [0, 0, 1], a) # (J, dz, B, a)
         integrate(LLG, S, h, heun_step, args)
         plot_decay(S, h, args, "decay_a={}".format(a))
-
 
 
 def ex221():
@@ -184,9 +181,9 @@ def ex2224():
     args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    # plot_coords(S, h, "2224", args, coords=[0])
-    # plot_fit_to_sum(S, h, args, "2224fit")
-    anim_spins(S, 10)
+    plot_coords(S, h, "2224", args, coords=[0])
+    plot_fit_to_sum(S, h, args, "2224fit")
+
 
 
 def ex2225():
@@ -219,27 +216,16 @@ def ex2226():
     args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    Mz = get_magz(S)
+    Mz = np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
     plot_mag(Mz, h, "mag", args)
-
-def ex2226():
-    T, N, h = 40_000, 10, 0.01
-    S = np.empty([T, N, dim])
-    S[0] = get_S2(N)
-
-    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
-
-    integrate(LLG, S, h, heun_step, args)
-    Mz = get_magz(S)
-    plot_mag(Mz, h, "mag2", args)
 
 
 # ex211()
 # ex212()
-# ex213()
+ex213()
 # ex221()
 # ex2221()
 # ex2222()
 # ex2224()
 # ex22252()
-ex2226()
+# ex2226()

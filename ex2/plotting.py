@@ -1,3 +1,5 @@
+
+
 import numpy as np
 from numpy import exp
 import matplotlib.pyplot as plt
@@ -71,7 +73,7 @@ def plot_decay(S, h, args, name):
     coo = ["x", "y"]
     col = ["g", "b"]
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig, ax = plt.subplots(figsize=(8, 6))
     for i in range(2):
         ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
     ax.plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
