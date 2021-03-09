@@ -52,6 +52,10 @@ def integrate(f, S, h, step, args):
         step(f, S, h, n, args)
 
 
+def get_magz(S):
+    return np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
+
+
 """
 INITIALIZATION
 """
@@ -207,6 +211,28 @@ def ex22252():
     plot_coords(S, h, "22252", args)
 
 
+def ex2226():
+    T, N, h = 40_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S1(N)
+
+    args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    Mz = get_magz(S)
+    plot_mag(Mz, h, "mag", args)
+
+def ex2226():
+    T, N, h = 40_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S2(N)
+
+    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    Mz = get_magz(S)
+    plot_mag(Mz, h, "mag2", args)
+
 
 # ex211()
 # ex212()
@@ -215,4 +241,5 @@ def ex22252():
 # ex2221()
 # ex2222()
 # ex2224()
-ex22252()
+# ex22252()
+ex2226()
