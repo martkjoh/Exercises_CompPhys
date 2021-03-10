@@ -1,5 +1,3 @@
-
-
 import numpy as np
 from numpy import exp
 import matplotlib.pyplot as plt
@@ -8,6 +6,8 @@ from matplotlib import cm
 from mayavi import mlab
 from scipy.optimize import curve_fit
 from matplotlib.colors import LogNorm
+import ffmpeg
+import os
 # from main import dim
 
 plt.rcParams['mathtext.fontset'] = 'cm'
@@ -27,12 +27,13 @@ def plot_single(S, h, args, name):
     N = len(S[0])
     t = np.linspace(0, T*h, T)
     coo = ["x", "y"]
-    col = ["g", "b"]
+    col = ["limegreen", "royalblue"]
 
     fig, ax = plt.subplots(figsize=(12, 6))
     for i in range(2):
         ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
-    ax.plot(t, S[0, 0, 0] * np.cos(t), "k", linestyle=(0, (5, 10)), label="$S_0 \cos(\omega t)$")
+    ax.plot(t, S[0, 0, 0] * np.cos(t), "k", linestyle=(0, (8, 15)), lw=3, label="$S_0 \cos(\omega t)$")
+    ax.plot(t, S[0, 0, 0] * np.sin(-t), "k", linestyle=(0, (3, 5)), lw=3, label="$S_0 \sin(\omega t)$")
     ax.legend()
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
@@ -65,23 +66,24 @@ def plot_err_afh(Sx, hs, Ts, S0, args, pows, names, name):
     plt.savefig(path + name + ".pdf")
 
 
-def plot_decay(S, h, args, name):
+def plot_decay(Ss, alphas, h, args, name):
     J, dz, B, a = args
-    T = len(S)
-    N = len(S[0])
+    T = len(Ss[0])
+    N = len(Ss[0][0])
     t = np.linspace(0, T*h, T)
     coo = ["x", "y"]
-    col = ["g", "b"]
+    col = ["limegreen", "royalblue"]
 
-    fig, ax = plt.subplots(figsize=(8, 6))
-    for i in range(2):
-        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
-    ax.plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
-
-    ax.legend()
-    ax.set_xlabel("$t$")
-    ax.set_ylabel("$S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + "$")
+    fig, ax = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
+    for k, S in enumerate(Ss):
+        a = alphas[k]
+        for i in range(2):
+            ax[k].plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
+        ax[k].plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
+        ax[k].legend()
+        ax[k].set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + "$")
+        ax[k].set_xlabel("$t$")
+    ax[0].set_ylabel("$S$")
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
@@ -162,7 +164,7 @@ def plot_fit_to_sum(S, h, args, name):
     ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}$")
     ax.plot(
         t, f(t, a, w, tau), "k--", 
-        label="$"+sci(a)+"\cos("+sci(w)+")\exp(-t/"+sci(w)+")$"
+        label="$"+sci(a)+"\cos("+sci(w)+"t)\exp(-t/"+sci(tau)+")$"
         )
     ax.legend()
 
@@ -214,7 +216,7 @@ def plot_spins(S, name):
     mlab.show()
 
 
-def anim_spins(S, skip=1):
+def anim_spins(S, name, skip=1):
     T = len(S)
     N = len(S[0])
     l = N/2
@@ -226,14 +228,29 @@ def anim_spins(S, skip=1):
         mode="arrow", scalars=np.arange(N)/N, colormap="plasma",
         resolution=16)
     quiver.glyph.color_mode = "color_by_scalar"
-    
+
+    pad = len(str(N))
     @mlab.animate(delay=10)
     def anim():
         for i in range(T//skip):
             quiver.mlab_source.u = S[i*skip, :, 0]
             quiver.mlab_source.v = S[i*skip, :, 1]
             quiver.mlab_source.w = S[i*skip, :, 2]
+
+            zeros = '0'*(pad - len(str(i)))
+            filename = path + name + "_{}{}".format(zeros, i) + ".png"
+            mlab.savefig(filename)
             yield
     
     anim()
     mlab.show()
+
+    input = ffmpeg.input(path + name + "_%0" + str(len(str(N))) + "d.png")
+    output = path + name + ".mp4"
+    stream = ffmpeg.output(input, output, framerate=20)
+
+    if os.path.isfile(output): os.remove(output)
+    ffmpeg.run(stream)  
+
+    [os.remove(path + f) for f in os.listdir(path) \
+        if f.endswith(".png") and f[:len(name)]==name]

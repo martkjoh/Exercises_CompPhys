@@ -127,10 +127,12 @@ def ex213():
     S = np.empty([T, N, dim])
     S[0] = get_S1(N, offset=0.2)
     alphas = [0.1, 0.05, 0.01]
-    for a in alphas:
+    Ss = []
+    for i, a in enumerate(alphas):
         args = (1, 0, [0, 0, 1], a) # (J, dz, B, a)
         integrate(LLG, S, h, heun_step, args)
-        plot_decay(S, h, args, "decay_a={}".format(a))
+        Ss.append(np.copy(S))
+    plot_decay(Ss, alphas, h, args, "decay_a")
 
 
 def ex221():
@@ -185,7 +187,6 @@ def ex2224():
     plot_fit_to_sum(S, h, args, "2224fit")
 
 
-
 def ex2225():
     T, N, h = 40_000, 10, 0.01
     S = np.empty([T, N, dim])
@@ -222,7 +223,7 @@ def ex2226():
 
 # ex211()
 # ex212()
-ex213()
+# ex213()
 # ex221()
 # ex2221()
 # ex2222()
