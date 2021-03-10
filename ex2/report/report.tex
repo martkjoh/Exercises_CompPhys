@@ -63,9 +63,7 @@
 
     \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) as shown above. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest neighbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$. This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|. The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest negihbours in all dimensions.
 
-    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. 
-
-    To 
+    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video. 
 
 
     \section*{Results}

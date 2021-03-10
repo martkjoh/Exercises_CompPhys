@@ -135,15 +135,17 @@ def ex213():
     plot_decay(Ss, alphas, h, args, "decay_a")
 
 
-def ex221():
-    T, N, h = 30_000, 10, 0.01
+def ex2211():
+    T, N, h = 20_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S(N)
     args = (1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
     integrate(LLG, S, h, heun_step, args)
     plot_zs(S, h, "ground_state_f", args)
     plot_spins(S[-1], "ground_state_f3D")
+    anim_spins(S, "gs_f", 20)
 
+def ex2212():
     T, N, h = 5_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S(N)
@@ -151,7 +153,7 @@ def ex221():
     integrate(LLG, S, h, heun_step, args)
     plot_zs(S, h, "ground_state_af", args)
     plot_spins(S[-1], "ground_state_af3D")
-
+    anim_spins(S, "gs_af", 10)
 
 def ex2221():
     T, N, h = 7_000, 10, 0.01
@@ -224,7 +226,8 @@ def ex2226():
 # ex211()
 # ex212()
 # ex213()
-# ex221()
+ex2211()
+# ex2212()
 # ex2221()
 # ex2222()
 # ex2224()

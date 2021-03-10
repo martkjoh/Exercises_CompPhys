@@ -156,10 +156,7 @@ def plot_fit_to_sum(S, h, args, name):
         return a[0] + "\cdot 10^{" + str(int(a[1])) + "}"
 
     Ssum1 = np.einsum("tnx -> tx", S)[:, 0]/N
-    # Can you figure this out?
-    Ssum = [Ssum1[i] for i in range(len(Ssum1)) if i%5==0 or i%11==0]
-    t2 = [t[i] for i in range(len(t)) if i%5==0 or i%11==0]
-
+    Ssum = Ssum1[::10]; t2 = t[::10]
     (a, w, tau), _ = curve_fit(f, t2, Ssum, maxfev=int(1e5))
     ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}$")
     ax.plot(
@@ -222,6 +219,11 @@ def anim_spins(S, name, skip=1):
     l = N/2
     x, y, z= np.mgrid[-l:l:N*1j, 0:0:1j, 0:0:1j]
     S = S[:, :, :, np.newaxis, np.newaxis]
+    mlab.figure(
+        size = (1200, 600),
+        bgcolor = (1,1,1), 
+        fgcolor = (0.5, 0.5, 0.5)
+        )
     mlab.plot3d(x, y, z)
     quiver = mlab.quiver3d(
         x, y, z, S[0, :, 0], S[0, :, 1], S[0, :, 2],
@@ -241,6 +243,7 @@ def anim_spins(S, name, skip=1):
             filename = path + name + "_{}{}".format(zeros, i) + ".png"
             mlab.savefig(filename)
             yield
+        mlab.close(all=True)
     
     anim()
     mlab.show()
