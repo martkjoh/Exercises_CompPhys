@@ -94,6 +94,7 @@ def ex211():
     integrate(LLG, S, h, heun_step, args)
 
     plot_single(S, h, args, "single")
+    anim_spins(S, "single", 10)
 
 
 def ex212():
@@ -211,8 +212,8 @@ def ex22252():
     plot_coords(S, h, "22252", args)
 
 
-def ex2226():
-    T, N, h = 40_000, 10, 0.01
+def ex22261():
+    T, N, h = 50_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
 
@@ -220,16 +221,28 @@ def ex2226():
 
     integrate(LLG, S, h, heun_step, args)
     Mz = np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
-    plot_mag(Mz, h, "mag", args)
+    plot_mag(Mz, h, "mag", args, gs=1)
+
+def ex22262():
+    T, N, h = 50_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S2(N)
+
+    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    Mz = np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
+    plot_mag(Mz, h, "mag2", args, gs=0)
 
 
 # ex211()
 # ex212()
 # ex213()
-ex2211()
+# ex2211()
 # ex2212()
 # ex2221()
 # ex2222()
 # ex2224()
 # ex22252()
-# ex2226()
+# ex22261()
+# ex22262()

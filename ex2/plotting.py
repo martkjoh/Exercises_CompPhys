@@ -169,7 +169,7 @@ def plot_fit_to_sum(S, h, args, name):
     plt.savefig(path + name + ".pdf")
 
 
-def plot_mag(Mz, h, name, args):
+def plot_mag(Mz, h, name, args, gs):
     J, dz, B, a = args
     T = len(Mz)
     t = np.linspace(0, T*h, T)
@@ -177,7 +177,7 @@ def plot_mag(Mz, h, name, args):
     fig, ax = plt.subplots(figsize=(10, 5))
 
     ax.plot(t, Mz, label="$M_z$")
-    ax.plot(t, 0*np.ones_like(t), "k--")
+    ax.plot(t, gs*np.ones_like(t), "k--")
     ax.legend()
     ax.set_ylabel("$M$")
     ax.set_xlabel("$t$")

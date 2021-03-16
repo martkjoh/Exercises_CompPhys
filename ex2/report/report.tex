@@ -63,7 +63,7 @@
 
     \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) as shown above. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest neighbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$. This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|. The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest negihbours in all dimensions.
 
-    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video. 
+    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video. Videos of one spin, a chain of spins and a configuration of spins in 3D is included in the folder plots. 
 
 
     \section*{Results}
@@ -122,7 +122,11 @@
         \label{ground states 3D}
     \end{figure}
 
-    When the coupling is turned of, $J = 0$, but $d_z>0$ and initializes one spin tilted, it will precess alone, as shown in to the left in figure \ref{one tilted}. However, if the coupling is turned on again, as shown on the right, the disturbance will ripple through the chain, in a wave. This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. 
+    When the coupling is turned of, $J = 0$, but $d_z>0$ and initializes one spin tilted, it will precess alone, as shown in to the left in figure \ref{one tilted}. This is because it is now an uncoupled system, where each spin follows 
+    \begin{equation*}
+        \dv{\vec S}{t} = - 2 d_z S_z \vec S \times \hat z, 
+    \end{equation*}
+    i.e. circular precession around the $z$-axis. Thus, spins parallel to the $z$-axis should not move, while the one tilted spin precesses. However, if the coupling is turned on again, as shown on the right in figure \ref{one tilted}, the disturbance will ripple through the chain, in a wave. This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. 
 
     \begin{figure}
         \centering
@@ -132,7 +136,7 @@
         \label{one tilted}
     \end{figure}
 
-    We can see that the vibrations in the chain is dominated by high frequency oscillations. By back on the damping, as shown in figure \ref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system. The plot on the right illustrates the sum of the $x$-component of all the spins. This follows the long-term pattern immediately. The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
+    We can see that the vibrations in the chain is dominated by high frequency oscillations. By turning back on the damping, as shown in figure \ref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system. The plot on the right illustrates the sum of the $x$-component of all the spins. This follows the long-term pattern immediately. The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
 
     \begin{figure}
         \centering
@@ -156,17 +160,18 @@
     \begin{equation*}
         M_a = \frac{1}{N} \sum_j S_{j, a}.
     \end{equation*}
-    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the anti-ferromagnetic case $\vec M = (0, 0, 0)$. This means that a disturbance in the ground state of the ferromagnet, like the sustained magnon oscillation we showed earlier, will result in a sustained loss of magnetization. This is due to the fact that it is the state of maximum magnetization. This is showed in figure \ref{mag}. Here, the magnetization quickly approaches 1 as the energy is dissipated. However, as the system settles in to the mode of sustained oscillation, as noted earlier, it retains some loss in magnetization. 
+    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the anti-ferromagnetic case $\vec M = (0, 0, 0)$. This means that a disturbance in the ground state of the ferromagnet, like the sustained magnon oscillation we showed earlier, will result in a sustained loss of magnetization. This is due to the fact that it is the state of maximum magnetization. This is showed in figure \ref{mag}. Here, the magnetization quickly approaches the ground state value as the energy is dissipated. However, as the system settles in to the mode of sustained oscillation, the ferromagnetic on the left retains some loss in magnetization, while the anti-ferromagnet reaches the ground state much faster.
 
     \begin{figure}
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/mag.pdf}
+        \includegraphics[width=0.49\textwidth]{../plots/mag.pdf}
+        \includegraphics[width=0.49\textwidth]{../plots/mag2.pdf}
         \caption{caption}
         \label{mag}
     \end{figure}
 
     \section*{Conclusion}
-    Using Heun's method, and the LLG equations materials of interacting spins have been investigated. Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagnetic reaches its ground state almost 10 times faster through dissipation than its ferromagnetic counterpart. Collective modes, magnons, is shown to exist in ferromagnetic materials. These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation. They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state. The simulation confirms this.
+    Using Heun's method, and the LLG equations materials of interacting spins have been investigated. Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagnetic reaches its ground state almost 10 times faster through dissipation than its ferromagnetic counterpart. Collective modes, magnons, is shown to exist in ferromagnetic materials. These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation. They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state. The simulation confirms this. 
 
     \bibliography{report}
     \bibliographystyle{plain}
