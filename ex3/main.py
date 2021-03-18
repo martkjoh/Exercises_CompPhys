@@ -64,17 +64,18 @@ def simulate(C0, args):
 
     return C
 
-def get_args():
-    N = 100
-    T = 100
+def get_args1(const_K=True):
+    N = 1000
+    T = 1000
     dz = 0.1
     a = 0.1
     kw = 0
-
-    K = np.ones(N)
+    if const_K:
+        K = np.ones(N)
+    else:
+        K = 2 + np.sin(np.linspace(0, 10, N))
     Ceq = np.zeros(T)
     return Ceq, K, T, N, a, dz, kw
-
 
 
 def plot_C(C, args):
@@ -91,7 +92,7 @@ def plot_C(C, args):
 
 
 def plot_D():
-    args = get_args()
+    args = get_args1()
 
     D = get_D(args)
     fig, ax = plt.subplots()
@@ -99,13 +100,38 @@ def plot_D():
     fig.colorbar(im)
     plt.show()
 
+def plot_M(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    dt = a * dz**2 * 2
+    t = np.linspace(0, T*dt, T)
+    M = np.einsum("tz -> t", C)
+
+    fig, ax = plt.subplots()
+    ax.plot(t, M)
+    plt.show()
+
+
 def test1():
-    args = get_args()
+    args = get_args1()
     Ceq, K, T, N, a, dz, kw = args
 
     C0 = np.ones(N)
     C = simulate(C0, args)
+    print(np.max(C), np.min(C))
     plot_C(C, args)
 
-test1()
-plot_D()
+
+def test2():
+    args = get_args1()
+    Ceq, K, T, N, a, dz, kw = args
+
+    C0 = np.zeros(N)
+    C0[N//4] = 1
+    C0[2*N//4] = 1
+    C0[3*N//4] = 1
+    C = simulate(C0, args)
+    print(np.max(C), np.min(C))
+    plot_C(C, args)
+    plot_M(C, args)
+
+test2()
