@@ -27,6 +27,14 @@ def get_g(args):
     return 2*a*kw*dz/K[0] * (K[0] - 1/2 * (3/2 * K[0] + 2 * K[1] - 1/2 * K[2]))
 
 
+def get_S(args):
+    Ceq, K, T, N, a, dz, kw = args
+    g = get_g(args)
+    S = np.zeros((T, N))
+    S[:, 0] = 2*g*Ceq
+    return S
+
+
 def get_solve(args):
     Ceq, K, T, N, a, dz, kw = args
     D = get_D(args).todense()
@@ -39,14 +47,6 @@ def get_V(args):
     D = get_D(args).todense()
     R =  np.identity(N) + D/2
     return lambda C, i, S: R @ C[i] + (S[i] + S[i+1])/2
-    
-
-def get_S(args):
-    Ceq, K, T, N, a, dz, kw = args
-    g = get_g(args)
-    S = np.zeros((T, N))
-    S[:, 0] = 2*g*Ceq
-    return S
     
 
 def simulate(C0, args):
@@ -68,13 +68,11 @@ def get_args1(const_K=True):
     N = 1000
     T = 1000
     dz = 0.1
-    a = 0.1
+    a = 1
     kw = 0
-    if const_K:
-        K = np.ones(N)
-    else:
-        K = 2 + np.sin(np.linspace(0, 10, N))
-    Ceq = np.zeros(T)
+    if const_K:K = np.ones(N)
+    else: K = 2 + np.sin(np.linspace(0, 10, N))
+    Ceq = np.ones(T)
     return Ceq, K, T, N, a, dz, kw
 
 
@@ -110,6 +108,19 @@ def plot_M(C, args):
     ax.plot(t, M)
     plt.show()
 
+def plot_var(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    dt = a * dz**2 * 2
+    t = np.linspace(0, T*dt, T)
+    z = np.linspace(0, N*dz, N)
+    M = np.einsum("tz -> t", C) * dz
+    mu = np.einsum("tz, z -> t", C, z) * dz / M
+    var = np.einsum("tz, z -> t", C, (z - mu)**2) * dz / M
+
+    fig, ax = plt.subplots()
+    ax.plot(t, var)
+    plt.show()
+
 
 def test1():
     args = get_args1()
@@ -117,21 +128,31 @@ def test1():
 
     C0 = np.ones(N)
     C = simulate(C0, args)
-    print(np.max(C), np.min(C))
     plot_C(C, args)
 
 
-def test2():
+def test23():
     args = get_args1()
     Ceq, K, T, N, a, dz, kw = args
 
-    C0 = np.zeros(N)
-    C0[N//4] = 1
-    C0[2*N//4] = 1
-    C0[3*N//4] = 1
+    z = np.linspace(0, N * dz, N)
+    C0 = np.exp(- (z - dz*N/2)**2/5)
     C = simulate(C0, args)
-    print(np.max(C), np.min(C))
     plot_C(C, args)
     plot_M(C, args)
+    plot_var(C, args)
 
-test2()
+
+def get_args2(const_K=True):
+    N = 1000
+    T = 1000
+    dz = 0.1
+    a = 1
+    kw = 1
+    if const_K:K = np.ones(N)
+    else: K = 2 + np.sin(np.linspace(0, 10, N))
+    Ceq = np.ones(T)
+    return Ceq, K, T, N, a, dz, kw
+
+
+def test4()
