@@ -30,11 +30,11 @@
     \begin{align*}
         \mathcal{D} &=
         \begin{pmatrix}
-            4\alpha K_0 + 2\Gamma & - 4\alpha K_0 & 0 & \dots&0 \\
-            \alpha K_1'/2 - 2\alpha K_1 & 4 \alpha K_1 & - \alpha K_1'/2 - 2\alpha K_1 \\
+            -4\alpha K_0 + 2\Gamma & 4\alpha K_0 & 0 & \dots&0 \\
+            -\alpha K_1'/2 + 2\alpha K_1 & -4 \alpha K_1 & \alpha K_1'/2 + 2\alpha K_1 \\
             0 & \ddots & \ddots & \ddots & 0\\
-            0 & \dots &\alpha K_{N-1}'/2 - 2\alpha K_{N-1} & 4 \alpha K_{N-1} & - \alpha K_{N-1}'/2 - 2\alpha K_{N-1} \\
-             0 & \dots & 0 & 4\alpha K_N & 4\alpha K_N
+            0 & \dots &-\alpha K_{N-1}'/2 + 2\alpha K_{N-1} & -4 \alpha K_{N-1} & \alpha K_{N-1}'/2 + 2\alpha K_{N-1} \\
+             0 & \dots & 0 & 4\alpha K_N & -4\alpha K_N
         \end{pmatrix},\quad
         S(t) = 
         \begin{pmatrix}
@@ -44,7 +44,7 @@
             0
         \end{pmatrix} \\
     \Gamma &= 2 \frac{\alpha k_w \Delta z}{K_0} \left(K_0 - \frac{1}{2}(\frac{3}{2} K_0 + 2K_1 - \frac{1}{2}K_2)\right), \quad
-     \alpha = \frac{2 \Delta t}{\Delta z}, \quad
+     \alpha = \frac{\Delta t}{2 \Delta z^2 }, \quad
       K_n' = K_{n+1} - K_{n-1}
     \end{align*}
     The Chranck-Nichelson scheme then yields
