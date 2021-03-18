@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.linalg import inv
-from scipy.sparse import diags
+from scipy.sparse.linalg import inv, spsolve
+from scipy.sparse import diags, csc_matrix
 from matplotlib import pyplot as plt
 
 
@@ -9,7 +9,7 @@ def get_D(args):
     g = get_g(args)
 
     V0 = -4 * a  * K
-    V0[0] += 2 * g * K[0]
+    V0[0] += 2 * g
 
     V1 = np.zeros(N-1)
     V1[1:] = a * (K[2:] - K[:-2])/2 + 2 * a * K[1:-1]
@@ -19,7 +19,7 @@ def get_D(args):
     V2[:-1] = -a * (K[2:] - K[:-2])/2 + 2 * a * K[1:-1]
     V2[-1] = 4*a*K[-1]
 
-    return diags((V2, V0, V1), (-1, 0, 1))
+    return csc_matrix(diags((V2, V0, V1), (-1, 0, 1)))
 
 
 def get_g(args):
@@ -37,16 +37,18 @@ def get_S(args):
 
 def get_solve(args):
     Ceq, K, T, N, a, dz, kw = args
-    D = get_D(args).todense()
-    A_inv = inv(np.identity(N) - D/2)
-    return lambda v: A_inv @ v
+    D = get_D(args)
+    I = csc_matrix(diags(np.ones(N), 0))
+    # A_inv = inv(I - D/2)
+    return lambda v: spsolve((I - D/2), v) 
 
 
 def get_V(args):
     Ceq, K, T, N, a, dz, kw = args
-    D = get_D(args).todense()
-    R =  np.identity(N) + D/2
-    return lambda C, i, S: R @ C[i] + (S[i] + S[i+1])/2
+    D = get_D(args)
+    I = csc_matrix(diags(np.ones(N), 0))
+    R =  I + D/2
+    return lambda C, i, S: R.dot(C[i]) + (S[i] + S[i+1])/2
     
 
 def simulate(C0, args):
@@ -122,6 +124,21 @@ def plot_var(C, args):
     plt.show()
 
 
+def plot_M_decay(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    dt = a * dz**2 * 2
+    L = dz * N
+    t = np.linspace(0, T*dt, T)
+    M = np.einsum("tz -> t", C)
+    tau = L / kw
+    Bi = kw * L / np.min(K)
+    fig, ax = plt.subplots()
+    ax.plot(t, M)
+    ax.plot(t, M[0] * np.exp(-t / tau), "--k")
+    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + "$")
+    plt.show()
+
+    
 def test1():
     args = get_args1()
     Ceq, K, T, N, a, dz, kw = args
@@ -136,7 +153,7 @@ def test23():
     Ceq, K, T, N, a, dz, kw = args
 
     z = np.linspace(0, N * dz, N)
-    C0 = np.exp(- (z - dz*N/2)**2/5)
+    C0 = np.exp(-(z - dz*N/2)**2/5)
     C = simulate(C0, args)
     plot_C(C, args)
     plot_M(C, args)
@@ -146,13 +163,23 @@ def test23():
 def get_args2(const_K=True):
     N = 1000
     T = 1000
-    dz = 0.1
-    a = 1
-    kw = 1
-    if const_K:K = np.ones(N)
+    dz = 1e-3
+    a = 1e6
+    kw = 1e-5
+    if const_K: K = 1e5*np.ones(N)
     else: K = 2 + np.sin(np.linspace(0, 10, N))
-    Ceq = np.ones(T)
+    Ceq = np.zeros(T)
     return Ceq, K, T, N, a, dz, kw
 
 
-def test4()
+def test4():
+    args = get_args2(True)
+    Ceq, K, T, N, a, dz, kw = args
+
+    z = np.linspace(0, N * dz, N)
+    C0 = np.ones(N)
+    C = simulate(C0, args)
+    plot_C(C, args)
+    plot_M_decay(C, args)
+
+test4()
