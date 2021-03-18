@@ -4,24 +4,22 @@ from scipy.sparse import diags
 from matplotlib import pyplot as plt
 
 
-def get_D(K, a, g):
-    N = len(K)
+def get_D(args):
+    Ceq, K, T, N, a, dz, kw = args
+    g = get_g(args)
 
     V0 = 4 * a  * K
     V0[0] += 2 * g
 
     V1 = np.zeros(N-1)
-    V1[1:] = -a * (K[:-2] - K[2:])/2 - 2 * a * K[1:]
+    V1[1:] = -a * (K[:-2] - K[2:])/2 - 2 * a * K[1:-1]
     V1[0] = -4*a*K[0]
 
     V2 = np.zeros(N-1)
-    V2[:-1] = a * (K[:-2] - K[2:])/2 - 2 * a * K[1:]
+    V2[:-1] = a * (K[:-2] - K[2:])/2 - 2 * a * K[1:-1]
     V2[-1] = 4*a*K[-1]
 
     return diags((V2, V0, V1), (-1, 0, 1))
-
-
-def get_R():
 
 
 def get_g(args):
@@ -29,27 +27,73 @@ def get_g(args):
     return 2*a*kw*dz/K[0] * (K[0] - 1/2 * (3/2 * K[0] + 2 * K[1] * 1/2 * K[2]))
 
 
-def get_v(C, i, R, S):
-    return R @ C[i] + (S[i] + S[i+1])/2
+def get_R(args):
+    D = get_D(args).todense()
+    return np.ones_like(D) - D/2
 
 
-def solve(L_inv, V):
-    return L_inv @ V
+def get_solve(args):
+    D = get_D(args).todense()
+    A_inv = inv(np.ones_like(D) + D/2)
+    return lambda v: A_inv @ v
 
 
-def step(C, i, R, S, solve):
-    v = get_v(C, i, R, S)
-    C[i + 1] = solve(C[i])
+def get_V(args):
+    R = get_R(args)
+    return lambda C, i, S: R @ C[i] + (S[i] + S[i+1])/2
+    
+
+def get_S(args):
+    Ceq, K, T, N, a, dz, kw = args
+    g = get_g(args)
+    S = np.zeros((T, N))
+    S[:, 0] = 2*g*Ceq
+    return S
+    
 
 
 def simulate(C0, args):
     Ceq, K, T, N, a, dz, kw = args
-    C = np.array((N, T))
+    C = np.zeros((T, N))
     C[0] = C0
-    g = get_g(args)
-    D = get_D(K, a, g)
+    S = get_S(args)
+
+    solve = get_solve(args)
+    V = get_V(args)
+
+    for i in range(T-1):
+        vi = V(C, i, S).T
+        C[i + 1] = solve(vi).T
+
+    return C
+
+
+def plot_C(C, args, dt):
+    Ceq, K, T, N, a, dz, kw = args
+    t = np.linspace(0, T*dt, T)
+    z = np.linspace(0, N*dz, N)
+    t, z = np.meshgrid(t, z)
+    fig, ax = plt.subplots()
+    extent = 0, T*dt, 0, N*dz
+    ax.imshow(C.T, extent=extent)
+    plt.show()
+
 
 
 def test1():
-    N = 1000
+    N = 100
+    T = 100
+    dz = 0.1
+    dt = 0.1
+    a = dt/dz**2/2
+    kw = 1
 
+    K = np.ones(N)
+    Ceq = np.ones(T)
+    args =  Ceq, K, T, N, a, dz, kw
+
+    C0 = np.ones(N)
+    C = simulate(C0, args)
+    plot_C(C, args, dt)
+
+test1()
