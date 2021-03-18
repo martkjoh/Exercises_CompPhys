@@ -3,7 +3,6 @@
 \usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage{graphicx}
 \usepackage{physics}
-\usepackage{algpseudocode}
 \usepackage{subcaption}
 \usepackage{hyperref}
 
@@ -18,6 +17,36 @@
     \maketitle
     \section*{Introduction}
         This is an implementation of \cite{exercise}.
+    \section*{Theory}
+    The diffusion equation, with the addition of a source at $z=0$, can be written as
+    \begin{equation*}
+        \Delta t \pdv{t} C(z, t) = \Delta t \left(K(z) \pdv[2]{z} + \dv{K(z)}{z}\pdv{z}\right) C(z, t) = \mathcal{D} C(z, t).
+    \end{equation*}
+    This differential operator can be discretized as 
+    \begin{equation*}
+        \mathcal{D}_{nm } = K_{nk} D^2_{km} + D^a_{nk}K_{k\ell}D^b_{\ell m}
+    \end{equation*}
+    where $K_{nm} = K(z_n) \delta_{nm}$, $D, D^2$ are finite difference matices. In the bulk, with $\alpha = \frac{\Delta t}{2 \Delta z^2}$
+    \begin{equation*}
+        D_{nn} =  0, D_{nn\pm1} = \pm\sqrt \alpha, \quad D^2_{nn} = -4 \alpha, D_{nn\pm1} = 2 \alpha  
+    \end{equation*}
+    The no-flux boundary condition at the bottom means that $C_{NN+1} = C_{NN-1}$, so 
+    \begin{equation*}
+        D^b_{NN-1} = 0, D^2_{NN-1} = 4 \alpha.
+    \end{equation*}
+    At the surface, $C_{-1} = C_{1} + (2 \Delta z k_w /K_0 )(C_0 - C_{eq})$, so 
+    \begin{equation*}
+        D^2_{00} = -4 \alpha + 2 \alpha \frac{2 \Delta z k_2}{K_0},\, D^2_{01} = 2\alpha, \quad D^b_{01} = \sqrt \alpha \frac{2 \Delta z k_2}{K_0}
+    \end{equation*}
+    
+    The Chranck-Nichelson scheme then yields
+    \begin{equation*}
+        C_{n, i+1}  = C_{n, i} + \frac{1}{2} \Delta t (\mathcal{D}_{nm, i} C_{m, i} + s_{ni}) + \frac{1}{2} \Delta t \mathcal{D}_{nm, i+1}C_{m, i+1},
+    \end{equation*}
+    so 
+    \begin{equation*}
+        \left(\delta_{nm} - \frac{1}{2} \Delta t \mathcal{D}_{nm, i}\right) C_{m, i+1} = \left(\delta_{nm} + \frac{1}{2} \Delta t \mathcal{D}_{nm, i+1}\right) C_{m, i}
+    \end{equation*}
     \bibliography{report}
     \bibliographystyle{plain}
 
