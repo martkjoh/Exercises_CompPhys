@@ -17,7 +17,7 @@
     \maketitle
     \section*{Introduction}
         This is an implementation of \cite{exercise}.
-    \section*{Theory}
+    \section*{Theory and implementation}
     The diffusion equation, can be written as
     \begin{equation*}
         \Delta t \pdv{t} C(z, t) = \Delta t \left(K(z) \pdv[2]{z} + \dv{K(z)}{z}\pdv{z}\right) C(z, t) = \mathcal{D} C(z, t).
@@ -27,8 +27,8 @@
         \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_n(t) + S_n(t),
     \end{equation*}
     where 
-    \begin{equation*}
-        \mathcal{D} =
+    \begin{align*}
+        \mathcal{D} &=
         \begin{pmatrix}
             4\alpha K_0 + 2\Gamma & - 4\alpha K_0 & 0 & \dots&0 \\
             \alpha K_1'/2 - 2\alpha K_1 & 4 \alpha K_1 & - \alpha K_1'/2 - 2\alpha K_1 \\
@@ -42,15 +42,18 @@
             0\\
             \vdots \\
             0
-        \end{pmatrix}
-    \end{equation*}
+        \end{pmatrix} \\
+    \Gamma &= 2 \frac{\alpha k_w \Delta z}{K_0} \left(K_0 - \frac{1}{2}(\frac{3}{2} K_0 + 2K_1 - \frac{1}{2}K_2)\right), \quad
+     \alpha = \frac{2 \Delta t}{\Delta z}, \quad
+      K_n' = K_{n+1} - K_{n-1}
+    \end{align*}
     The Chranck-Nichelson scheme then yields
     \begin{equation*}
         C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
-    so 
+    so the equatino to be solved to get the next timestep is
     \begin{equation*}
-        \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right) C_{m}^{i+1} = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1})
+        A_{nm} C_{m}^{i+1} = V_n^i, \quad V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), A = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
     \end{equation*}
     \bibliography{report}
     \bibliographystyle{plain}
