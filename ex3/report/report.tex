@@ -18,34 +18,39 @@
     \section*{Introduction}
         This is an implementation of \cite{exercise}.
     \section*{Theory}
-    The diffusion equation, with the addition of a source at $z=0$, can be written as
+    The diffusion equation, can be written as
     \begin{equation*}
         \Delta t \pdv{t} C(z, t) = \Delta t \left(K(z) \pdv[2]{z} + \dv{K(z)}{z}\pdv{z}\right) C(z, t) = \mathcal{D} C(z, t).
     \end{equation*}
-    This differential operator can be discretized as 
+    Discretizing the spatial part, and applying boundary conditions, gives
     \begin{equation*}
-        \mathcal{D}_{nm } = K_{nk} D^2_{km} + D^a_{nk}K_{k\ell}D^b_{\ell m}
+        \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_n(t) + S_n(t),
     \end{equation*}
-    where $K_{nm} = K(z_n) \delta_{nm}$, $D, D^2$ are finite difference matices. In the bulk, with $\alpha = \frac{\Delta t}{2 \Delta z^2}$
+    where 
     \begin{equation*}
-        D_{nn} =  0, D_{nn\pm1} = \pm\sqrt \alpha, \quad D^2_{nn} = -4 \alpha, D_{nn\pm1} = 2 \alpha  
+        \mathcal{D} =
+        \begin{pmatrix}
+            4\alpha K_0 + 2\Gamma & - 4\alpha K_0 & 0 & \dots&0 \\
+            \alpha K_1'/2 - 2\alpha K_1 & 4 \alpha K_1 & - \alpha K_1'/2 - 2\alpha K_1 \\
+            0 & \ddots & \ddots & \ddots & 0\\
+            0 & \dots &\alpha K_{N-1}'/2 - 2\alpha K_{N-1} & 4 \alpha K_{N-1} & - \alpha K_{N-1}'/2 - 2\alpha K_{N-1} \\
+             0 & \dots & 0 & 4\alpha K_N & 4\alpha K_N
+        \end{pmatrix},\quad
+        S(t) = 
+        \begin{pmatrix}
+            2\Gamma C_\mathrm{eq}(t) \\
+            0\\
+            \vdots \\
+            0
+        \end{pmatrix}
     \end{equation*}
-    The no-flux boundary condition at the bottom means that $C_{NN+1} = C_{NN-1}$, so 
-    \begin{equation*}
-        D^b_{NN-1} = 0, D^2_{NN-1} = 4 \alpha.
-    \end{equation*}
-    At the surface, $C_{-1} = C_{1} + (2 \Delta z k_w /K_0 )(C_0 - C_{eq})$, so 
-    \begin{equation*}
-        D^2_{00} = -4 \alpha + 2 \alpha \frac{2 \Delta z k_2}{K_0},\, D^2_{01} = 2\alpha, \quad D^b_{01} = \sqrt \alpha \frac{2 \Delta z k_2}{K_0}
-    \end{equation*}
-    
     The Chranck-Nichelson scheme then yields
     \begin{equation*}
-        C_{n, i+1}  = C_{n, i} + \frac{1}{2} \Delta t (\mathcal{D}_{nm, i} C_{m, i} + s_{ni}) + \frac{1}{2} \Delta t \mathcal{D}_{nm, i+1}C_{m, i+1},
+        C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
     so 
     \begin{equation*}
-        \left(\delta_{nm} - \frac{1}{2} \Delta t \mathcal{D}_{nm, i}\right) C_{m, i+1} = \left(\delta_{nm} + \frac{1}{2} \Delta t \mathcal{D}_{nm, i+1}\right) C_{m, i}
+        \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right) C_{m}^{i+1} = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1})
     \end{equation*}
     \bibliography{report}
     \bibliographystyle{plain}
