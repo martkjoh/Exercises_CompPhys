@@ -1,7 +1,16 @@
 import numpy as np
-from scipy.sparse.linalg import inv, spsolve
+from scipy.sparse.linalg import inv, spsolve, splu
 from scipy.sparse import diags, csc_matrix
+from scipy.linalg import tri
+from numba import njit
+
 from matplotlib import pyplot as plt
+
+plt.rcParams['mathtext.fontset'] = 'cm'
+font = {'family' : 'serif', 
+        'size': 20}
+plt.rc('font', **font)
+plt.rc('lines', lw=2)
 
 
 def get_D(args):
@@ -35,12 +44,53 @@ def get_S(args):
     return S
 
 
-def get_solve(args):
+@njit
+def tdma_solver(a, b, c, d):
+    N = len(d)
+    c_ = np.zeros(N-1)
+    d_ = np.zeros(N)
+    x  = np.zeros(N)
+    c_[0] = c[0]/b[0]
+    d_[0] = d[0]/b[0]
+    for i in range(1, N-1):
+        q = (b[i] - a[i-1]*c_[i-1])
+        c_[i] = c[i]/q
+        d_[i] = (d[i] - a[i-1]*d_[i-1])/q
+    d_[N-1] = (d[N-1] - a[N-2]*d_[N-2])/(b[N-1] - a[N-2]*c_[N-2])
+    x[-1] = d_[-1]
+    for i in range(N-2, -1, -1):
+        x[i] = d_[i] - c_[i]*x[i+1]
+    return x
+
+def tdma(A, b):
+    x = tdma_solver(A.diagonal(-1), A.diagonal(0), A.diagonal(1), b)
+    return x
+
+
+def get_solve_tdma(args):
     Ceq, K, T, N, a, dz, kw = args
     D = get_D(args)
     I = csc_matrix(diags(np.ones(N), 0))
-    # A_inv = inv(I - D/2)
-    return lambda v: spsolve((I - D/2), v) 
+    A = I - D/2
+    return lambda v: tdma(A, v)
+
+
+def get_solve_spsolve(args):
+    Ceq, K, T, N, a, dz, kw = args
+    D = get_D(args)
+    I = csc_matrix(diags(np.ones(N), 0))
+    A = I - D/2
+    return lambda v: spsolve(A, v) 
+
+
+def get_solve_splu(args):
+    Ceq, K, T, N, a, dz, kw = args
+    D = get_D(args)
+    I = csc_matrix(diags(np.ones(N), 0))
+    A = I - D/2
+    LU = splu(A)
+    return lambda v: LU.solve(v)
+
 
 
 def get_V(args):
@@ -51,7 +101,7 @@ def get_V(args):
     return lambda C, i, S: R.dot(C[i]) + (S[i] + S[i+1])/2
     
 
-def simulate(C0, args):
+def simulate(C0, args, get_solve=get_solve_spsolve):
     Ceq, K, T, N, a, dz, kw = args
     C = np.zeros((T, N))
     C[0] = C0
@@ -66,39 +116,25 @@ def simulate(C0, args):
 
     return C
 
-def get_args1(const_K=True):
-    N = 1000
-    T = 1000
-    dz = 0.1
-    a = 1
-    kw = 0
-    if const_K:K = np.ones(N)
-    else: K = 2 + np.sin(np.linspace(0, 10, N))
-    Ceq = np.ones(T)
-    return Ceq, K, T, N, a, dz, kw
-
 
 def plot_C(C, args):
     Ceq, K, T, N, a, dz, kw = args
     dt = a * dz**2 * 2
-    t = np.linspace(0, T*dt, T)
-    z = np.linspace(0, N*dz, N)
-    t, z = np.meshgrid(t, z)
-    fig, ax = plt.subplots()
     extent = 0, T*dt, 0, N*dz
-    im = ax.imshow(C.T)
+    
+    fig, ax = plt.subplots()
+    im = ax.imshow(C.T, aspect="auto", extent=extent)
     fig.colorbar(im)
     plt.show()
 
 
-def plot_D():
-    args = get_args1()
-
+def plot_D(args):
     D = get_D(args)
     fig, ax = plt.subplots()
     im = ax.imshow(D.todense())
     fig.colorbar(im)
     plt.show()
+
 
 def plot_M(C, args):
     Ceq, K, T, N, a, dz, kw = args
@@ -106,9 +142,13 @@ def plot_M(C, args):
     t = np.linspace(0, T*dt, T)
     M = np.einsum("tz -> t", C)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, M)
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$M$")
+    ax.set_title("$K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
     plt.show()
+
 
 def plot_var(C, args):
     Ceq, K, T, N, a, dz, kw = args
@@ -117,10 +157,19 @@ def plot_var(C, args):
     z = np.linspace(0, N*dz, N)
     M = np.einsum("tz -> t", C) * dz
     mu = np.einsum("tz, z -> t", C, z) * dz / M
-    var = np.einsum("tz, z -> t", C, (z - mu)**2) * dz / M
+    v = np.einsum("z, t -> tz", z, -mu)
+    var = np.einsum("tz, tz -> t", C, v**2) * dz / M
 
-    fig, ax = plt.subplots()
+    m = np.max(var)
+    lin = var[0] + K[0] * t / 2
+    i = lin<m
+
+    fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, var)
+    ax.plot(t[i], lin[i], "--k")
+    ax.set_xlabel("$t$")
+    ax.set_ylabel("$\sigma^2$")
+    ax.set_title("$K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
     plt.show()
 
 
@@ -135,8 +184,24 @@ def plot_M_decay(C, args):
     fig, ax = plt.subplots()
     ax.plot(t, M)
     ax.plot(t, M[0] * np.exp(-t / tau), "--k")
-    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + "$")
+    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + ",\,K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
     plt.show()
+
+
+def get_args1(const_K=True):
+    N = 1000
+    T = 10000
+    t0 = 0.0032
+    dz = 1/N
+    dt = t0*1/T
+    a = dt / dz**2 / 2
+    
+    kw = 0
+    K0 = 18
+    if const_K:K = K0*np.ones(N)
+    else: K = K0*(2 + np.sin(np.linspace(0, 10, N)))
+    Ceq = np.ones(T)
+    return Ceq, K, T, N, a, dz, kw
 
     
 def test1():
@@ -153,8 +218,8 @@ def test23():
     Ceq, K, T, N, a, dz, kw = args
 
     z = np.linspace(0, N * dz, N)
-    C0 = np.exp(-(z - dz*N/2)**2/5)
-    C = simulate(C0, args)
+    C0 = np.exp(-(z - dz*N/2)**2/(2 * 1/100)**2)
+    C = simulate(C0, args, get_solve_splu)
     plot_C(C, args)
     plot_M(C, args)
     plot_var(C, args)
@@ -163,11 +228,15 @@ def test23():
 def get_args2(const_K=True):
     N = 1000
     T = 1000
-    dz = 1e-3
-    a = 1e6
-    kw = 1e-5
-    if const_K: K = 1e5*np.ones(N)
-    else: K = 2 + np.sin(np.linspace(0, 10, N))
+    t0 = 10
+    dz = 1/N
+    dt = t0/T
+    a = dt / dz**2 / 2
+
+    kw = 0.1
+    K0 = 100
+    if const_K: K = K0 * np.ones(N)
+    else: K = K0*(2 + np.sin(np.linspace(0, 10, N)))
     Ceq = np.zeros(T)
     return Ceq, K, T, N, a, dz, kw
 
@@ -178,8 +247,11 @@ def test4():
 
     z = np.linspace(0, N * dz, N)
     C0 = np.ones(N)
-    C = simulate(C0, args)
+    C = simulate(C0, args, get_solve_splu)
     plot_C(C, args)
     plot_M_decay(C, args)
 
+
+# test1()
+# test23()
 test4()
