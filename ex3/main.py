@@ -43,26 +43,24 @@ def get_S(args):
     S[:, 0] = 2*g*Ceq
     return S
 
-
-@njit
-def tdma_solver(a, b, c, d):
-    N = len(d)
-    c_ = np.zeros(N-1)
-    d_ = np.zeros(N)
-    x  = np.zeros(N)
-    c_[0] = c[0]/b[0]
-    d_[0] = d[0]/b[0]
-    for i in range(1, N-1):
-        q = (b[i] - a[i-1]*c_[i-1])
-        c_[i] = c[i]/q
-        d_[i] = (d[i] - a[i-1]*d_[i-1])/q
-    d_[N-1] = (d[N-1] - a[N-2]*d_[N-2])/(b[N-1] - a[N-2]*c_[N-2])
-    x[-1] = d_[-1]
-    for i in range(N-2, -1, -1):
-        x[i] = d_[i] - c_[i]*x[i+1]
-    return x
-
 def tdma(A, b):
+    @njit
+    def tdma_solver(a, b, c, d):
+        N = len(d)
+        c_ = np.zeros(N-1)
+        d_ = np.zeros(N)
+        x  = np.zeros(N)
+        c_[0] = c[0]/b[0]
+        d_[0] = d[0]/b[0]
+        for i in range(1, N-1):
+            q = (b[i] - a[i-1]*c_[i-1])
+            c_[i] = c[i]/q
+            d_[i] = (d[i] - a[i-1]*d_[i-1])/q
+        d_[N-1] = (d[N-1] - a[N-2]*d_[N-2])/(b[N-1] - a[N-2]*c_[N-2])
+        x[-1] = d_[-1]
+        for i in range(N-2, -1, -1):
+            x[i] = d_[i] - c_[i]*x[i+1]
+        return x
     x = tdma_solver(A.diagonal(-1), A.diagonal(0), A.diagonal(1), b)
     return x
 
@@ -122,15 +120,18 @@ def plot_C(C, args):
     dt = a * dz**2 * 2
     extent = 0, T*dt, 0, N*dz
     
-    fig, ax = plt.subplots()
-    im = ax.imshow(C.T, aspect="auto", extent=extent)
+    fig, ax = plt.subplots(figsize=(12, 8))
+    st = T//500+1
+    sn = N//500+1
+    im = ax.imshow(C[::st, ::sn].T, aspect="auto", extent=extent)
     fig.colorbar(im)
+    ax.set_title("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
     plt.show()
 
 
 def plot_D(args):
     D = get_D(args)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 8))
     im = ax.imshow(D.todense())
     fig.colorbar(im)
     plt.show()
@@ -146,7 +147,6 @@ def plot_M(C, args):
     ax.plot(t, M)
     ax.set_xlabel("$t$")
     ax.set_ylabel("$M$")
-    ax.set_title("$K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
     plt.show()
 
 
@@ -169,7 +169,6 @@ def plot_var(C, args):
     ax.plot(t[i], lin[i], "--k")
     ax.set_xlabel("$t$")
     ax.set_ylabel("$\sigma^2$")
-    ax.set_title("$K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
     plt.show()
 
 
@@ -179,12 +178,12 @@ def plot_M_decay(C, args):
     L = dz * N
     t = np.linspace(0, T*dt, T)
     M = np.einsum("tz -> t", C)
-    tau = L / kw
+    tau = L / kw * 2
     Bi = kw * L / np.min(K)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, M)
     ax.plot(t, M[0] * np.exp(-t / tau), "--k")
-    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + ",\,K_0={},\,\\alpha={},\,k_w={}$".format(K[0], a, kw))
+    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + "$")
     plt.show()
 
 
@@ -227,14 +226,14 @@ def test23():
 
 def get_args2(const_K=True):
     N = 1000
-    T = 1000
-    t0 = 10
+    T = 100_000
+    t0 = 1000
     dz = 1/N
     dt = t0/T
     a = dt / dz**2 / 2
 
-    kw = 0.1
-    K0 = 100
+    kw = 0.02
+    K0 = 3100
     if const_K: K = K0 * np.ones(N)
     else: K = K0*(2 + np.sin(np.linspace(0, 10, N)))
     Ceq = np.zeros(T)
