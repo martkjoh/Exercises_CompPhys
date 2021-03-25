@@ -11,11 +11,15 @@ plt.rc('lines', lw=2)
 
 def plot_C(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    extent = 0, Nt*dt, 0, Nz*dz
+    fact = 60 * 60 * 24
+    extent = 0, Nt*dt/fact, -Nz*dz, 3
     C = C[::(Nt//500+1), ::(Nz//500+1)]
 
     fig, ax = plt.subplots(figsize=(16, 10))
     im = ax.imshow(C.T, aspect="auto", extent=extent)
+    ax.set_ylabel("$z / [\mathrm{m}]$")
+    ax.set_xlabel("$t / [\mathrm{days}]$")
+
     fig.colorbar(im)
     fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
     fig.tight_layout()
