@@ -10,11 +10,11 @@ plt.rc('lines', lw=2)
 
 
 def plot_C(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     dt = a * dz**2 * 2
     extent = 0, T*dt, 0, N*dz
     C = C[::(T//500+1), ::(N//500+1)]
-    
+
     fig, ax = plt.subplots(figsize=(16, 10))
     im = ax.imshow(C.T, aspect="auto", extent=extent)
     fig.colorbar(im)
@@ -34,8 +34,8 @@ def plot_D(args):
 
 
 def plot_M(C, args):
-    Ceq, K, T, N, a, dz, kw = args
-    C = C[::(T//500+1), ::(N//500+1)]
+    Ceq, K, T, N, a, dz, dt, kw = args
+    C = C[::(T//500+1)]
     t, z = get_tz(C, args)
     M = get_mass(C, args)
 
@@ -49,8 +49,7 @@ def plot_M(C, args):
 
 
 def plot_var(C, args):
-    Ceq, K, T, N, a, dz, kw = args
-    dt = a * dz**2 * 2
+    Ceq, K, T, N, a, dz, dt, kw = args
     L, t0 = N*dz, T*dt
     C = C[::(T//500+1), ::(N//500+1)]
     t, z = get_tz(C, args)
@@ -71,7 +70,7 @@ def plot_var(C, args):
 
 
 def plot_M_decay(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
     C = C[::(T//500+1), ::(N//500+1)]
@@ -93,7 +92,7 @@ def plot_M_decay(C, args):
 
 
 def plot_minmax(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
     C = C[::(T//500+1), ::(N//500+1)]

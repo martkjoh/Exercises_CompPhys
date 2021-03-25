@@ -1,15 +1,16 @@
 import numpy as np
 from scipy.sparse.linalg import spsolve, splu
 from scipy.sparse import diags, csc_matrix
+from scipy.integrate import simps
+from numba import jit
 
-from numba import njit
 
 """
 Sampling functions
 """
 
 def get_tz(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     T, N = len(C), len(C[0])
     dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
@@ -19,12 +20,17 @@ def get_tz(C, args):
 
 
 def get_mass(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
+    print(C.shape)
+    z, t = get_tz(C, args)
+    X, dx = np.linspace(0, 100, len(C[0]), retstep = True)
+    return simps(C, x = X, axis = 1)
+    # return np.sum(C, axis=1)
     return np.einsum("tz -> t", C) * dz
 
 
 def get_var(C, args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     M = get_mass(C, args)
     t, z = get_tz(args)
     mu = np.einsum("tz, z -> t", C, z) * dz / M
@@ -36,8 +42,9 @@ def get_var(C, args):
 Utililties for implementation w/ simple no-flux bc's
 """
 
+
 def get_D0(args):
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
     V0 = -4*a*np.ones_like(N)
     V1 = 2 * a * np.ones(N-1)
     V2 = 2 * a * np.ones(N-1)
@@ -46,32 +53,26 @@ def get_D0(args):
     return csc_matrix(diags((V2, V0, V1), (-1, 0, 1)))
 
 
-def get_splu0(args):
-    Ceq, K, T, N, a, dz, kw = args
-    D = get_D0(args)
-    I = csc_matrix(diags(np.ones(N), 0))
-    A = I - D/2
-    LU = splu(A)
-    return lambda v: LU.solve(v)
+def get_sovle_V(args):
+    Ceq, K, T, N, a, dz, dt, kw = args
 
-
-def get_V0(args):
-    Ceq, K, T, N, a, dz, kw = args
     D = get_D0(args)
     I = csc_matrix(diags(np.ones(N)))
-    R =  I + D/2
-    return lambda C: R.dot(C)
+    A = I - D/2
+    R = I + D/2
+
+    LU = splu(A)
+    return lambda v: LU.solve(v), lambda C: R.dot(C)
 
 
-def simulate0(C0, args, get_solve=get_splu0):
-    Ceq, K, T, N, a, dz, kw = args
-    C = np.zeros((T, N))
+def simulate0(C0, args):
+    Ceq, K, T, N, a, dz, dt, kw = args
+    C = np.empty((T, N))
     C[0] = C0
-    solve = get_solve(args)
-    V = get_V0(args)
-    for i in range(T-1):
-        vi = V(C[i]).T
-        C[i + 1] = solve(vi).T
+    solve, V = get_sovle_V(args)
+    for i in range(1, T):
+        x = V(C[i-1,:])
+        C[i,:] = solve(x)
     return C
 
 
