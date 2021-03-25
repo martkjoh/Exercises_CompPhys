@@ -4,6 +4,82 @@ from scipy.sparse import diags, csc_matrix
 
 from numba import njit
 
+"""
+Sampling functions
+"""
+
+def get_tz(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    T, N = len(C), len(C[0])
+    dt = a * dz**2 * 2
+    L, t0 = N*dz, T*dt
+    t = np.linspace(0, t0, T)
+    z = np.linspace(0, L, N)
+    return t, z
+
+
+def get_mass(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    return np.einsum("tz -> t", C) * dz
+
+
+def get_var(C, args):
+    Ceq, K, T, N, a, dz, kw = args
+    M = get_mass(C, args)
+    t, z = get_tz(args)
+    mu = np.einsum("tz, z -> t", C, z) * dz / M
+    v = np.einsum("z, t -> tz", z, -mu)
+    var = np.einsum("tz, tz -> t", C, v**2) * dz / M
+
+
+"""
+Utililties for implementation w/ simple no-flux bc's
+"""
+
+def get_D0(args):
+    Ceq, K, T, N, a, dz, kw = args
+    V0 = -4*a*np.ones_like(N)
+    V1 = 2 * a * np.ones(N-1)
+    V2 = 2 * a * np.ones(N-1)
+    V1[0] = 4*a
+    V2[-1] = 4*a
+    return csc_matrix(diags((V2, V0, V1), (-1, 0, 1)))
+
+
+def get_splu0(args):
+    Ceq, K, T, N, a, dz, kw = args
+    D = get_D0(args)
+    I = csc_matrix(diags(np.ones(N), 0))
+    A = I - D/2
+    LU = splu(A)
+    return lambda v: LU.solve(v)
+
+
+def get_V0(args):
+    Ceq, K, T, N, a, dz, kw = args
+    D = get_D0(args)
+    I = csc_matrix(diags(np.ones(N)))
+    R =  I + D/2
+    return lambda C: R.dot(C)
+
+
+def simulate0(C0, args, get_solve=get_splu0):
+    Ceq, K, T, N, a, dz, kw = args
+    C = np.zeros((T, N))
+    C[0] = C0
+    solve = get_solve(args)
+    V = get_V0(args)
+    for i in range(T-1):
+        vi = V(C[i]).T
+        C[i + 1] = solve(vi).T
+    return C
+
+
+
+"""
+Utillities for full implementation
+"""
+
 
 def get_D(args):
     Ceq, K, T, N, a, dz, kw = args
@@ -37,6 +113,7 @@ def get_S(args):
     S[:, 0] = 2*g*Ceq
     return S
 
+
 def get_S_const(args):
     Ceq, K, T, N, a, dz, kw = args
     g = get_g(args)
@@ -48,7 +125,8 @@ def get_S_const(args):
 def is_equib(C, args):
     Ceq, K, T, N, a, dz, kw = args
     return np.allclose(C, Ceq)
-    
+
+
 
 def get_splu(args):
     Ceq, K, T, N, a, dz, kw = args
@@ -59,6 +137,7 @@ def get_splu(args):
     return lambda v: LU.solve(v)
 
 
+
 def get_V(args):
     Ceq, K, T, N, a, dz, kw = args
     D = get_D(args)
@@ -66,6 +145,7 @@ def get_V(args):
     R =  I + D/2
     return lambda C, Si, Sip: R.dot(C) + (Si + Sip)/2
     
+
 
 def simulate(C0, args, get_solve=get_splu):
     Ceq, K, T, N, a, dz, kw = args

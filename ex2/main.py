@@ -210,7 +210,7 @@ def ex22252():
 
     integrate(LLG, S, h, heun_step, args)
     plot_coords(S, h, "22252", args)
-
+    anim_spins(S, "test", skip=10)
 
 def ex22261():
     T, N, h = 50_000, 10, 0.01
@@ -243,6 +243,6 @@ def ex22262():
 # ex2221()
 # ex2222()
 # ex2224()
-# ex22252()
+ex22252()
 # ex22261()
 # ex22262()

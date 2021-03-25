@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utillities import get_D
+from utillities import get_D, get_tz, get_var, get_mass
 
 plt.rcParams['mathtext.fontset'] = 'cm'
 font = {'family' : 'serif', 
@@ -35,14 +35,9 @@ def plot_D(args):
 
 def plot_M(C, args):
     Ceq, K, T, N, a, dz, kw = args
-    dt = a * dz**2 * 2
-    L, t0 = N*dz, T*dt
     C = C[::(T//500+1), ::(N//500+1)]
-    T, N = len(C), len(C[0])
-    t = np.linspace(0, t0, T)
-    z = np.linspace(0, L, N)
-
-    M = np.einsum("tz -> t", C)
+    t, z = get_tz(C, args)
+    M = get_mass(C, args)
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, M)
@@ -58,13 +53,8 @@ def plot_var(C, args):
     dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
     C = C[::(T//500+1), ::(N//500+1)]
-    T, N = len(C), len(C[0])
-    t = np.linspace(0, t0, T)
-    z = np.linspace(0, L, N)
-    M = np.einsum("tz -> t", C) * dz
-    mu = np.einsum("tz, z -> t", C, z) * dz / M
-    v = np.einsum("z, t -> tz", z, -mu)
-    var = np.einsum("tz, tz -> t", C, v**2) * dz / M
+    t, z = get_tz(C, args)
+    var = get_var(C, args)
 
     m = np.max(var)
     lin = var[0] + K[0] * t / 2
