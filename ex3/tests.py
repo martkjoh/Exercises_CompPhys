@@ -3,7 +3,6 @@ from utillities import *
 from plot import *
 
 
-
 def test0():
     args = get_args1(False)
     t0 = 100
@@ -39,6 +38,7 @@ def get_args1(const_K):
     Ceq = 0
     return Ceq, K, T, N, a, dz, dt, kw
 
+
 def test1():
     args = get_args1(False)
     Ceq, K, T, N, a, dz, dt, kw = args
@@ -50,7 +50,7 @@ def test1():
 
 def test23(const_K):
     args = get_args1(const_K)
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
 
     z = np.linspace(0, N * dz, N)
     C0 = np.exp(-(z - dz*N/2)**2/(2 * 1/20)**2)
@@ -75,7 +75,7 @@ def test4(const_K):
     else: K = K0*(2 + np.sin(np.linspace(0, 10, N)))
     Ceq = 0
 
-    args = Ceq, K, T, N, a, dz, kw
+    args = Ceq, K, T, N, a, dz, dt, kw
 
     z = np.linspace(0, N * dz, N)
     C0 = np.ones(N)
@@ -97,12 +97,12 @@ def get_args3(const_K):
     if const_K: K = K0 * np.ones(N)
     else: K = K0*(2 + np.sin(np.linspace(0, 10, N)))
     Ceq = -0.5
-    return Ceq, K, T, N, a, dz, kw
+    return Ceq, K, T, N, a, dz, dt, kw
 
 
 def test5():
     args = get_args3(True)
-    Ceq, K, T, N, a, dz, kw = args
+    Ceq, K, T, N, a, dz, dt, kw = args
 
     z = np.linspace(0, N * dz, N)
     C0 = np.ones(N)
@@ -111,8 +111,8 @@ def test5():
     plot_minmax(C, args)
 
 
-test0()
-test1()
-# test23(True)
+# test0()
+# test1()
+test23(True)
 # test4(True)
 # test5()

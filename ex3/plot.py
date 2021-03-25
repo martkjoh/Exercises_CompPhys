@@ -51,7 +51,7 @@ def plot_M(C, args):
 def plot_var(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
     L, t0 = N*dz, T*dt
-    C = C[::(T//500+1), ::(N//500+1)]
+    C = C[::(T//500+1)]
     t, z = get_tz(C, args)
     var = get_var(C, args)
 
@@ -73,7 +73,7 @@ def plot_M_decay(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
     dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
-    C = C[::(T//500+1), ::(N//500+1)]
+    C = C[::(T//500+1)]
     T, N = len(C), len(C[0])
     t = np.linspace(0, t0, T)
     z = np.linspace(0, L, N)
