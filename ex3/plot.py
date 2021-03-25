@@ -40,9 +40,9 @@ def plot_M(C, args):
     M = get_mass(C, args)
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(t, M)
+    ax.plot(t, M-M[0])
     ax.set_xlabel("$t$")
-    ax.set_ylabel("$M$")
+    ax.set_ylabel("$\Delta M$")
     fig.tight_layout()
 
     plt.show()
@@ -50,7 +50,6 @@ def plot_M(C, args):
 
 def plot_var(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
-    L, t0 = N*dz, T*dt
     C = C[::(T//500+1)]
     t, z = get_tz(C, args)
     var = get_var(C, args)
@@ -61,7 +60,8 @@ def plot_var(C, args):
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, var)
-    ax.plot(t[i], lin[i], "--k")
+    ax.plot(t, lin, "--k")
+    ax.set_ylim(0.95*np.min(var), 1.05*np.max(var))
     ax.set_xlabel("$t$")
     ax.set_ylabel("$\sigma^2$")
     fig.tight_layout()
@@ -79,7 +79,7 @@ def plot_M_decay(C, args):
     z = np.linspace(0, L, N)
 
     M = np.einsum("tz -> t", C)
-    tau = L / kw * 2
+    tau = L / kw
     Bi = kw * L / np.min(K)
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(t, M)

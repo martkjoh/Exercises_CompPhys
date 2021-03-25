@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import newaxis as na
 from scipy.sparse.linalg import spsolve, splu
 from scipy.sparse import diags, csc_matrix
 from scipy.integrate import simps
@@ -9,11 +10,11 @@ from numba import jit
 Sampling functions
 """
 
+
 def get_tz(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
-    T, N = len(C), len(C[0])
-    dt = a * dz**2 * 2
     L, t0 = N*dz, T*dt
+    T, N = len(C), len(C[0])
     t = np.linspace(0, t0, T)
     z = np.linspace(0, L, N)
     return t, z
@@ -21,59 +22,18 @@ def get_tz(C, args):
 
 def get_mass(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
-    print(C.shape)
-    z, t = get_tz(C, args)
-    X, dx = np.linspace(0, 100, len(C[0]), retstep = True)
-    return simps(C, x = X, axis = 1)
-    # return np.sum(C, axis=1)
-    return np.einsum("tz -> t", C) * dz
+    t, z = get_tz(C, args)
+    return simps(C, x=z, axis=1)
 
 
 def get_var(C, args):
     Ceq, K, T, N, a, dz, dt, kw = args
     M = get_mass(C, args)
     t, z = get_tz(C, args)
-    mu = np.einsum("tz, z -> t", C, z) * dz / M
+    mu = simps(C * z[na,:], x=z, axis=1) / M
     v = np.einsum("z, t -> tz", z, -mu)
-    var = np.einsum("tz, tz -> t", C, v**2) * dz / M
-
-
-"""
-Utililties for implementation w/ simple no-flux bc's
-"""
-
-
-def get_D0(args):
-    Ceq, K, T, N, a, dz, dt, kw = args
-    V0 = -4*a*np.ones_like(N)
-    V1 = 2 * a * np.ones(N-1)
-    V2 = 2 * a * np.ones(N-1)
-    V1[0] = 4*a
-    V2[-1] = 4*a
-    return csc_matrix(diags((V2, V0, V1), (-1, 0, 1)))
-
-
-def get_sovle_V(args):
-    Ceq, K, T, N, a, dz, dt, kw = args
-
-    D = get_D0(args)
-    I = csc_matrix(diags(np.ones(N)))
-    A = I - D/2
-    R = I + D/2
-
-    LU = splu(A)
-    return lambda v: LU.solve(v), lambda C: R.dot(C)
-
-
-def simulate0(C0, args):
-    Ceq, K, T, N, a, dz, dt, kw = args
-    C = np.empty((T, N))
-    C[0] = C0
-    solve, V = get_sovle_V(args)
-    for i in range(1, T):
-        x = V(C[i-1,:])
-        C[i,:] = solve(x)
-    return C
+    var = simps(C * v**2, x=z, axis=1) / M
+    return var
 
 
 """
