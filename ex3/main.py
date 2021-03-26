@@ -31,7 +31,7 @@ def get_args2(t0_d, Nt, Nz):
     return Ceq, K, Nt, Nz, a, dz, dt, kw
 
 
-def conv_test():
+def conv_test1():
     Nts = 10**(np.linspace(1, 4, 10))
     Nts = np.concatenate([Nts, [50_000,]]) # refrence value
     Cs = []
@@ -44,7 +44,23 @@ def conv_test():
         print(Nt)
 
     plot_Cs(Cs, args)
-    plot_conv(Cs, Nts, args)
+    fac = 10 / (60 * 60 * 24)
+    plot_conv(Cs, fac/Nts, 1, args)
+
+
+def conv_test2():
+    Nzs = 10**(np.linspace(1, 4, 10))
+    Nzs = np.concatenate([Nzs, [10_000,]]) # refrence value
+    Cs = []
+    Nt = 201
+    for Nz in Nzs:
+        Nz = int(Nz)
+        C0 = np.zeros(Nz)
+        args = get_args2(10, Nt, Nz)
+        Ceq, K, Nt, Nz, a, dz, dt, kw = args
+        Cs.append(simulate_until(C0, args))
+
+    plot_conv2(Cs, Nzs, 1, args)
 
 
 def prob2():
@@ -87,7 +103,7 @@ def prob3():
     plot_M(C, args)
 
 
-conv_test()
+conv_test2()
 # prob2()
 # prob3()
 # print(100/0.01)

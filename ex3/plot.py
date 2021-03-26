@@ -125,15 +125,29 @@ def plot_minmax(C, args):
     plt.show()
 
 
-def plot_conv(Cs, Ns, args):
+def plot_conv(Cs, ds, exp, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
 
-    fac = 10 * 60 * 60 * 24
     fig, ax = plt.subplots(figsize=(12, 8))
-    z = np.linspace(0, Nz*dz, Nz)
-    # Mref = get_mass(Cs[-1][np.newaxis], args)
-    for i in range(len(Cs) - 1):
-        err = np.sqrt(np.mean((Cs[-1]-Cs[i])**2))
-        ax.loglog(fac/Ns[i], err, "kx")
+    for i in range(len(Cs)-1):
+        err = np.sqrt(np.mean(((Cs[-1]-Cs[i])/Cs[i])**2))
+        ax.loglog(ds[i], err, "kx")
+    ax.loglog(ds[:-1],  err*(ds[:-1]/ds[-2])**exp)
+
+    
+    plt.show()
+
+def plot_conv2(Cs, Ns, exp, args):
+    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ds = 100/Ns
+    for i in range(len(Cs)-1):
+        Nskip = int((Ns[-1]-1)//(Ns[i]-1))
+        print(Nskip)
+        err = np.sqrt(np.mean(((Cs[-1][::Nskip]-Cs[i])/Cs[i])**2))
+        ax.loglog(ds[i], err, "kx")
+    ax.loglog(ds[:-1],  err*(ds[:-1]/ds[-2])**exp)
+
     
     plt.show()

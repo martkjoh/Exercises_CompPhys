@@ -3,9 +3,8 @@ from utillities import *
 from plot import *
 
 
-def get_args1(const_K):
+def get_args1(const_K, Nt=10_000):
     Nz = 10_000
-    Nt = 10_000
     t0 = 0.2
     dz = 1/Nz
     dt = t0/Nt
@@ -39,6 +38,24 @@ def test23(const_K):
     plot_C(C, args)
     plot_M(C, args)
     plot_var(C, args)
+
+
+def conv_test():
+    Nts = 10**(np.linspace(1, 3, 10))
+    Nts = np.concatenate([Nts, [4_000,]]) # refrence value
+    Cs = []
+    Nz = 200
+    for Nt in Nts:
+        args = get_args1(10, int(Nt))
+        Ceq, K, Nt, Nz, a, dz, dt, kw = args
+        z = np.linspace(0, Nz * dz, Nz)
+        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
+        Cs.append(simulate_until(C0, args))
+        print(Nt)
+
+    # plot_Cs(Cs, args)
+    fac = 10 / (60 * 60 * 24)
+    plot_conv(Cs, fac/Nts, 2, args)
 
 
 def test4(const_K):
@@ -89,5 +106,6 @@ def test5(const_K):
 
 # test1()
 # test23(True)
-test4(True)
-test5(False)
+# test4(True)
+# test5(False)
+conv_test()
