@@ -81,11 +81,6 @@ def get_S_const(args):
     return S
 
 
-def is_equib(C, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    return np.allclose(C, Ceq)
-
-
 def get_solve_V(args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     D = get_D(args)
@@ -100,24 +95,26 @@ def simulate(C0, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     C = np.zeros((Nt, Nz))
     C[0] = C0
-    S = get_S_const(args)
+    S = get_S(args)
     solve, V = get_solve_V(args)
 
     for i in range(Nt-1):
-        vi = V(C[i], S, S)
+        vi = V(C[i], S[i], S[i+1])
         C[i + 1] = solve(vi)
 
     return C
 
-def simulate_until(C0, args, cond):
+
+def simulate_until(C0, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     C = C0
     S = get_S_const(args)
     solve, V = get_solve_V(args)
 
     i = 0
-    while not cond(C, args) and i<Nt:
-        vi = V(C[i], S, S).T
-        C = solve(vi).T
+    while i<Nt:
+        vi = V(C, S, S)
+        C = solve(vi)
+        i += 1
 
     return C

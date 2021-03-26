@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from utillities import get_D, get_tz, get_var, get_mass
+from matplotlib import cm
 
 plt.rcParams['mathtext.fontset'] = 'cm'
 font = {'family' : 'serif', 
@@ -21,6 +22,23 @@ def plot_C(C, args):
     ax.set_xlabel("$t / [\mathrm{days}]$")
 
     fig.colorbar(im)
+    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
+    fig.tight_layout()
+    plt.show()
+
+
+def plot_Cs(Cs, args):
+    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    fact = 60 * 60 * 24
+    fig, ax = plt.subplots(figsize=(16, 10))
+
+    for i, C in enumerate(Cs):
+        z = np.linspace(0, Nz * dz, Nz)
+        ax.plot(z, C, color=cm.viridis(i/len(Cs)))
+
+    ax.set_xlabel("$z / [\mathrm{m}]$")
+    ax.set_xlabel("$C / [\mathrm{??}]$")
+
     fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
     fig.tight_layout()
     plt.show()
@@ -104,4 +122,18 @@ def plot_minmax(C, args):
     ax.plot(t, Max)
     ax.set_title("$C_\mathrm{eq}"+" = {0}$".format(Ceq))
 
+    plt.show()
+
+
+def plot_conv(Cs, Ns, args):
+    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+
+    fac = 10 * 60 * 60 * 24
+    fig, ax = plt.subplots(figsize=(12, 8))
+    z = np.linspace(0, Nz*dz, Nz)
+    # Mref = get_mass(Cs[-1][np.newaxis], args)
+    for i in range(len(Cs) - 1):
+        err = np.sqrt(np.mean((Cs[-1]-Cs[i])**2))
+        ax.loglog(fac/Ns[i], err, "kx")
+    
     plt.show()

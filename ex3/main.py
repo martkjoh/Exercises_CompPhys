@@ -5,10 +5,12 @@ from plot import *
 
 H = 5060
 kw = 5.97e-5
+ppco2 = 415e-6
 
-def prob2():
+
+def get_args2(t0_d, Nt, Nz):
+
     def get_K(z, L):
-        
         K0 = 1e-3
         Ka = 2e-2
         za = 7
@@ -16,10 +18,7 @@ def prob2():
         zb = 10
         return K0 + Ka * z / za  *np.exp(z / za) + Kb * (L - z)/zb * np.exp(-(L - z)/zb)
 
-    t0 = 60*60*24 * 180
-
-    Nz = 10_000
-    Nt = 10_000
+    t0 = 60*60*24 * t0_d
     dz = 100/Nz
     dt = t0/Nt
     a = dt / (2*dz**2)
@@ -27,14 +26,35 @@ def prob2():
     z = np.linspace(0, Nz*dz, Nz)
     K = get_K(z, Nz*dz)
 
-    ppco2 = 415e-6
     Ceq = H * ppco2
 
-    args = Ceq, K, Nt, Nz, a, dz, dt, kw
+    return Ceq, K, Nt, Nz, a, dz, dt, kw
+
+
+def conv_test():
+    Nts = 10**(np.linspace(1, 4, 10))
+    Nts = np.concatenate([Nts, [50_000,]]) # refrence value
+    Cs = []
+    Nz = 200
+    C0 = np.zeros(Nz)
+    for Nt in Nts:
+        args = get_args2(10, int(Nt), int(Nz))
+        Ceq, K, Nt, Nz, a, dz, dt, kw = args
+        Cs.append(simulate(C0, args)[-1])
+        print(Nt)
+
+    plot_Cs(Cs, args)
+    plot_conv(Cs, Nts, args)
+
+
+def prob2():
+    args = get_args2(180, 10_000, 10_00)
+    Ceq, K, Nt, Nz, a, dz, dt, kw = args
 
     C0 = np.zeros(Nz)
     C = simulate(C0, args)
     plot_C(C, args)
+
 
 def prob3():
     def get_K(z, L):
@@ -56,16 +76,18 @@ def prob3():
     z = np.linspace(0, Nz*dz, Nz)
     K = get_K(z, Nz*dz)
 
-    ppco2 = 415e-6
-    Ceq = H * ppco2
+    t = np.linspace(0, t0, Nt)
+    Ceq = H * (ppco2 + 2.3e-6/(60*60*24*360) * t)
 
     args = Ceq, K, Nt, Nz, a, dz, dt, kw
 
-    C0 = np.zeros(Nz)
+    C0 = Ceq[0] * np.ones(Nz)
     C = simulate(C0, args)
     plot_C(C, args)
     plot_M(C, args)
 
 
+conv_test()
 # prob2()
-prob3()
+# prob3()
+# print(100/0.01)
