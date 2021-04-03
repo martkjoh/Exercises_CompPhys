@@ -5,6 +5,7 @@
 \usepackage{physics}
 \usepackage{subcaption}
 \usepackage{hyperref}
+\usepackage[version=4]{mhchem}
 
 
 \title{Exercise 3, TFY4235 Computational physics}
@@ -52,7 +53,18 @@
     \begin{equation*}
         A_{nm} C_{m}^{i+1} = V_n^i, \quad V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), A = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
     \end{equation*}
+    \dots
 
+    \section*{Tests}
+    Make sure the implementation gives good answers, it is compared to known solutions. First, a constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. 
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/test1}
+        \includegraphics[width=.49\textwidth]{../plots/test1_varK}
+        \label{Constant cons}
+        \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-12}$, respectively.}
+    \end{figure}
     \bibliography{report}
     \bibliographystyle{plain}
 

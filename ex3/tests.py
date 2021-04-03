@@ -2,29 +2,36 @@ import numpy as np
 from utillities import *
 from plot import *
 
-
+ 
 def get_args1(const_K, Nt=10_000):
     Nz = 10_000
-    t0 = 0.2
-    dz = 1/Nz
+    t0_d = 1 # Number of days to run sim for
+    t0 = 60*60*24 * t0_d
+    L = 100
+
+    dz = L/Nz
     dt = t0/Nt
     a = dt / (2 * dz**2)
     
     kw = 0
-    K0 = 1
+    K0 = 0.00001
     if const_K:K = K0*np.ones(Nz)
-    else: K = K0*(2 + np.sin(np.linspace(0, 10, Nz)))
+    else: K = K0*(1 + np.sin(np.linspace(0, 10, Nz)/2))
     Ceq = 0
     return Ceq, K, Nt, Nz, a, dz, dt, kw
 
 
-def test1():
-    args = get_args1(False)
+def test1(const_K):
+    args = get_args1(const_K)
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    name = "test1"
+    if not const_K: name += "_varK"
 
     C0 = np.ones(Nz)
     C = simulate(C0, args)
-    plot_C(C, args)
+
+    plot_C(C, args, name)
+    print("var = {}".format(np.max(C) - np.min(C)))
 
 
 def test23(const_K):
@@ -104,8 +111,9 @@ def test5(const_K):
     plot_minmax(C, args)
 
 
-# test1()
+# test1(True)
+# test1(False)
 # test23(True)
 # test4(True)
 # test5(False)
-conv_test()
+# conv_test()

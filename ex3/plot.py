@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from utillities import get_D, get_tz, get_var, get_mass
 from matplotlib import cm
+from os import path, mkdir
 
 plt.rcParams['mathtext.fontset'] = 'cm'
 font = {'family' : 'serif', 
@@ -9,22 +10,44 @@ font = {'family' : 'serif',
 plt.rc('font', **font)
 plt.rc('lines', lw=2)
 
+dir_path = "plots/"
 
-def plot_C(C, args):
+
+def make_dir(dir_path):
+    """ recursively (!) creates the needed directories """
+    if not path.isdir(dir_path):
+        make_dir("/".join(dir_path.split("/")[:-2]) + "/")
+        mkdir(dir_path)
+
+
+def check_dir(dir_path):
+    if not path.isdir(dir_path):
+        make_dir(dir_path)
+
+
+def save_plot(fig, ax, fname):
+    check_dir(dir_path)
+    plt.tight_layout()
+    plt.savefig(dir_path + fname + ".pdf")
+    plt.close(fig)
+
+
+def plot_C(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     fact = 60 * 60 * 24
-    extent = 0, Nt*dt/fact, -Nz*dz, 3
+    extent = 0, Nt*dt/fact, -Nz*dz, 0
     C = C[::(Nt//500+1), ::(Nz//500+1)]
 
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(10, 8))
     im = ax.imshow(C.T, aspect="auto", extent=extent)
     ax.set_ylabel("$z / [\mathrm{m}]$")
     ax.set_xlabel("$t / [\mathrm{days}]$")
 
     fig.colorbar(im)
-    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
+    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={},\,N_t={},\,N_z={}$".format(K[0], a, kw, Nt, Nz)),
     fig.tight_layout()
-    plt.show()
+    
+    save_plot(fig, ax, name)
 
 
 def plot_Cs(Cs, args):
