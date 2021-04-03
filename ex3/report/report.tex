@@ -56,12 +56,21 @@
     \dots
 
     \section*{Tests}
-    Make sure the implementation gives good answers, it is compared to known solutions. First, a constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. 
+    Make sure the implementation gives good answers, it is compared to known solutions. First, a constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{Constant cons}. 
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test1}
         \includegraphics[width=.49\textwidth]{../plots/test1_varK}
+        \label{Constant cons}
+        \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-12}$, respectively.}
+    \end{figure}
+
+    The systems should also, given $k_w=0$, conserve mass.
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/test2_m}
         \label{Constant cons}
         \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-12}$, respectively.}
     \end{figure}

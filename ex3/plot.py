@@ -77,7 +77,7 @@ def plot_D(args):
     plt.show()
 
 
-def plot_M(C, args):
+def plot_M(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
@@ -89,10 +89,10 @@ def plot_M(C, args):
     ax.set_ylabel("$\Delta M$")
     fig.tight_layout()
 
-    plt.show()
+    save_plot(fig, ax, name)
 
 
-def plot_var(C, args):
+def plot_var(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
@@ -110,12 +110,12 @@ def plot_var(C, args):
     ax.set_ylabel("$\sigma^2$")
     fig.tight_layout()
 
-    plt.show()
+    save_plot(fig, ax, name)
 
 
 def plot_M_decay(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    C = C[::(Nt//500+1)]
+    # C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     L = Nz * dz
 

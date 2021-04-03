@@ -34,17 +34,28 @@ def test1(const_K):
     print("var = {}".format(np.max(C) - np.min(C)))
 
 
-def test23(const_K):
-    args = get_args1(const_K)
+def test2():
+    args = get_args1(False)
+    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    name = "test2"
+
+    z = np.linspace(0, Nz * dz, Nz)
+    C0 = np.exp(-(z - dz*Nz/2)**2/(5)**2)
+    C = simulate(C0, args)
+    plot_C(C, args, name+"_C")
+    plot_M(C, args, name+"_M")
+
+
+def test3():
+    args = get_args1(True)
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
-    # C0 = z*(z - 1)
     C = simulate(C0, args)
     plot_C(C, args)
-    plot_M(C, args)
     plot_var(C, args)
+
 
 
 def conv_test():
@@ -113,7 +124,7 @@ def test5(const_K):
 
 # test1(True)
 # test1(False)
-# test23(True)
+test2()
 # test4(True)
 # test5(False)
 # conv_test()
