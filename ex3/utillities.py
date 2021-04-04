@@ -11,8 +11,8 @@ Sampling functions
 
 
 def get_tz(C, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    L, t0 = Nz*dz, Nt*dt
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+    # L, t0 = Nz*dz, Nt*dt
     Nt, Nz = len(C), len(C[0])
     t = np.linspace(0, t0, Nt)
     z = np.linspace(0, L, Nz)
@@ -20,7 +20,7 @@ def get_tz(C, args):
 
 
 def get_mass(C, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     return simpson(C, dx=dz, axis=1)
 
 
@@ -33,13 +33,17 @@ def get_var(C, args):
     return var
 
 
+def rms(C, C0):
+    return np.sqrt(np.mean(((C-C0)/C0)**2))
+
+
 """
 Utillities for full implementation
 """
 
 
 def get_D(args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     g = get_g(args)
 
     V0 = -4*a*K
@@ -57,7 +61,7 @@ def get_D(args):
 
 
 def get_g(args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     A = 2*a*kw*dz
     B =  1 - (-3/2 * K[0] + 2 * K[1] - 1/2 * K[2]) /(2 * K[0])
     return A * B
@@ -65,14 +69,14 @@ def get_g(args):
 
 
 def get_S(Ceqi, g, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     S = np.zeros((Nz))
     S[0] = 2*g*Ceqi
     return S
 
 
 def get_solve_V(args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     D = get_D(args)
     I = csc_matrix(diags(np.ones(Nz), 0))
     A = I - D/2
@@ -82,7 +86,7 @@ def get_solve_V(args):
 
 
 def simulate(C0, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = np.zeros((Nt, Nz))
     C[0] = C0
     g = get_g(args)
@@ -98,7 +102,7 @@ def simulate(C0, args):
 
 
 def simulate_until(C0, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C0
     g = get_g(args)
     solve, V = get_solve_V(args)

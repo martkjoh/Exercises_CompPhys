@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utillities import get_D, get_tz, get_var, get_mass
+from utillities import get_D, get_tz, get_var, get_mass, rms, simpson
 from matplotlib import cm
 from os import path, mkdir
 
@@ -12,6 +12,7 @@ plt.rc('lines', lw=2)
 
 dir_path = "plots/"
 fact = 60 * 60 * 24
+
 
 def make_dir(dir_path):
     """ recursively (!) creates the needed directories """
@@ -33,7 +34,7 @@ def save_plot(fig, ax, fname):
 
 
 def plot_C(C, args, name):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     fact = 60 * 60 * 24
     extent = 0, Nt*dt/fact, -Nz*dz, 0
     C = C[::(Nt//500+1), ::(Nz//500+1)]
@@ -51,7 +52,7 @@ def plot_C(C, args, name):
 
 
 def plot_Cs(Cs, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     fact = 60 * 60 * 24
     fig, ax = plt.subplots(figsize=(16, 10))
 
@@ -78,7 +79,7 @@ def plot_D(args):
 
 
 def plot_M(C, args, name):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     M = get_mass(C, args)
@@ -93,7 +94,7 @@ def plot_M(C, args, name):
 
 
 def plot_var(C, args, name):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     var = get_var(C, args)
@@ -114,10 +115,9 @@ def plot_var(C, args, name):
 
 
 def plot_M_decay(C, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     # C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
-    L = Nz * dz
 
     M = np.einsum("tz -> t", C)
     tau = L / kw
@@ -133,7 +133,7 @@ def plot_M_decay(C, args):
 
 
 def plot_minmax(C, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1), ::(Nz//500+1)]
     t, z = get_tz(C, args)
 
@@ -149,15 +149,17 @@ def plot_minmax(C, args):
 
 
 def plot_conv_t(Cs, Nts, exp, args, name):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    t0 = Nt * dt
     dts = t0/fact / Nts
-    for i in range(len(Cs)-1):
-        err = np.sqrt(np.mean(((Cs[-1]-Cs[i])/Cs[i])**2))
-        ax.loglog(dts[i], err, "kx")
-    ax.loglog(dts[:-1],  err*(dts[:-1]/dts[-2])**exp, label="$C \Delta t^{}$".format(exp))
+    errs = [rms(Cs[i], Cs[-1]) for i in range(len(Cs)-1)]
+
+    ax.loglog(dts[:-1], errs, "kx", label="$\Delta t_\mathrm{ rms }$")
+    ax.loglog(
+        dts[:-1],  errs[-1]*(dts[:-1]/dts[-2])**exp, 
+        label="$C \Delta t^{}$".format(exp)
+        )
 
     ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
@@ -166,17 +168,26 @@ def plot_conv_t(Cs, Nts, exp, args, name):
     save_plot(fig, ax, name)
 
 
-def plot_conv2(Cs, Ns, exp, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+def plot_conv_z(Cs, Nzs, exp, args, name):
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
-    fig, ax = plt.subplots(figsize=(12, 8))
-    ds = 100/Ns
-    for i in range(len(Cs)-1):
-        Nskip = int((Ns[-1]-1)//(Ns[i]-1))
-        print(Nskip)
-        err = np.sqrt(np.mean(((Cs[-1][::Nskip]-Cs[i])/Cs[i])**2))
-        ax.loglog(ds[i], err, "kx")
-    ax.loglog(ds[:-1],  err*(ds[:-1]/ds[-2])**exp)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    dzs = 1 / Nzs
+    skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
+    errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
 
-    
-    plt.show()
+    # M0 = simpson(Cs[-1], dx=dzs[-1])
+    # errs = [np.abs(simpson(Cs[i], dx=dzs[i]) - M0)/M0 for i in range(len(Cs)-1)]
+
+
+    ax.loglog(dzs[:-1], errs, "kx", label="$\Delta z_\mathrm{ rms }$")
+    # ax.loglog(
+    #     dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
+    #     label="$C \Delta z^{}$".format(exp)
+    #     )
+
+    ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
+    ax.set_ylabel("$\mathrm{rel. err.}$")
+    plt.legend()
+
+    save_plot(fig, ax, name)

@@ -17,12 +17,12 @@ def get_args1(const_K, Nt=1_000, Nz = 1_000, t0_d=1):
     if const_K:K = K0*np.ones(Nz)
     else: K = K0*(1 + np.sin(np.linspace(0, 10, Nz)/2))
     Ceq = np.zeros(Nt)
-    return Ceq, K, Nt, Nz, a, dz, dt, kw
+    return Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
 
 def test1(const_K):
     args = get_args1(const_K)
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     name = "test1"
     if not const_K: name += "_varK"
 
@@ -35,7 +35,7 @@ def test1(const_K):
 
 def test2():
     args = get_args1(True)
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     name = "test2"
 
     z = np.linspace(0, Nz * dz, Nz)
@@ -44,7 +44,6 @@ def test2():
     C = simulate(C0, args)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
-    plot_Cs([C[0],C[-1]], args)
 
 
 def conv_test_t():
@@ -54,35 +53,33 @@ def conv_test_t():
     Nz = 200
     for Nt in Nts:
         args = get_args1(True, int(Nt))
-        Ceq, K, Nt, Nz, a, dz, dt, kw = args
-        z = np.linspace(0, Nz * dz, Nz)
-        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
+        Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+        z = np.linspace(0, L, Nz)
+        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 20)**2)
         Cs.append(simulate_until(C0, args))
-        print(Nt)
+        print("Nt={}".format(Nt))
 
     plot_conv_t(Cs, Nts, 2, args, "conv_test")
 
 
 def conv_test_z():
-    Nzs = ((10**(np.linspace(1, 3, 10)))//2)*2 + 1
-    print(Nzs)
-    Nzs = np.concatenate([Nzs, [10_000,]]) # refrence value
+    # Nzs = ((10**(np.linspace(1, 4, 9)))//2)*2 + 1
+    Nzs = np.array([21, 51, 101, 201, 501, 1001, 2001, 10_001])
     Cs = []
-    Nt = 10
-    # for Nz in Nzs:
-    #     args = get_args1(True, Nz=int(Nz), Nt=Nt)
-    #     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    #     z = np.linspace(0, Nz * dz, Nz)
-    #     C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
-    #     Cs.append(simulate_until(C0, args))
-    #     print(Nt)
+    for Nz in Nzs:
+        args = get_args1(True, Nz=int(Nz), Nt=1_000)
+        Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+        z = np.linspace(0, L, Nz)
+        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 20)**2)
+        Cs.append(simulate_until(C0, args))
+        print("Nz={}".format(Nz))
 
-    # plot_conv_t(Cs, Nzs, 2, args, "conv_test")
+    plot_conv_z(Cs, Nzs, 2, args, "conv_test_z")
  
 
 def test3():
     args = get_args1(True)
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
@@ -105,7 +102,7 @@ def test4(const_K):
     else: K = K0*(2 + np.sin(np.linspace(0, 10, Nz)))
     Ceq = 0
 
-    args = Ceq, K, Nt, Nz, a, dz, dt, kw
+    args = Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.ones(Nz)
@@ -128,7 +125,7 @@ def test5(const_K):
     else: K = K0*(2 + np.sin(np.linspace(0, 10, Nz)))
     Ceq = 0.5
 
-    args = Ceq, K, Nt, Nz, a, dz, dt, kw
+    args = Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.ones(Nz)
