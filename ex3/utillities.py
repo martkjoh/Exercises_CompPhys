@@ -14,7 +14,7 @@ def get_tz(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     L, t0 = Nz*dz, Nt*dt
     Nt, Nz = len(C), len(C[0])
-    t = np.linspace(0, t0, Nt+1)
+    t = np.linspace(0, t0, Nt)
     z = np.linspace(0, L, Nz)
     return t, z
 
@@ -83,12 +83,12 @@ def get_solve_V(args):
 
 def simulate(C0, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    C = np.zeros((Nt+1, Nz))
+    C = np.zeros((Nt, Nz))
     C[0] = C0
     g = get_g(args)
     solve, V = get_solve_V(args)
 
-    for i in range(Nt):
+    for i in range(Nt-1):
         Si = get_S(Ceq[i], g, args)
         Si1 = get_S(Ceq[i+1], g, args)
         vi = V(C[i], Si, Si1)
@@ -104,11 +104,10 @@ def simulate_until(C0, args):
     solve, V = get_solve_V(args)
 
     i = 0
-    while i<Nt:
+    for i in range(Nt-1):
         Si = get_S(Ceq[i], g, args)
         Si1 = get_S(Ceq[i+1], g, args)
         vi = V(C, Si, Si1)
         C = solve(vi)
-        i += 1
 
     return C

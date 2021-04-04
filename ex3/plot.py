@@ -59,8 +59,8 @@ def plot_Cs(Cs, args):
         z = np.linspace(0, Nz * dz, Nz)
         ax.plot(z, C, color=cm.viridis(i/len(Cs)))
 
-    ax.set_xlabel("$z / [\mathrm{m}]$")
-    ax.set_xlabel("$C / [\mathrm{??}]$")
+    ax.set_xlabel("$z / [\mathrm{ m }]$")
+    ax.set_xlabel("$C / [\mathrm{ days }]$")
 
     fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
     fig.tight_layout()
@@ -152,13 +152,14 @@ def plot_conv_t(Cs, Nts, exp, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    dts = fact / Nts
+    t0 = Nt * dt
+    dts = t0/fact / Nts
     for i in range(len(Cs)-1):
         err = np.sqrt(np.mean(((Cs[-1]-Cs[i])/Cs[i])**2))
         ax.loglog(dts[i], err, "kx")
-    ax.loglog(dts[:-1],  err*(dts[:-1]/dts[-2])**exp, label="$C_0 \Delta t^2$")
+    ax.loglog(dts[:-1],  err*(dts[:-1]/dts[-2])**exp, label="$C \Delta t^{}$".format(exp))
 
-    ax.set_xlabel("$\Delta t / [\mathrm{days}]$")
+    ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
 
