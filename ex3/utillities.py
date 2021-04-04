@@ -2,8 +2,7 @@ import numpy as np
 from numpy import newaxis as na
 from scipy.sparse.linalg import spsolve, splu
 from scipy.sparse import diags, csc_matrix
-from scipy.integrate import simps
-from numba import jit
+from scipy.integrate import simpson
 
 
 """
@@ -15,23 +14,22 @@ def get_tz(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     L, t0 = Nz*dz, Nt*dt
     Nt, Nz = len(C), len(C[0])
-    t = np.linspace(0, t0, Nt)
+    t = np.linspace(0, t0, Nt+1)
     z = np.linspace(0, L, Nz)
     return t, z
 
 
 def get_mass(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    t, z = get_tz(C, args)
-    return simps(C, x=z, axis=1)
+    return simpson(C, dx=dz, axis=1)
 
 
 def get_var(C, args):
     M = get_mass(C, args)
     t, z = get_tz(C, args)
-    mu = simps(C * z[na,:], x=z, axis=1) / M
+    mu = simpson(C * z[na,:], x=z, axis=1) / M
     v = np.einsum("z, t -> tz", z, -mu)
-    var = simps(C * v**2, x=z, axis=1) / M
+    var = simpson(C * v**2, x=z, axis=1) / M
     return var
 
 
@@ -65,19 +63,11 @@ def get_g(args):
     return A * B
 
 
-def get_S(args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    g = get_g(args)
-    S = np.zeros((Nt, Nz))
-    S[:, 0] = 2*g*Ceq
-    return S
 
-
-def get_S_const(args):
+def get_S(Ceqi, g, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    g = get_g(args)
     S = np.zeros((Nz))
-    S[0] = 2*g*Ceq
+    S[0] = 2*g*Ceqi
     return S
 
 
@@ -93,13 +83,15 @@ def get_solve_V(args):
 
 def simulate(C0, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
-    C = np.zeros((Nt, Nz))
+    C = np.zeros((Nt+1, Nz))
     C[0] = C0
-    S = get_S(args)
+    g = get_g(args)
     solve, V = get_solve_V(args)
 
-    for i in range(Nt-1):
-        vi = V(C[i], S[i], S[i+1])
+    for i in range(Nt):
+        Si = get_S(Ceq[i], g, args)
+        Si1 = get_S(Ceq[i+1], g, args)
+        vi = V(C[i], Si, Si1)
         C[i + 1] = solve(vi)
 
     return C
@@ -108,12 +100,14 @@ def simulate(C0, args):
 def simulate_until(C0, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
     C = C0
-    S = get_S_const(args)
+    g = get_g(args)
     solve, V = get_solve_V(args)
 
     i = 0
     while i<Nt:
-        vi = V(C, S, S)
+        Si = get_S(Ceq[i], g, args)
+        Si1 = get_S(Ceq[i+1], g, args)
+        vi = V(C, Si, Si1)
         C = solve(vi)
         i += 1
 

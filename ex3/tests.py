@@ -3,9 +3,8 @@ from utillities import *
 from plot import *
 
  
-def get_args1(const_K, Nt=10_000):
+def get_args1(const_K, Nt=10_000, t0_d=1):
     Nz = 10_000
-    t0_d = 1 # Number of days to run sim for
     t0 = 60*60*24 * t0_d
     L = 100
 
@@ -14,10 +13,10 @@ def get_args1(const_K, Nt=10_000):
     a = dt / (2 * dz**2)
     
     kw = 0
-    K0 = 0.00001
+    K0 = 1e-3
     if const_K:K = K0*np.ones(Nz)
     else: K = K0*(1 + np.sin(np.linspace(0, 10, Nz)/2))
-    Ceq = 0
+    Ceq = np.zeros(Nt+1)
     return Ceq, K, Nt, Nz, a, dz, dt, kw
 
 
@@ -40,11 +39,28 @@ def test2():
     name = "test2"
 
     z = np.linspace(0, Nz * dz, Nz)
-    C0 = np.exp(-(z - dz*Nz/2)**2/(5)**2)
+    C0 = np.exp(-(z - dz*Nz/2)**2/5**2)/5 \
+        + np.exp(-(z - dz*Nz*4/5)**2/20**2)/20
     C = simulate(C0, args)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
 
+
+def conv_test():
+    Nts = 10**(np.linspace(2, 4, 10))
+    Nts = np.concatenate([Nts, [50_000,]]) # refrence value
+    Cs = []
+    Nz = 200
+    for Nt in Nts:
+        args = get_args1(10, int(Nt))
+        Ceq, K, Nt, Nz, a, dz, dt, kw = args
+        z = np.linspace(0, Nz * dz, Nz)
+        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
+        Cs.append(simulate_until(C0, args)[-1])
+        print(Nt)
+
+    plot_conv_t(Cs, Nts, 2, args, "conv_test")
+ 
 
 def test3():
     args = get_args1(True)
@@ -56,24 +72,6 @@ def test3():
     plot_C(C, args)
     plot_var(C, args)
 
-
-
-def conv_test():
-    Nts = 10**(np.linspace(1, 3, 10))
-    Nts = np.concatenate([Nts, [4_000,]]) # refrence value
-    Cs = []
-    Nz = 200
-    for Nt in Nts:
-        args = get_args1(10, int(Nt))
-        Ceq, K, Nt, Nz, a, dz, dt, kw = args
-        z = np.linspace(0, Nz * dz, Nz)
-        C0 = np.exp(-(z - dz*Nz/2)**2/(2 * 1/20)**2)
-        Cs.append(simulate_until(C0, args))
-        print(Nt)
-
-    # plot_Cs(Cs, args)
-    fac = 10 / (60 * 60 * 24)
-    plot_conv(Cs, fac/Nts, 2, args)
 
 
 def test4(const_K):
@@ -124,7 +122,7 @@ def test5(const_K):
 
 # test1(True)
 # test1(False)
-test2()
+# test2()
+conv_test()
 # test4(True)
 # test5(False)
-# conv_test()

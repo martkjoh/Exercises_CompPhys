@@ -11,7 +11,7 @@ plt.rc('font', **font)
 plt.rc('lines', lw=2)
 
 dir_path = "plots/"
-
+fact = 60 * 60 * 24
 
 def make_dir(dir_path):
     """ recursively (!) creates the needed directories """
@@ -83,10 +83,10 @@ def plot_M(C, args, name):
     t, z = get_tz(C, args)
     M = get_mass(C, args)
 
-    fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(t, M-M[0])
-    ax.set_xlabel("$t$")
-    ax.set_ylabel("$\Delta M$")
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.plot(t/fact, (M-M[0]/M[0]))
+    ax.set_xlabel("$t / [\mathrm{days}]$")
+    ax.set_ylabel("$\Delta M / M_0$")
     fig.tight_layout()
 
     save_plot(fig, ax, name)
@@ -148,17 +148,22 @@ def plot_minmax(C, args):
     plt.show()
 
 
-def plot_conv(Cs, ds, exp, args):
+def plot_conv_t(Cs, Nts, exp, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(10, 6))
+    dts = fact / Nts
     for i in range(len(Cs)-1):
         err = np.sqrt(np.mean(((Cs[-1]-Cs[i])/Cs[i])**2))
-        ax.loglog(ds[i], err, "kx")
-    ax.loglog(ds[:-1],  err*(ds[:-1]/ds[-2])**exp)
+        ax.loglog(dts[i], err, "kx")
+    ax.loglog(dts[:-1],  err*(dts[:-1]/dts[-2])**exp, label="$C_0 \Delta t^2$")
 
-    
-    plt.show()
+    ax.set_xlabel("$\Delta t / [\mathrm{days}]$")
+    ax.set_ylabel("$\mathrm{rel. err.}$")
+    plt.legend()
+
+    save_plot(fig, ax, name)
+
 
 def plot_conv2(Cs, Ns, exp, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw = args
