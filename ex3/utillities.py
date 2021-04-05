@@ -12,8 +12,7 @@ Sampling functions
 
 def get_tz(C, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    # L, t0 = Nz*dz, Nt*dt
-    Nt, Nz = len(C), len(C[0])
+    Nt, Nz = C.shape
     t = np.linspace(0, t0, Nt)
     z = np.linspace(0, L, Nz)
     return t, z

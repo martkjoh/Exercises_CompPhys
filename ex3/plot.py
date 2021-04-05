@@ -57,7 +57,8 @@ def plot_Cs(Cs, args):
     fig, ax = plt.subplots(figsize=(16, 10))
 
     for i, C in enumerate(Cs):
-        z = np.linspace(0, Nz * dz, Nz)
+        Nz = C.shape[0]
+        z = np.linspace(0, L, Nz)
         ax.plot(z, C, color=cm.viridis(i/len(Cs)))
 
     ax.set_xlabel("$z / [\mathrm{ m }]$")
@@ -85,7 +86,7 @@ def plot_M(C, args, name):
     M = get_mass(C, args)
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(t/fact, (M-M[0]/M[0]))
+    ax.plot(t/fact, (M-M[0])/M[0])
     ax.set_xlabel("$t / [\mathrm{days}]$")
     ax.set_ylabel("$\Delta M / M_0$")
     fig.tight_layout()
@@ -176,15 +177,11 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
     skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
     errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
 
-    # M0 = simpson(Cs[-1], dx=dzs[-1])
-    # errs = [np.abs(simpson(Cs[i], dx=dzs[i]) - M0)/M0 for i in range(len(Cs)-1)]
-
-
     ax.loglog(dzs[:-1], errs, "kx", label="$\Delta z_\mathrm{ rms }$")
-    # ax.loglog(
-    #     dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
-    #     label="$C \Delta z^{}$".format(exp)
-    #     )
+    ax.loglog(
+        dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
+        label="$C \Delta z^{}$".format(exp)
+        )
 
     ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
