@@ -24,11 +24,12 @@ def get_mass(C, args):
 
 
 def get_var(C, args):
-    M = get_mass(C, args)
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     t, z = get_tz(C, args)
-    mu = simpson(C * z[na,:], x=z, axis=1) / M
-    v = np.einsum("z, t -> tz", z, -mu)
-    var = simpson(C * v**2, x=z, axis=1) / M
+    M = get_mass(C, args)
+    mu = simpson(C * z[na,:], dx=dz, axis=1) / M
+    v2 = (z[na, :] -mu[:, na])**2
+    var = simpson(C * v2, dx=dz, axis=1) / M
     return var
 
 

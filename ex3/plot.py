@@ -39,13 +39,17 @@ def plot_C(C, args, name):
     extent = 0, Nt*dt/fact, -Nz*dz, 0
     C = C[::(Nt//500+1), ::(Nz//500+1)]
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(C.T, aspect="auto", extent=extent)
     ax.set_ylabel("$z / [\mathrm{m}]$")
     ax.set_xlabel("$t / [\mathrm{days}]$")
 
     fig.colorbar(im)
-    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={},\,N_t={},\,N_z={}$".format(K[0], a, kw, Nt, Nz)),
+    fig.suptitle(
+        "$K_0={},\,\\alpha={:.2f},\,k_w={} $\n\
+            $N_t={},\,N_z={}$".format(K[0], a, kw, Nt, Nz), 
+            fontsize=18, y=0.9
+            )
     fig.tight_layout()
     
     save_plot(fig, ax, name)
@@ -54,7 +58,7 @@ def plot_C(C, args, name):
 def plot_Cs(Cs, args):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     fact = 60 * 60 * 24
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     for i, C in enumerate(Cs):
         Nz = C.shape[0]
@@ -64,7 +68,7 @@ def plot_Cs(Cs, args):
     ax.set_xlabel("$z / [\mathrm{ m }]$")
     ax.set_xlabel("$C / [\mathrm{ days }]$")
 
-    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw))
+    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
     fig.tight_layout()
     plt.show()
 
@@ -98,93 +102,103 @@ def plot_var(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
+    t = t / fact
     var = get_var(C, args)
+    lin = var[0] + 2 * K[0] * t *fact
 
-    m = np.max(var)
-    lin = var[0] + K[0] * t / 2
-    i = lin<m
-
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(t, var)
     ax.plot(t, lin, "--k")
+    ax.plot(t, np.max(var)*np.ones_like(t), "--k")
     ax.set_ylim(0.95*np.min(var), 1.05*np.max(var))
-    ax.set_xlabel("$t$")
+    ax.set_xlabel("$t / [\mathrm{days}]$")
     ax.set_ylabel("$\sigma^2$")
     fig.tight_layout()
 
     save_plot(fig, ax, name)
 
 
-def plot_M_decay(C, args):
+def plot_M_decay(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    # C = C[::(Nt//500+1)]
+    C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
-
+    t = t/fact
     M = np.einsum("tz -> t", C)
-    tau = L / kw
+    tau = L / kw / fact
     Bi = kw * L / np.min(K)
-    fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(t, M)
-    ax.plot(t, M[0] * np.exp(-t / tau), "--k")
-    ax.set_title("$\mathrm{Bi}=" + str(Bi) + ",\, \\tau = " + str(tau) + "$")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(t, M, label="$M(t)$")
+    ax.plot(t, M[0] * np.exp(-t / tau), "--k", label="$M(0)\exp(-t/\\tau)$")
+    fig.suptitle("$\mathrm{ Bi }="+"{:.3e}".format(Bi) + ",\, \\tau = {:.3f}".format(tau) + "\,\mathrm{ days }$")
+    ax.set_xlabel("$t / [\mathrm{days}]$")
+    ax.set_ylabel("$M/[\mathrm{ mol/m^2 }]$")
+    ax.legend()
     fig.tight_layout()
 
-    plt.show()
+    save_plot(fig, ax, name)
 
 
 
-def plot_minmax(C, args):
+def plot_minmax(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1), ::(Nz//500+1)]
     t, z = get_tz(C, args)
-
+    t = t/fact
     Min = C.min(axis=1)
     Max = C.max(axis=1)
 
-    fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(t, Min)
-    ax.plot(t, Max)
-    ax.set_title("$C_\mathrm{eq}"+" = {0}$".format(Ceq))
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(t, Min, label="$\mathrm{ min_z } C(t)$")
+    ax.plot(t, Max, label="$\mathrm{ max_z } C(t)$")
+    fig.suptitle(
+    "$K_0={},\,\\alpha={:.2f},\,k_w={} ".format(K[0], a, kw)\
+        +",\,C_\mathrm{ eq }"+"= {}$".format(Ceq[0]), 
+        fontsize=18, y=0.9
+        )
+    ax.set_xlabel("$t / [\mathrm{days}]$")
+    ax.set_ylabel("$C / [\mathrm{ mol/m^3 }]$")
+    plt.legend()
 
-    plt.show()
+    save_plot(fig, ax, name)
 
 
 def plot_conv_t(Cs, Nts, exp, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 5))
     dts = t0/fact / Nts
     errs = [rms(Cs[i], Cs[-1]) for i in range(len(Cs)-1)]
 
-    ax.loglog(dts[:-1], errs, "kx", label="$\Delta t_\mathrm{ rms }$")
     ax.loglog(
         dts[:-1],  errs[-1]*(dts[:-1]/dts[-2])**exp, 
         label="$C \Delta t^{}$".format(exp)
         )
+    ax.loglog(dts[:-1], errs, "kx", label="$\Delta t_\mathrm{ rms }$")
 
     ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
-
+    fig.suptitle("$K_0={},\,k_w={},\,N_z={}$".format(K[0], kw, Nz), y=0.9)
     save_plot(fig, ax, name)
 
 
 def plot_conv_z(Cs, Nzs, exp, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 5))
     dzs = 1 / Nzs
     skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
     errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
 
-    ax.loglog(dzs[:-1], errs, "kx", label="$\Delta z_\mathrm{ rms }$")
     ax.loglog(
         dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
         label="$C \Delta z^{}$".format(exp)
         )
+    ax.loglog(dzs[:-1], errs, "kx", label="$\Delta z_\mathrm{ rms }$")
 
     ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
+    fig.suptitle("$K_0={},\,k_w={},\,N_t={}$".format(K[0], kw, Nt), y=0.9)
 
     save_plot(fig, ax, name)

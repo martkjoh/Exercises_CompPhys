@@ -5,7 +5,10 @@
 \usepackage{physics}
 \usepackage{subcaption}
 \usepackage{hyperref}
+\usepackage{caption}
+\captionsetup{width=.9\textwidth}
 \usepackage[version=4]{mhchem}
+
 
 
 \title{Exercise 3, TFY4235 Computational physics}
@@ -49,21 +52,31 @@
     \begin{equation*}
         C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
-    so the equatino to be solved to get the next timestep is
+    so the equation to be solved to get the next timestep is
     \begin{equation*}
         A_{nm} C_{m}^{i+1} = V_n^i, \quad V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), A = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
     \end{equation*}
     \dots
 
     \section*{Tests}
-    Make sure the implementation gives good answers, it is compared to known solutions. First, a constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{Constant cons}. 
+    Make sure the implementation gives good answers, it is compared to known solutions. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case, to check this. \autoref{convergence test} shows the result of this. 
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/conv_test}
+        \includegraphics[width=.49\textwidth]{../plots/conv_test_z}
+        \caption{Error, measured as the root mean square deviation from a reference value, after 1 day simulation of an gaussian initial concentration.}
+        \label{convergence test}
+    \end{figure}
+
+    A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{constant_cons}, both for constant and varying diffusivity $K(z)$.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test1}
         \includegraphics[width=.49\textwidth]{../plots/test1_varK}
-        \label{Constant cons}
         \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-12}$, respectively.}
+        \label{constant_cons}
     \end{figure}
 
     The systems should also, given $k_w=0$, conserve mass.
@@ -72,18 +85,36 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test2_c}
         \includegraphics[width=.49\textwidth]{../plots/test2_m}
-        \label{Consv mass}
         \caption{The evolution of a gaussian distribution of \ce{CO2} is shown on the left. On the right, the relative change in mass as a function of time is plotted. }
+        \label{Consv mass}
     \end{figure}
 
 
     \begin{figure}
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/conv_test}
-        \includegraphics[width=.49\textwidth]{../plots/conv_test_z}
-        \label{convergence test}
+        \includegraphics[width=.49\textwidth]{../plots/test3}
+        \includegraphics[width=.49\textwidth]{../plots/test3_var}
         \caption{}
+        \label{var}
     \end{figure}
+
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/test4}
+        \includegraphics[width=.49\textwidth]{../plots/test4_decay}
+        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.}
+        \label{decay}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/test5_minmax}
+        \includegraphics[width=.49\textwidth]{../plots/test5_varK_minmax}
+        \label{decay}
+        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.}
+    \end{figure}
+
     \bibliography{report}
     \bibliographystyle{plain}
 
