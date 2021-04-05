@@ -36,7 +36,7 @@ def save_plot(fig, ax, fname):
 def plot_C(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     fact = 60 * 60 * 24
-    extent = 0, Nt*dt/fact, -Nz*dz, 0
+    extent = 0, t0/fact, L, 0
     C = C[::(Nt//500+1), ::(Nz//500+1)]
 
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -46,7 +46,7 @@ def plot_C(C, args, name):
 
     fig.colorbar(im)
     fig.suptitle(
-        "$K_0={},\,\\alpha={:.2f},\,k_w={} $\n\
+        "$K_0={:.3e},\,\\alpha={:.3e},\,k_w={} $\n\
             $N_t={},\,N_z={}$".format(K[0], a, kw, Nt, Nz), 
             fontsize=18, y=0.9
             )
@@ -68,7 +68,7 @@ def plot_Cs(Cs, args):
     ax.set_xlabel("$z / [\mathrm{ m }]$")
     ax.set_xlabel("$C / [\mathrm{ days }]$")
 
-    fig.suptitle("$K_0={},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
+    fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
     fig.tight_layout()
     plt.show()
 

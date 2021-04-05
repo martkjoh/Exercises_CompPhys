@@ -3,14 +3,12 @@ from utillities import *
 from plot import *
 
  
-def get_args1(const_K, Nt=1_000, Nz = 1_000, t0_d=1):
+def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=1):
     def get_K(z, L, K0):
-        Ka = K0/10
-        za = 7
-        Kb = K0*10
-        zb = 10
-        return K0 + Ka * z / za  *np.exp(z / za) + \
-            Kb * (L - z)/zb * np.exp(-(L - z)/zb)
+        K1 = K0/10
+        a = 0.5
+        z0 = L/2
+        return K1 + (K0 - K1) / (1 + np.exp(-a*(z - z0)))
 
     t0 = 60*60*24 * t0_d
     L = 100
@@ -20,7 +18,7 @@ def get_args1(const_K, Nt=1_000, Nz = 1_000, t0_d=1):
     a = dt / (2 * dz**2)
     
     kw = 0
-    K0 = 1e-5
+    K0 = 1e-3
     z = np.linspace(0, L, Nz)
     if const_K: K = K0*np.ones(Nz)
     else: K = get_K(z, L, K0)
@@ -72,7 +70,7 @@ def test1(const_K):
 
 
 def test2():
-    args = get_args1(False, Nz=1_001)
+    args = get_args1(False, t0_d=10, Nt=10_001)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     name = "test2"
 
@@ -82,6 +80,8 @@ def test2():
     C = simulate(C0, args)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
+    plot_Cs([C[0], C[-1]], args)
+    plot_Cs([K,], args)
 
 
 def test3():
@@ -142,7 +142,7 @@ def test5(const_K):
     name = "test5"
     if not const_K: name += "_varK"
 
-    C0 = np.ones(Nz)
+    C0 = np.zeros(Nz)
     C = simulate(C0, args)
     plot_C(C, args, name)
     plot_minmax(C, args, name+"_minmax")
@@ -152,8 +152,8 @@ def test5(const_K):
 # conv_test_z()
 # test1(True)
 # test1(False)
-test2()
+# test2()
 # test3()
 # test4(True)
-# test5(True)
-# test5(False)
+test5(True)
+test5(False)

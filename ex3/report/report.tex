@@ -48,7 +48,7 @@
      \alpha = \frac{\Delta t}{2 \Delta z^2 },\\
       K_n' & = K_{n+1} - K_{n-1}
     \end{align*}
-    The Chranck-Nichelson scheme then yields
+    The Cranck-Nichelson scheme then yields
     \begin{equation*}
         C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
@@ -69,17 +69,17 @@
         \label{convergence test}
     \end{figure}
 
-    A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{constant_cons}, both for constant and varying diffusivity $K(z)$.
+    A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$. For both, the constant initial concentration is close to unchanged, save for numerical errors.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test1}
         \includegraphics[width=.49\textwidth]{../plots/test1_varK}
-        \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-12}$, respectively.}
+        \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-16}$ and $10^{-15}$, respectively.}
         \label{constant_cons}
     \end{figure}
 
-    The systems should also, given $k_w=0$, conserve mass.
+    The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two gaussian functions were evolved in time, with a non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
 
     \begin{figure}
         \centering
@@ -89,6 +89,7 @@
         \label{Consv mass}
     \end{figure}
 
+    A sharply peaked gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}.
 
     \begin{figure}
         \centering
@@ -98,6 +99,7 @@
         \label{var}
     \end{figure}
 
+    \autoref{decay} shows the depletion of \ce{CO2} from the ocean, given a zero partial pressure in the atmosphere. For a small Biot number, this should follow a exponential decay, as this test shows.
 
     \begin{figure}
         \centering
@@ -107,12 +109,14 @@
         \label{decay}
     \end{figure}
 
+    Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
+
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test5_minmax}
         \includegraphics[width=.49\textwidth]{../plots/test5_varK_minmax}
-        \label{decay}
-        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.}
+        \caption{Equilibration of the ocean with a atmosphere with $C_\mathrm{eq}=0.5$. The figure on the left is a system with constant diffusivity, the left side has a oscillating but always positive diffusivity.}
+        \label{minmax}
     \end{figure}
 
     \bibliography{report}
