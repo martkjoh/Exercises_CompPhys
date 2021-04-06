@@ -53,10 +53,13 @@
         C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
     so the equation to be solved to get the next timestep is
-    \begin{equation*}
-        A_{nm} C_{m}^{i+1} = V_n^i, \quad V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), A = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
-    \end{equation*}
-    \dots
+    \begin{align*}
+        & A_{nm} C_{m}^{i+1} = V_n^i, \\ 
+        & V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), \quad 
+        A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
+    \end{align*}
+    
+    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above. 
 
     \section*{Tests}
     Make sure the implementation gives good answers, it is compared to known solutions. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case, to check this. \autoref{convergence test} shows the result of this. 

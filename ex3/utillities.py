@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import newaxis as na
-from scipy.sparse.linalg import spsolve, splu
+from scipy.sparse.linalg import splu
 from scipy.sparse import diags, csc_matrix
 from scipy.integrate import simpson
 
@@ -65,7 +65,6 @@ def get_g(args):
     A = 2*a*kw*dz
     B =  1 - (-3/2 * K[0] + 2 * K[1] - 1/2 * K[2]) /(2 * K[0])
     return A * B
-
 
 
 def get_S(Ceqi, g, args):
