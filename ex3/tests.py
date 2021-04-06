@@ -44,6 +44,8 @@ def conv_test_t():
 
 def conv_test_z():
     Nzs = np.array([21, 51, 101, 201, 501, 1_001, 2_001, 10_001])
+    Nzs = (10**(np.linspace(1, 3, 20))).astype(int) +1
+
     Cs = []
     for Nz in Nzs:
         args = get_args1(True, Nz=int(Nz), Nt=10_000)
@@ -149,7 +151,7 @@ def test5(const_K):
 
 
 # conv_test_t()
-# conv_test_z()
+conv_test_z()
 # test1(True)
 # test1(False)
 # test2()

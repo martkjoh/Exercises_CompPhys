@@ -179,7 +179,7 @@ def plot_conv_t(Cs, Nts, exp, args, name):
     ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
-    fig.suptitle("$K_0={},\,k_w={},\,N_z={}$".format(K[0], kw, Nz), y=0.9)
+    fig.suptitle("$K_0={:.3e},\,k_w={},\,N_z={}$".format(K[0], kw, Nz), y=0.9)
     save_plot(fig, ax, name)
 
 
@@ -188,8 +188,16 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
 
     fig, ax = plt.subplots(figsize=(8, 5))
     dzs = 1 / Nzs
-    skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
-    errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
+    # skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
+    # errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
+
+    errs = []
+    z = np.linspace(0, L, Nzs[-1])
+    M10 = simpson(Cs[-1] * z, x=z)
+    for i, Nz in enumerate(Nzs[:-1]):
+        z = np.linspace(0, L, Nz)
+        M1 = simpson(Cs[i] * z, x=z)
+        errs.append(np.abs(M1 - M10)/M10)
 
     ax.loglog(
         dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
@@ -200,6 +208,6 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
     ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
-    fig.suptitle("$K_0={},\,k_w={},\,N_t={}$".format(K[0], kw, Nt), y=0.9)
+    fig.suptitle("$K_0={:.3e},\,k_w={},\,N_t={}$".format(K[0], kw, Nt), y=0.9)
 
     save_plot(fig, ax, name)

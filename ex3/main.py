@@ -19,33 +19,54 @@ def get_args2(t0_d, Nt, Nz):
         return K0 + Ka * z / za  *np.exp(z / za) + Kb * (L - z)/zb * np.exp(-(L - z)/zb)
 
     t0 = 60*60*24 * t0_d
-    dz = 100/Nz
-    dt = t0/Nt
-    a = dt / (2*dz**2)
+    L = 100
 
-    z = np.linspace(0, Nz*dz, Nz)
-    K = get_K(z, Nz*dz)
+    dz = L/(Nz - 1)
+    dt = t0/(Nt - 1)
+    a = dt / (2 * dz**2)
 
-    Ceq = H * ppco2
+    z = np.linspace(0, L, Nz)
+    K = get_K(z, L)
 
-    return Ceq, K, Nt, Nz, a, dz, dt, kw
+    Ceq = H * ppco2 * np.ones(Nt)
+
+    return Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
 
-def conv_test1():
-    Nts = 10**(np.linspace(1, 4, 10))
-    Nts = np.concatenate([Nts, [50_000,]]) # refrence value
+def prob2_conv_test_t():
+    Nts = 10**(np.linspace(0.4, 3, 20))
+    Nts = np.concatenate([Nts, [10_000,]]) # refrence value
     Cs = []
-    Nz = 200
-    C0 = np.zeros(Nz)
+    Nz = 201
     for Nt in Nts:
-        args = get_args2(10, int(Nt), int(Nz))
-        Ceq, K, Nt, Nz, a, dz, dt, kw = args
-        Cs.append(simulate(C0, args)[-1])
-        print(Nt)
+        args = get_args2(10, int(Nt), Nz)
+        Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+        z = np.linspace(0, L, Nz)
+        C0 = np.zeros(Nz)
+        Cs.append(simulate_until(C0, args))
+        print("Nt={}".format(Nt))
 
     plot_Cs(Cs, args)
-    fac = 10 / (60 * 60 * 24)
-    plot_conv(Cs, fac/Nts, 1, args)
+    plot_conv_t(Cs, Nts, 2, args, "prob2_conv_test_t")
+
+def prob2_conv_test_z():
+    # Nzs = np.array([21, 51, 101, 201, 501, 1_001, 2_001, 10_001, 20_001, 50_001])
+    Nzs = (10**(np.linspace(1.6, 4.2, 20))).astype(int)
+    Nzs = np.concatenate([Nzs, [70_001,]])
+    Cs = []
+    Nt = 200
+    for Nz in Nzs:
+        args = get_args2(10, Nt, Nz)
+        Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+        z, dz0 = np.linspace(0, L, Nz, retstep=True)
+        # C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
+        C0 = np.zeros(Nz)
+        Cs.append(simulate_until(C0, args))
+        print("Nz={}".format(Nz))
+        # print(Ceq)
+
+    # plot_Cs(Cs, args)
+    plot_conv_z(Cs, Nzs, 2, args, "prob2_conv_test_z")
 
 
 def conv_test2():
@@ -103,7 +124,8 @@ def prob3():
     plot_M(C, args)
 
 
-conv_test2()
+# prob2_conv_test_t()
+prob2_conv_test_z()
 # prob2()
 # prob3()
 # print(100/0.01)
