@@ -107,12 +107,13 @@ def plot_var(C, args, name):
     lin = var[0] + 2 * K[0] * t *fact
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(t, var)
-    ax.plot(t, lin, "--k")
-    ax.plot(t, np.max(var)*np.ones_like(t), "--k")
+    ax.plot(t, var, label="$\sigma^2(t)$")
+    ax.plot(t, lin, "--k", label="$\sigma^2(0) + 2 K t$")
+    ax.plot(t, np.max(var)*np.ones_like(t), "-.k", label="$\sigma^2(\infty)$")
     ax.set_ylim(0.95*np.min(var), 1.05*np.max(var))
     ax.set_xlabel("$t / [\mathrm{days}]$")
     ax.set_ylabel("$\sigma^2$")
+    plt.legend()
     fig.tight_layout()
 
     save_plot(fig, ax, name)
@@ -173,7 +174,7 @@ def plot_conv_t(Cs, Nts, exp, args, name):
         dts[:-1],  errs[-1]*(dts[:-1]/dts[-2])**exp, 
         label="$C \Delta t^{}$".format(exp)
         )
-    ax.loglog(dts[:-1], errs, "kx", label="$\Delta t_\mathrm{ rms }$")
+    ax.loglog(dts[:-1], errs, "kx", label="$\Delta_\mathrm{ rms }$")
 
     ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
@@ -194,7 +195,7 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
         dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 
         label="$C \Delta z^{}$".format(exp)
         )
-    ax.loglog(dzs[:-1], errs, "kx", label="$\Delta z_\mathrm{ rms }$")
+    ax.loglog(dzs[:-1], errs, "kx", label="$\Delta_\mathrm{ rms }$")
 
     ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
