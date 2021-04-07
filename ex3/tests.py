@@ -4,11 +4,14 @@ from plot import *
 
  
 def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=10):
-    def get_K(z, L, K0):
-        K1 = K0/10
-        a = 0.5
-        z0 = L/2
-        return K1 + (K0 - K1) / (1 + np.exp(-a*(z - z0)))
+    def get_K(z, L):
+        K0 = 1e-3
+        Ka = 2e-2
+        za = 7
+        Kb = 5e-2
+        zb = 10
+        return K0 + Ka * z / za  *np.exp(-z / za) + Kb * (L - z)/zb * np.exp(-(L - z)/zb)
+
 
     t0 = 60*60*24 * t0_d
     L = 100
@@ -21,7 +24,7 @@ def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=10):
     K0 = 1e-3
     z = np.linspace(0, L, Nz)
     if const_K: K = K0*np.ones(Nz)
-    else: K = get_K(z, L, K0)
+    else: K = get_K(z, L)
     Ceq = np.zeros(Nt)
     return Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
@@ -81,8 +84,6 @@ def test2():
     C = simulate(C0, args)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
-    plot_Cs([C[0], C[-1]], args)
-    plot_Cs([K,], args)
 
 
 def test3():
@@ -151,10 +152,10 @@ def test5(const_K):
 
 conv_test_t()
 conv_test_z()
-# test1(True)
-# test1(False)
-# test2()
-# test3()
-# test4(True)
-# test5(True)
-# test5(False)
+test1(True)
+test1(False)
+test2()
+test3()
+test4(True)
+test5(True)
+test5(False)
