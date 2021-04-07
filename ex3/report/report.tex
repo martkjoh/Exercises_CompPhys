@@ -66,9 +66,9 @@
 
     \begin{figure}
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/conv_test}
+        \includegraphics[width=.49\textwidth]{../plots/conv_test_t}
         \includegraphics[width=.49\textwidth]{../plots/conv_test_z}
-        \caption{Error, measured as the root mean square deviation from a reference value, after 1 day simulation of an gaussian initial concentration.}
+        \caption{Error, measured as the root mean square deviation from a reference value, after 1 day simulation of an Gaussian initial concentration.}
         \label{convergence test}
     \end{figure}
 
@@ -82,23 +82,23 @@
         \label{constant_cons}
     \end{figure}
 
-    The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two gaussian functions were evolved in time, with a non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
+    The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, with a non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test2_c}
-        \includegraphics[width=.49\textwidth]{../plots/test2_m}
-        \caption{The evolution of a gaussian distribution of \ce{CO2} is shown on the left. On the right, the relative change in mass as a function of time is plotted. }
+        \includegraphics[width=.45\textwidth]{../plots/test2_m}
+        \caption{The evolution of a Gaussian distribution of \ce{CO2} is shown on the left. On the right, the relative change in mass as a function of time is plotted. }
         \label{Consv mass}
     \end{figure}
 
-    A sharply peaked gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}.
+    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test3}
-        \includegraphics[width=.49\textwidth]{../plots/test3_var}
-        \caption{}
+        \includegraphics[width=.45\textwidth]{../plots/test3_var}
+        \caption{A system with an initial Gaussain distribution is simulated. On the right, the variance as a function of time is shown. The increase is initially constant, but then approaches a steady state.}
         \label{var}
     \end{figure}
 
@@ -107,7 +107,7 @@
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test4}
-        \includegraphics[width=.49\textwidth]{../plots/test4_decay}
+        \includegraphics[width=.45\textwidth]{../plots/test4_decay}
         \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.}
         \label{decay}
     \end{figure}

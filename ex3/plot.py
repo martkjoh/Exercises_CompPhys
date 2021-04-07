@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utillities import get_D, get_tz, get_var, get_mass, rms, simpson
+from utillities import get_D, get_tz, get_var, get_mass, get_rms
 from matplotlib import cm
 from os import path, mkdir
 
@@ -71,6 +71,25 @@ def plot_Cs(Cs, args):
     fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
     fig.tight_layout()
     plt.show()
+
+def plot_Ci(C, indxs, args, name):
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    t = np.linspace(0, t0/fact, Nt)
+    for i in indxs:
+        z = np.linspace(0, L, Nz)
+        label = "$t = {:.3f}".format(t[i])+"$"
+        ax.plot(z, C, color=cm.viridis(i/len(indxs)), lablel=label)
+
+    ax.set_xlabel("$z / [\mathrm{ m }]$")
+    ax.set_xlabel("$C / [\mathrm{ days }]$")
+
+    fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
+    fig.tight_layout()
+    plt.legend()
+    save_plot(fig, ax, name)
+
 
 
 def plot_D(args):
@@ -168,7 +187,7 @@ def plot_conv_t(Cs, Nts, exp, args, name):
 
     fig, ax = plt.subplots(figsize=(8, 5))
     dts = t0/fact / Nts
-    errs = [rms(Cs[i], Cs[-1]) for i in range(len(Cs)-1)]
+    errs = get_rms(Cs)
 
     ax.loglog(
         dts[:-1],  errs[-1]*(dts[:-1]/dts[-2])**exp, 
@@ -188,16 +207,7 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
 
     fig, ax = plt.subplots(figsize=(8, 5))
     dzs = 1 / Nzs
-    # skips = [int((Nzs[-1] - 1)/(Nzs[i] - 1)) for i in range(len(Nzs))]
-    # errs = [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
-
-    errs = []
-    z = np.linspace(0, L, Nzs[-1])
-    M10 = simpson(Cs[-1] * z, x=z)
-    for i, Nz in enumerate(Nzs[:-1]):
-        z = np.linspace(0, L, Nz)
-        M1 = simpson(Cs[i] * z, x=z)
-        errs.append(np.abs(M1 - M10)/M10)
+    errs = get_rms(Cs, Nzs)
 
     ax.loglog(
         dzs[:-1],  errs[-1]*(dzs[:-1]/dzs[-2])**exp, 

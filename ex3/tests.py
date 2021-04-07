@@ -3,7 +3,7 @@ from utillities import *
 from plot import *
 
  
-def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=1):
+def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=10):
     def get_K(z, L, K0):
         K1 = K0/10
         a = 0.5
@@ -27,28 +27,27 @@ def get_args1(const_K, Nt=1_000, Nz=1_001, t0_d=1):
 
 
 def conv_test_t():
-    Nts = 10**(np.linspace(2, 4, 10))
+    Nts = 10**(np.linspace(1, 4, 20))
     Nts = np.concatenate([Nts, [50_000,]]) # refrence value
     Cs = []
-    Nz = 200
+    Nz = 201
     for Nt in Nts:
-        args = get_args1(True, int(Nt))
+        args = get_args1(True, Nz=Nz, Nt=int(Nt))
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
         Cs.append(simulate_until(C0, args))
         print("Nt={}".format(Nt))
 
-    plot_conv_t(Cs, Nts, 2, args, "conv_test")
+    plot_conv_t(Cs, Nts, 2, args, "conv_test_t")
 
 
 def conv_test_z():
-    Nzs = np.array([21, 51, 101, 201, 501, 1_001, 2_001, 10_001])
-    Nzs = (10**(np.linspace(1, 3, 20))).astype(int) +1
+    Nzs = get_Nzs(10, 2**10*10 + 1) # 10k ish
 
     Cs = []
     for Nz in Nzs:
-        args = get_args1(True, Nz=int(Nz), Nt=10_000)
+        args = get_args1(True, Nz=Nz, Nt=10_000)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z, dz0 = np.linspace(0, L, Nz, retstep=True)
         C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
@@ -150,7 +149,7 @@ def test5(const_K):
     plot_minmax(C, args, name+"_minmax")
 
 
-# conv_test_t()
+conv_test_t()
 conv_test_z()
 # test1(True)
 # test1(False)

@@ -16,7 +16,7 @@ def get_args2(t0_d, Nt, Nz):
         za = 7
         Kb = 5e-2
         zb = 10
-        return K0 + Ka * z / za  *np.exp(z / za) + Kb * (L - z)/zb * np.exp(-(L - z)/zb)
+        return K0 + Ka * z / za  *np.exp(-z / za) + Kb * (L - z)/zb * np.exp(-(L - z)/zb)
 
     t0 = 60*60*24 * t0_d
     L = 100
@@ -39,34 +39,42 @@ def prob2_conv_test_t():
     Cs = []
     Nz = 201
     for Nt in Nts:
-        args = get_args2(10, int(Nt), Nz)
+        args = get_args2(180, int(Nt), Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.zeros(Nz)
         Cs.append(simulate_until(C0, args))
         print("Nt={}".format(Nt))
 
-    plot_Cs(Cs, args)
     plot_conv_t(Cs, Nts, 2, args, "prob2_conv_test_t")
+    plot_Cs(Cs, args)
+
 
 def prob2_conv_test_z():
-    # Nzs = np.array([21, 51, 101, 201, 501, 1_001, 2_001, 10_001, 20_001, 50_001])
-    Nzs = (10**(np.linspace(1.6, 4.2, 20))).astype(int)
-    Nzs = np.concatenate([Nzs, [70_001,]])
+    Nzs = get_Nzs(6, 2**10*10*5 + 1) # 50k ish
     Cs = []
-    Nt = 200
+    Nt = 10_000
     for Nz in Nzs:
         args = get_args2(10, Nt, Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z, dz0 = np.linspace(0, L, Nz, retstep=True)
-        # C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
         C0 = np.zeros(Nz)
         Cs.append(simulate_until(C0, args))
         print("Nz={}".format(Nz))
-        # print(Ceq)
 
-    # plot_Cs(Cs, args)
     plot_conv_z(Cs, Nzs, 2, args, "prob2_conv_test_z")
+
+
+def prob2():
+    args = get_args2(180, 10_000, 10_000)
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+
+    C0 = np.zeros(Nz)
+    C = simulate(C0, args)
+    plot_C(C, args, "prob2")
+    indxs = [0, 10, 100, 1000, 10_000]
+    plot_Ci(C, indxs, args, "prob2_i")
+
 
 
 def conv_test2():
@@ -81,16 +89,8 @@ def conv_test2():
         Ceq, K, Nt, Nz, a, dz, dt, kw = args
         Cs.append(simulate_until(C0, args))
 
-    plot_conv2(Cs, Nzs, 1, args)
+    plot_conv_t(Cs, Nzs, 1, args)
 
-
-def prob2():
-    args = get_args2(180, 10_000, 10_00)
-    Ceq, K, Nt, Nz, a, dz, dt, kw = args
-
-    C0 = np.zeros(Nz)
-    C = simulate(C0, args)
-    plot_C(C, args)
 
 
 def prob3():
@@ -125,7 +125,7 @@ def prob3():
 
 
 # prob2_conv_test_t()
-prob2_conv_test_z()
-# prob2()
+# prob2_conv_test_z()
+prob2()
 # prob3()
 # print(100/0.01)
