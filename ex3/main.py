@@ -34,45 +34,44 @@ def get_args2(t0_d, Nt, Nz):
 
 
 def prob2_conv_test_t():
-    Nts = 10**(np.linspace(0.4, 3, 20))
-    Nts = np.concatenate([Nts, [10_000,]]) # refrence value
+    Nts = 10**(np.linspace(0.4, 4, 20))
+    Nts = np.concatenate([Nts, [50_000,]]) # refrence value
     Cs = []
     Nz = 201
     for Nt in Nts:
+        print("Nt={}".format(Nt))
         args = get_args2(180, int(Nt), Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.zeros(Nz)
         Cs.append(simulate_until(C0, args))
-        print("Nt={}".format(Nt))
 
     plot_conv_t(Cs, Nts, 2, args, "prob2_conv_test_t")
-    plot_Cs(Cs, args)
 
 
 def prob2_conv_test_z():
-    Nzs = get_Nzs(6, 2**10*10*5 + 1) # 50k ish
+    Nzs = get_Nzs(8, 2**10*10*10 + 1) # 100k ish
     Cs = []
-    Nt = 10_000
+    Nt = 1_000
     for Nz in Nzs:
+        print("Nz={}".format(Nz))
         args = get_args2(10, Nt, Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z, dz0 = np.linspace(0, L, Nz, retstep=True)
         C0 = np.zeros(Nz)
         Cs.append(simulate_until(C0, args))
-        print("Nz={}".format(Nz))
 
     plot_conv_z(Cs, Nzs, 2, args, "prob2_conv_test_z")
 
 
 def prob2():
-    args = get_args2(180, 10_000, 10_000)
+    args = get_args2(180, 1_000, 10_000)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     C0 = np.zeros(Nz)
     C = simulate(C0, args)
     plot_C(C, args, "prob2")
-    indxs = [0, 10, 100, 1000, 10_000]
+    indxs = [0, 10, 50, 100, -1]
     plot_Ci(C, indxs, args, "prob2_i")
 
 
@@ -117,7 +116,7 @@ def prob3():
     Ceq = H * (ppco2 + 2.3e-6/(60*60*24*360) * t)
 
     args = Ceq, K, Nt, Nz, a, dz, dt, kw
-
+ 
     C0 = Ceq[0] * np.ones(Nz)
     C = simulate(C0, args)
     plot_C(C, args)

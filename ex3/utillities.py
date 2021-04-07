@@ -3,7 +3,7 @@ from numpy import newaxis as na
 from scipy.sparse.linalg import splu
 from scipy.sparse import diags, csc_matrix
 from scipy.integrate import simpson
-
+from tqdm import trange
 
 """
 Sampling functions
@@ -96,7 +96,7 @@ def simulate(C0, args):
     g = get_g(args)
     solve, V = get_solve_V(args)
 
-    for i in range(Nt-1):
+    for i in trange(Nt-1):
         Si = get_S(Ceq[i], g, args)
         Si1 = get_S(Ceq[i+1], g, args)
         vi = V(C[i], Si, Si1)
@@ -111,7 +111,7 @@ def simulate_until(C0, args):
     g = get_g(args)
     solve, V = get_solve_V(args)
 
-    for i in range(Nt-1):
+    for i in trange(Nt-1):
         Si = get_S(Ceq[i], g, args)
         Si1 = get_S(Ceq[i+1], g, args)
         vi = V(C, Si, Si1)
@@ -127,4 +127,4 @@ def get_Nzs(n, Nz_max):
         Nz = Nzs[i+1]
         assert (Nz - 1)%2 == 0
         Nzs.append((Nz-1)//2 + 1)
-    return np.array(Nzs[::-1])
+    return np.array(Nzs[::-1], dtype=int)

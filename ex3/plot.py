@@ -41,8 +41,8 @@ def plot_C(C, args, name):
 
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(C.T, aspect="auto", extent=extent)
-    ax.set_ylabel("$z / [\mathrm{m}]$")
-    ax.set_xlabel("$t / [\mathrm{days}]$")
+    ax.set_ylabel("$z / [\mathrm{ m }]$")
+    ax.set_xlabel("$t / [\mathrm{ days }]$")
 
     fig.colorbar(im)
     fig.suptitle(
@@ -66,27 +66,32 @@ def plot_Cs(Cs, args):
         ax.plot(z, C, color=cm.viridis(i/len(Cs)))
 
     ax.set_xlabel("$z / [\mathrm{ m }]$")
-    ax.set_xlabel("$C / [\mathrm{ days }]$")
+    ax.set_ylabel("$C / [\mathrm{ mol/m^3 }]$")
 
     fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
     fig.tight_layout()
     plt.show()
 
+
 def plot_Ci(C, indxs, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    fig, ax = plt.subplots(figsize=(8, 6))
-
-    t = np.linspace(0, t0/fact, Nt)
-    for i in indxs:
-        z = np.linspace(0, L, Nz)
-        label = "$t = {:.3f}".format(t[i])+"$"
-        ax.plot(z, C, color=cm.viridis(i/len(indxs)), lablel=label)
-
+    fig, ax = plt.subplots(figsize=(12, 8))
+    C = C[:, ::(Nz//500+1)]
+    t, z = get_tz(C, args)
+    for i, j in enumerate(indxs):
+        label = "$t = {:.2f}".format(t[j]/fact)+" \, \mathrm{ days }$"
+        ax.plot(z, C[j], color=cm.viridis(i/len(indxs)), label=label)
+    plt.legend()
+    ax2 = plt.twinx(ax)
+    ax2.plot(z, K[::(Nz//500+1)], "--k", label="$K(z)$")
+    ax2.set_ylabel("$K / [\mathrm{ mol/m^3 }]$")
+    ax2.set_ylim(0, np.max(K)*1.1)
     ax.set_xlabel("$z / [\mathrm{ m }]$")
-    ax.set_xlabel("$C / [\mathrm{ days }]$")
+    ax.set_ylabel("$C / [\mathrm{ m/s }]$")
 
     fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), fontsize=12)
     fig.tight_layout()
+
     plt.legend()
     save_plot(fig, ax, name)
 
@@ -110,7 +115,7 @@ def plot_M(C, args, name):
 
     fig, ax = plt.subplots(figsize=(10, 8))
     ax.plot(t/fact, (M-M[0])/M[0])
-    ax.set_xlabel("$t / [\mathrm{days}]$")
+    ax.set_xlabel("$t / [\mathrm{ days }]$")
     ax.set_ylabel("$\Delta M / M_0$")
     fig.tight_layout()
 
@@ -158,7 +163,6 @@ def plot_M_decay(C, args, name):
     save_plot(fig, ax, name)
 
 
-
 def plot_minmax(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C = C[::(Nt//500+1), ::(Nz//500+1)]
@@ -198,7 +202,7 @@ def plot_conv_t(Cs, Nts, exp, args, name):
     ax.set_xlabel("$\Delta t / [\mathrm{ days }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
-    fig.suptitle("$K_0={:.3e},\,k_w={},\,N_z={}$".format(K[0], kw, Nz), y=0.9)
+    fig.suptitle("$K_0={:.3e},\,k_w={},$\n$N_t={},\,N_z={}$".format(K[0], kw, Nts[-2], Nz), y=0.9)
     save_plot(fig, ax, name)
 
 
@@ -218,6 +222,6 @@ def plot_conv_z(Cs, Nzs, exp, args, name):
     ax.set_xlabel("$\Delta z / [\mathrm{ L }]$")
     ax.set_ylabel("$\mathrm{rel. err.}$")
     plt.legend()
-    fig.suptitle("$K_0={:.3e},\,k_w={},\,N_t={}$".format(K[0], kw, Nt), y=0.9)
+    fig.suptitle("$K_0={:.3e},\,k_w={},$\n$N_t={},\,N_z={}$".format(K[0], kw, Nt, Nzs[-2]), y=0.9)
 
     save_plot(fig, ax, name)
