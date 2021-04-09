@@ -8,6 +8,7 @@
 \usepackage{caption}
 \captionsetup{width=.9\textwidth}
 \usepackage[version=4]{mhchem}
+\usepackage{siunitx}
 
 
 
@@ -121,6 +122,42 @@
         \caption{Equilibration of the ocean with a atmosphere with $C_\mathrm{eq}=0.5$. The figure on the left is a system with constant diffusivity, the left side has a oscillating but always positive diffusivity.}
         \label{minmax}
     \end{figure}
+
+    \section*{Results}
+    \subsubsection*{Shallow waters}
+    To simulate the uptake of \ce{CO2} in shallow areas, $L=\SI{100}{m}$, diffusivity $K(z)$ is used as given in equation (11) in \cite{exercise}. \autoref{prob2 conv} illustrates the convergence of the simulation, which shows that the simulation still has quadratic convergence both in time and space. The convergence test are run for a time of $\SI{10}{days}$.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/prob2_conv_test_t}
+        \includegraphics[width=.49\textwidth]{../plots/prob2_conv_test_z}
+        \caption{Error, as a function of step length in both time and space.}
+        \label{prob2 conv}
+    \end{figure}
+
+    The simulation is then run for 180 days, with $N_t = N_z = 10000$. This corresponds to $\Delta t = 180 / 10000 = 1.8 \cdot 10^{-2} \si{days}$, and $\Delta z = L/10000 = 10^{-4} L$. The results are shown in \autoref{prob2}, together with the form of the diffusivity, $K(z)$. \autoref{prob2 minmax} shows how the minimum and maximum concentration evolves as a function of time, together with some snap shots of the concentration as it evolves. The surface of the ocean, where wind dominates the diffusion, first absorbs the \ce{CO2}. The deeper parts of the ocean lacks behind some, as there low diffusivity around 40 meters are a bottle neck, but it does not take long before it penetrates down to the ocean floor.
+
+    At 90 days, the ocean is nearly in equilibrium with the atmosphere, and at 180 it is so close as does not make a difference. This gives confidence to an assumption that the carbon in the ocean is in sync with the atmosphere.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.65\textwidth]{../plots/prob2}
+        \includegraphics[width=.3\textwidth]{../plots/prob2_K}
+        \caption{cap}
+        \label{prob2}
+    \end{figure}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.47\textwidth]{../plots/prob2_minmax}
+        \includegraphics[width=.52\textwidth]{../plots/prob2_i}
+        \caption{cap}
+        \label{prob2 minmax}
+    \end{figure}
+
+    \subsubsection*{Deep waters}
+    
+
 
     \bibliography{report}
     \bibliographystyle{plain}

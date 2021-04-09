@@ -40,7 +40,7 @@ def prob2_conv_test_t():
     Nz = 201
     for Nt in Nts:
         print("Nt={}".format(Nt))
-        args = get_args2(180, int(Nt), Nz)
+        args = get_args2(10, int(Nt), Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.zeros(Nz)
@@ -65,14 +65,16 @@ def prob2_conv_test_z():
 
 
 def prob2():
-    args = get_args2(180, 1_000, 10_000)
+    args = get_args2(180, 10_000, 10_000)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     C0 = np.zeros(Nz)
     C = simulate(C0, args)
-    plot_C(C, args, "prob2")
-    indxs = [0, 10, 50, 100, -1]
+    plot_C(C, args, "prob2", fs=(12, 6))
+    plot_minmax(C, args, "prob2_minmax")
+    indxs = [0, 10, 100, 1_000, 5_000, -1]
     plot_Ci(C, indxs, args, "prob2_i")
+    plot_K(args, "prob2_K")
 
 
 
