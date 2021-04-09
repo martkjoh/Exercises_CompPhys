@@ -67,21 +67,21 @@ def test1(const_K):
     if not const_K: name += "_varK"
 
     C0 = np.ones(Nz)
-    C = simulate(C0, args)
+    C = simulate2(C0, args)
 
     plot_C(C, args, name)
     print("var = {}".format(np.max(C) - np.min(C)))
 
 
 def test2():
-    args = get_args1(False, t0_d=10, Nt=10_001)
+    args = get_args1(False, t0_d=10, Nz=500_001, Nt=1_000)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     name = "test2"
 
     z = np.linspace(0, Nz * dz, Nz)
-    C0 = np.exp(-(z - L/2)**2/10**2)/10 \
-        + np.exp(-(z - L*3/5)**2/5**2)/5
-    C = simulate(C0, args)
+    C0 = np.exp(-(z - L/2)**2/50**2)/50 \
+        + np.exp(-(z - L*3/5)**2/20**2)/5
+    C = simulate2(C0, args, save=100)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
 
@@ -92,7 +92,7 @@ def test3():
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.exp(-(z - L/2)**2/(2 * 5)**2)
-    C = simulate(C0, args)
+    C = simulate2(C0, args)
     plot_C(C, args, "test3")
     plot_var(C, args, "test3_var")
 
@@ -118,7 +118,7 @@ def test4(const_K):
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.ones(Nz)
-    C = simulate(C0, args)
+    C = simulate2(C0, args)
     plot_C(C, args, "test4")
     plot_M_decay(C, args, "test4_decay")
 
@@ -145,7 +145,7 @@ def test5(const_K):
     if not const_K: name += "_varK"
 
     C0 = np.zeros(Nz)
-    C = simulate(C0, args)
+    C = simulate2(C0, args)
     plot_C(C, args, name)
     plot_minmax(C, args, name+"_minmax")
 

@@ -119,6 +119,23 @@ def simulate_until(C0, args):
 
     return C
 
+def simulate2(C0, args, save=500):
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+    N = Nt//save
+    C = np.zeros((save+1, Nz))
+    C[0] = C0
+    g = get_g(args)
+    solve, V = get_solve_V(args)
+
+    for i in trange(Nt-1):
+        Si = get_S(Ceq[i], g, args)
+        Si1 = get_S(Ceq[i+1], g, args)
+        vi = V(C[(i+N)//N], Si, Si1)
+        C[(i+N+1)//N] = solve(vi)
+
+    return C
+
+
 
 def get_Nzs(n, Nz_max):
     assert (Nz_max - 1)%5 == 0

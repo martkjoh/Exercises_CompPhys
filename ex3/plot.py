@@ -37,7 +37,7 @@ def plot_C(C, args, name, fs=(8, 6)):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     fact = 60 * 60 * 24
     extent = 0, t0/fact, L, 0
-    C = C[::(Nt//500+1), ::(Nz//500+1)]
+    C = C[:, ::(Nz//500+1)]
 
     fig, ax = plt.subplots(figsize=fs)
     im = ax.imshow(C.T, aspect="auto", extent=extent)
@@ -119,12 +119,12 @@ def plot_D(args):
 
 def plot_M(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     M = get_mass(C, args)
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(t/fact, (M-M[0])/M[0])
+    dM = (M-M[0])/M[0]
+    ax.plot(t/fact, dM)
     ax.set_xlabel("$t / [\mathrm{ days }]$")
     ax.set_ylabel("$\Delta M / M_0$")
     fig.tight_layout()
@@ -134,7 +134,6 @@ def plot_M(C, args, name):
 
 def plot_var(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     t = t / fact
     var = get_var(C, args)
@@ -155,7 +154,6 @@ def plot_var(C, args, name):
 
 def plot_M_decay(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = C[::(Nt//500+1)]
     t, z = get_tz(C, args)
     t = t/fact
     M = np.einsum("tz -> t", C)
@@ -175,7 +173,7 @@ def plot_M_decay(C, args, name):
 
 def plot_minmax(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = C[::(Nt//500+1), ::(Nz//500+1)]
+    C = C[:, ::(Nz//500+1)]
     t, z = get_tz(C, args)
     t = t/fact
     Min = C.min(axis=1)
