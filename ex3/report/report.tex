@@ -156,7 +156,25 @@
     \end{figure}
 
     \subsubsection*{Deep waters}
-    
+    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity. This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere. \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically.  
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/prob3_conv_test_t}
+        \includegraphics[width=.49\textwidth]{../plots/prob3_conv_test_z}
+        \caption{Error, as a function of step length in both time and space.}
+        \label{prob3 conv}
+    \end{figure}
+
+    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.8\textwidth]{../plots/prob3}
+        \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
+        \label{prob3}
+    \end{figure}
+
 
 
     \bibliography{report}
