@@ -89,37 +89,7 @@ def get_solve_V(args):
     return lambda v: LU.solve(v), lambda C, Si, Sip: R.dot(C) + (Si + Sip)/2
 
 
-def simulate(C0, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = np.zeros((Nt, Nz))
-    C[0] = C0
-    g = get_g(args)
-    solve, V = get_solve_V(args)
-
-    for i in trange(Nt-1):
-        Si = get_S(Ceq[i], g, args)
-        Si1 = get_S(Ceq[i+1], g, args)
-        vi = V(C[i], Si, Si1)
-        C[i + 1] = solve(vi)
-
-    return C
-
-
-def simulate_until(C0, args):
-    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    C = C0
-    g = get_g(args)
-    solve, V = get_solve_V(args)
-
-    for i in trange(Nt-1):
-        Si = get_S(Ceq[i], g, args)
-        Si1 = get_S(Ceq[i+1], g, args)
-        vi = V(C, Si, Si1)
-        C = solve(vi)
-
-    return C
-
-def simulate2(C0, args, save=501):
+def simulate(C0, args, save=501):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     assert (Nt-1)%(save-1)==0
     N = (Nt-1)//(save-1)
@@ -139,16 +109,6 @@ def simulate2(C0, args, save=501):
         C[i+1] = Ci
 
     return C
-
-    # for i in trange(Nt-1):
-    #     Si = get_S(Ceq[i], g, args)
-    #     Si1 = get_S(Ceq[i+1], g, args)
-    #     vi = V(C[(i+N-1)//N], Si, Si1)
-    #     print(i)
-    #     C[(i+N)//N] = solve(vi)
-
-    # return C
-
 
 
 def get_Nzs(n, Nz_max):

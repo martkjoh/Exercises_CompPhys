@@ -36,7 +36,7 @@ def conv_test_t():
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
-        Cs.append(simulate2(C0, args, save=2)[-1])
+        Cs.append(simulate(C0, args, save=2)[-1])
         print("Nt={}".format(Nt))
 
     plot_conv_t(Cs, Nts, 2, args, "conv_test_t")
@@ -51,7 +51,7 @@ def conv_test_z():
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z, dz0 = np.linspace(0, L, Nz, retstep=True)
         C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
-        Cs.append(simulate2(C0, args, save=2)[-1])
+        Cs.append(simulate(C0, args, save=2)[-1])
         print("Nz={}".format(Nz))
 
     plot_conv_z(Cs, Nzs, 2, args, "conv_test_z")
@@ -64,7 +64,7 @@ def test1(const_K):
     if not const_K: name += "_varK"
 
     C0 = np.ones(Nz)
-    C = simulate2(C0, args)
+    C = simulate(C0, args)
 
     plot_C(C, args, name)
     print("var = {}".format(np.max(C) - np.min(C)))
@@ -78,7 +78,7 @@ def test2():
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.exp(-(z - L/2)**2/50**2)/50 \
         + np.exp(-(z - L*3/5)**2/20**2)/5
-    C = simulate2(C0, args, save=101)
+    C = simulate(C0, args, save=101)
     plot_C(C, args, name+"_C")
     plot_M(C, args, name+"_M")
 
@@ -89,7 +89,7 @@ def test3():
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.exp(-(z - L/2)**2/(2 * 5)**2)
-    C = simulate2(C0, args)
+    C = simulate(C0, args)
     plot_C(C, args, "test3")
     plot_var(C, args, "test3_var")
 
@@ -115,7 +115,7 @@ def test4(const_K):
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.ones(Nz)
-    C = simulate2(C0, args)
+    C = simulate(C0, args)
     plot_C(C, args, "test4")
     plot_M_decay(C, args, "test4_decay")
 
@@ -142,15 +142,15 @@ def test5(const_K):
     if not const_K: name += "_varK"
 
     C0 = np.zeros(Nz)
-    C = simulate2(C0, args)
+    C = simulate(C0, args)
     plot_C(C, args, name)
     plot_minmax(C, args, name+"_minmax")
 
 
 # conv_test_t()
 # conv_test_z()
-test1(True)
-test1(False)
+# test1(True)
+# test1(False)
 # test2()
 # test3()
 # test4(True)
