@@ -119,21 +119,35 @@ def simulate_until(C0, args):
 
     return C
 
-def simulate2(C0, args, save=500):
+def simulate2(C0, args, save=501):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    N = Nt//save
-    C = np.zeros((save+1, Nz))
+    assert (Nt-1)%(save-1)==0
+    N = (Nt-1)//(save-1)
+    C = np.zeros((save, Nz))
     C[0] = C0
     g = get_g(args)
     solve, V = get_solve_V(args)
 
-    for i in trange(Nt-1):
-        Si = get_S(Ceq[i], g, args)
-        Si1 = get_S(Ceq[i+1], g, args)
-        vi = V(C[(i+N)//N], Si, Si1)
-        C[(i+N+1)//N] = solve(vi)
+    for i in trange(save-1):
+        Ci = C[i]
+        for j in range(N):
+            k = i*N + j
+            Sk = get_S(Ceq[k], g, args)
+            Sk1 = get_S(Ceq[k+1], g, args)
+            vk = V(Ci, Sk, Sk1)
+            Ci = solve(vk)
+        C[i+1] = Ci
 
     return C
+
+    # for i in trange(Nt-1):
+    #     Si = get_S(Ceq[i], g, args)
+    #     Si1 = get_S(Ceq[i+1], g, args)
+    #     vi = V(C[(i+N-1)//N], Si, Si1)
+    #     print(i)
+    #     C[(i+N)//N] = solve(vi)
+
+    # return C
 
 
 
