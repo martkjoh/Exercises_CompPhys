@@ -117,7 +117,7 @@ def plot_D(args):
     plt.show()
 
 
-def plot_M(C, args, name):
+def plot_dM(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     t, z = get_tz(C, args)
     M = get_mass(C, args)
@@ -127,6 +127,20 @@ def plot_M(C, args, name):
     ax.plot(t/fact, dM)
     ax.set_xlabel("$t / [\mathrm{ days }]$")
     ax.set_ylabel("$\Delta M / M_0$")
+    fig.tight_layout()
+
+    save_plot(fig, ax, name)
+
+def plot_M(C, args, name):
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+    t, z = get_tz(C, args)
+    M = get_mass(C, args) # mol / m^2
+    V = .36 # * 10e15 m^3
+    M = 2 * 12 * V * M # 10e15 g
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(t/fact/365, M)
+    ax.set_xlabel("$t / [\mathrm{ years }]$")
+    ax.set_ylabel("$M / [10^{ 15 } \mathrm{ g }]$")
     fig.tight_layout()
 
     save_plot(fig, ax, name)

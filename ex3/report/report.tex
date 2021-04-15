@@ -170,11 +170,20 @@
 
     \begin{figure}[h]
         \centering
-        \includegraphics[width=.8\textwidth]{../plots/prob3}
+        \includegraphics[width=.60\textwidth]{../plots/prob3}
+        \includegraphics[width=.39\textwidth]{../plots/prob3_i}
         \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
         \label{prob3}
     \end{figure}
 
+    The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $\SI{0.36 \cdot 10^{15}}{m^2}$ as the value of the surface area of the global oceans, and $\SI{24}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total wieght of the carbon stored in the ocean is plotted in \autoref{prob3 mass}.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=.60\textwidth]{../plots/prob3_M}
+        \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
+        \label{prob3 mass}
+    \end{figure}
 
 
     \bibliography{report}
