@@ -141,6 +141,7 @@ def plot_M(C, args, name):
     ax.plot(t/fact/365, M)
     ax.set_xlabel("$t / [\mathrm{ years }]$")
     ax.set_ylabel("$M / [10^{ 15 } \mathrm{ g }]$")
+    fig.suptitle("$\mathrm{ \Delta M }="+"{:.1f}".format(M[-1] - M[0])+"$")
     fig.tight_layout()
 
     save_plot(fig, ax, name)

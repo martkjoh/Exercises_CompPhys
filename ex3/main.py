@@ -4,7 +4,7 @@ from plot import *
 
 
 H = 5060
-kw = 5.97e-5
+kw = 6.97e-5
 ppco2 = 415e-6
 
 
@@ -33,13 +33,13 @@ def get_args2(t0_d, Nt, Nz):
 
 
 def prob2_conv_test_t():
-    Nts = 10**(np.linspace(0.4, 4, 20))
-    Nts = np.concatenate([Nts, [50_000,]]) # refrence value
+    Nts = (10**(np.linspace(0.4, 4.5, 20))).astype(int)
+    Nts = np.concatenate([Nts, [200_000,]]) # refrence value
     Cs = []
-    Nz = 201
+    Nz = 1_001
     for Nt in Nts:
         print("Nt={}".format(Nt))
-        args = get_args2(10, int(Nt), Nz)
+        args = get_args2(10, Nt, Nz)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.zeros(Nz)
@@ -49,7 +49,7 @@ def prob2_conv_test_t():
 
 
 def prob2_conv_test_z():
-    Nzs = get_Nzs(8, 2**10*10*10 + 1) # 100k ish
+    Nzs = get_Nzs(8, 2**10*10*100 + 1) # 1m ish
     Cs = []
     Nt = 1_001
     for Nz in Nzs:
@@ -70,7 +70,7 @@ def prob2():
     C0 = np.zeros(Nz)
     C = simulate(C0, args)
     plot_C(C, args, "prob2", fs=(12, 6))
-    plot_minmadx(C, args, "prob2_minmax")
+    plot_minmax(C, args, "prob2_minmax")
     indxs = [0, 10, 50, 100, 250, -1]
     plot_Ci(C, indxs, args, "prob2_i")
     plot_K(args, "prob2_K")
@@ -87,7 +87,7 @@ def get_args3(t0_y, Nt, Nz):
     dt = t0/(Nt - 1)
     a = dt / (2 * dz**2)
 
-    K0 = 1e-4
+    K0 = 1e-3
     K1 = 1e-2
     b = 0.5
     z0 = 100
@@ -100,7 +100,7 @@ def get_args3(t0_y, Nt, Nz):
     return Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
 
 def prob3_conv_test_t():
-    Nts = (10**(np.linspace(3, 4.5, 20))).astype(int)
+    Nts = (10**(np.linspace(1, 3.5, 20))).astype(int)
     Nts = np.concatenate([Nts, [100_000,]]) # refrence value
     Cs = []
     Nz = 201
@@ -143,10 +143,30 @@ def prob3():
     plot_Ci(C, indxs, args, "prob3_i")
     plot_M(C, args, "prob3_M")
 
+
+
+# def test():
+#     Nts = np.array([10_000, 100_000])
+#     Cs = []
+#     Nz = 10_000
+#     for Nt in Nts:
+#         print("Nt={}".format(Nt))
+#         args = get_args2(10, int(Nt), Nz)
+#         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+#         z = np.linspace(0, L, Nz)
+#         C0 = np.zeros(Nz)
+#         Cs.append(simulate(C0, args, save=2)[-1])
+
+#     plot_Cs(Cs, args)
+
+
+# test()
+
+
 # prob2_conv_test_t()
-# prob2_conv_test_z()
+prob2_conv_test_z()
 # prob2()
 
 # prob3_conv_test_t()
 # prob3_conv_test_z()
-prob3()
+# prob3()

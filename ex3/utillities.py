@@ -38,7 +38,7 @@ def get_rms(Cs, Nzs=None):
         skips = [int((Nzs[-1]-1)/(Nzs[i]-1)) for i in range(len(Nzs))]
     else: 
         skips = [1 for _ in Cs]
-    rms = lambda C, C0: np.sqrt(np.mean(((C-C0)/C0)**2))
+    rms = lambda C, C0: np.sqrt(1/len(C)*np.sum(((C-C0)/C0)**2))
     return [rms(Cs[i], Cs[-1][::skips[i]]) for i in range(len(Cs)-1)]
 
 

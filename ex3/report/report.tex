@@ -1,12 +1,18 @@
 \documentclass{article}
 
-\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+
 \usepackage{graphicx}
 \usepackage{physics}
 \usepackage{subcaption}
 \usepackage{hyperref}
+
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.8em}
+
 \usepackage{caption}
 \captionsetup{width=.9\textwidth}
+
 \usepackage[version=4]{mhchem}
 \usepackage{siunitx}
 
@@ -60,7 +66,16 @@
         A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
     \end{align*}
     
-    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above. 
+    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above.
+
+    The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, 
+
+    To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \in [0, L]$, relative RMS error is given by
+    \begin{equation*}
+        \Delta_\mathrm{rms} = \sqrt{\frac{1}{N}\sum_i \left(\frac{C(z_i) - C_0(z_i)}{C_0(z_i)}\right)^2}.
+    \end{equation*}
+    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utillities.py|, which takes a list of arrays and compare each with the last element. 
+
 
     \section*{Tests}
     Make sure the implementation gives good answers, it is compared to known solutions. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case, to check this. \autoref{convergence test} shows the result of this. 
@@ -166,7 +181,7 @@
         \label{prob3 conv}
     \end{figure}
 
-    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation.
+    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation. The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $0.36 \cdot 10^{15}\si{m^2}$ as the value of the surface area of the global oceans, and $\SI{24}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total wieght of the carbon stored in the ocean is plotted in \autoref{prob3 mass}.
 
     \begin{figure}[h]
         \centering
@@ -175,9 +190,6 @@
         \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
         \label{prob3}
     \end{figure}
-
-    The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $\SI{0.36 \cdot 10^{15}}{m^2}$ as the value of the surface area of the global oceans, and $\SI{24}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total wieght of the carbon stored in the ocean is plotted in \autoref{prob3 mass}.
-
     \begin{figure}[h]
         \centering
         \includegraphics[width=.60\textwidth]{../plots/prob3_M}
@@ -187,6 +199,5 @@
 
 
     \bibliography{report}
-    \bibliographystyle{plain}
-
+    \bibliographystyle{plain}   
 \end{document}
