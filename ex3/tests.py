@@ -1,5 +1,5 @@
 import numpy as np
-from utillities import *
+from utilities import *
 from plot import *
 
  

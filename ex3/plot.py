@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from utillities import get_D, get_tz, get_var, get_mass, get_rms
+from utilities import get_D, get_tz, get_var, get_mass, get_rms
 from matplotlib import cm
 from os import path, mkdir
 
