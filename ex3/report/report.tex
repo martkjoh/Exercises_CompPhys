@@ -27,9 +27,9 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-        This is an implementation of \cite{exercise}.
+        This paper documents the implementation and results of the simulation as given in \cite{exercise}. By using a finite difference scheme, the process of absorption of \ce{CO2} by the global ocean in the form of dissolved inorganic carbon (DIC). A simplified model of the physics is used, where both the atmospheric and oceanic concentration of carbon is constant at a given height, meaning there is in effect only one spatial dimension. The method is tested against known solutions, and the convergence is monitored. It is then used to extract results of how the ocean absorbs carbon, and at what rate.
     \section*{Theory and implementation}
-    The diffusion equation, can be written as
+    The diffusion equation can be written as
     \begin{equation*}
         \Delta t \pdv{t} C(z, t) = \Delta t \left(K(z) \pdv[2]{z} + \dv{K(z)}{z}\pdv{z}\right) C(z, t) = \mathcal{D} C(z, t).
     \end{equation*}
@@ -37,7 +37,7 @@
     \begin{equation*}
         \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_n(t) + S_n(t),
     \end{equation*}
-    where 
+    where summation over repeated indices are implied, and
     \begin{align*}
         \mathcal{D} &=
         \begin{pmatrix}
@@ -55,20 +55,19 @@
      \alpha = \frac{\Delta t}{2 \Delta z^2 },\\
       K_n' & = K_{n+1} - K_{n-1}
     \end{align*}
-    The Cranck-Nichelson scheme then yields
+    Using the Cranck-Nichelson scheme to discretize the time part yields
     \begin{equation*}
         C_n^{i+1}  = C_n^i + \frac{1}{2} (\mathcal{D}_{nm} C_m^i + S_n^i) + \frac{1}{2} (\mathcal{D}_{nm} C_m^{i+1} + S_n^{i+1}),
     \end{equation*}
     so the equation to be solved to get the next timestep is
     \begin{align*}
-        & A_{nm} C_{m}^{i+1} = V_n^i, \\ 
-        & V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), \quad 
-        A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right)
+        A_{nm} C_{m}^{i+1} = V_n^i, \quad V_n^i = \left(\delta_{nm} + \frac{1}{2} \mathcal{D}_{nm}\right) C_m^i + \frac{1}{2}(S_n^i + S_n^{i+1}), \quad 
+        A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right).
     \end{align*}
     
     The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above.
 
-    The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, 
+    The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array. This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statemet.
 
     To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \in [0, L]$, relative RMS error is given by
     \begin{equation*}
@@ -181,7 +180,7 @@
         \label{prob3 conv}
     \end{figure}
 
-    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation. The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $0.36 \cdot 10^{15}\si{m^2}$ as the value of the surface area of the global oceans, and $\SI{24}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total wieght of the carbon stored in the ocean is plotted in \autoref{prob3 mass}.
+    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation. The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $0.36 \cdot 10^{15}\si{m^2}$ as the value of the surface area of the global oceans, and $\SI{24}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total wieght of the carbon stored in the ocean is plotted in \autoref{prob3 mass}. This simulation results in a uptake of $\Delta M = 504.8 \cdot 10^{15} \si{g}$ carbon over 10 years, i.e. an average absorption rate of $50.48 \cdot 10^{15} \si{g/year}$.
 
     \begin{figure}[h]
         \centering

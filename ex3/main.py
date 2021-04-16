@@ -145,26 +145,8 @@ def prob3():
 
 
 
-# def test():
-#     Nts = np.array([10_000, 100_000])
-#     Cs = []
-#     Nz = 10_000
-#     for Nt in Nts:
-#         print("Nt={}".format(Nt))
-#         args = get_args2(10, int(Nt), Nz)
-#         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-#         z = np.linspace(0, L, Nz)
-#         C0 = np.zeros(Nz)
-#         Cs.append(simulate(C0, args, save=2)[-1])
-
-#     plot_Cs(Cs, args)
-
-
-# test()
-
-
 # prob2_conv_test_t()
-prob2_conv_test_z()
+# prob2_conv_test_z()
 # prob2()
 
 # prob3_conv_test_t()
