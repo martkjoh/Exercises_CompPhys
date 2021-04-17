@@ -27,12 +27,12 @@ def get_args1(const_K, Nt=1_001, Nz=1_001, t0_d=10):
 
 
 def conv_test_t():
-    Nts = 10**(np.linspace(1, 4, 20))
+    Nts = (10**(np.linspace(1, 4, 20))).astype(int)
     Nts = np.concatenate([Nts, [50_000,]]) # refrence value
     Cs = []
     Nz = 201
     for Nt in Nts:
-        args = get_args1(True, Nz=Nz, Nt=int(Nt))
+        args = get_args1(True, Nz=Nz, Nt=Nt)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z = np.linspace(0, L, Nz)
         C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
@@ -50,7 +50,7 @@ def conv_test_z():
         args = get_args1(True, Nz=Nz, Nt=10_001)
         Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
         z, dz0 = np.linspace(0, L, Nz, retstep=True)
-        C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)
+        C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)/20
         Cs.append(simulate(C0, args, save=2)[-1])
         print("Nz={}".format(Nz))
 
@@ -66,21 +66,22 @@ def test1(const_K):
     C0 = np.ones(Nz)
     C = simulate(C0, args)
 
-    plot_C(C, args, name)
+    plot_C(C, args, name, fs=(7, 5))
     print("var = {}".format(np.max(C) - np.min(C)))
 
 
-def test2():
-    args = get_args1(False, t0_d=10, Nz=500_001, Nt=1_001)
+def test2(const_K):
+    args = get_args1(const_K, t0_d=10, Nz=100_001, Nt=10_001)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     name = "test2"
+    if not const_K: name += "_varK"
 
     z = np.linspace(0, Nz * dz, Nz)
-    C0 = np.exp(-(z - L/2)**2/50**2)/50 \
-        + np.exp(-(z - L*3/5)**2/20**2)/5
+    C0 = np.exp(-(z - L/2)**2/(2 * 20)**2)/20
     C = simulate(C0, args, save=101)
     plot_C(C, args, name+"_C")
-    plot_M(C, args, name+"_M")
+    plot_dM(C, args, name+"_M")
+    plot_K(args, name)
 
 
 def test3():
@@ -88,7 +89,7 @@ def test3():
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     z = np.linspace(0, Nz * dz, Nz)
-    C0 = np.exp(-(z - L/2)**2/(2 * 5)**2)
+    C0 = np.exp(-(z - L/2)**2/(2 * 5)**2)/5
     C = simulate(C0, args)
     plot_C(C, args, "test3")
     plot_var(C, args, "test3_var")
@@ -112,12 +113,14 @@ def test4(const_K):
     Ceq = np.zeros(Nt)
 
     args = Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
+    name = "test4"
+    if not const_K: name += "_varK"
 
     z = np.linspace(0, Nz * dz, Nz)
     C0 = np.ones(Nz)
     C = simulate(C0, args)
-    plot_C(C, args, "test4")
-    plot_M_decay(C, args, "test4_decay")
+    plot_C(C, args, name)
+    plot_M_decay(C, args, name+"_decay")
 
 
 def test5(const_K):
@@ -135,7 +138,7 @@ def test5(const_K):
     K0 = 2e-2
     if const_K: K = K0 * np.ones(Nz)
     else: K = K0*(2 + np.sin(np.linspace(0, 10, Nz)))
-    Ceq = 0.5*np.ones(Nt)
+    Ceq = np.ones(Nt)
 
     args = Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
     name = "test5"
@@ -147,12 +150,14 @@ def test5(const_K):
     plot_minmax(C, args, name+"_minmax")
 
 
-# conv_test_t()
-# conv_test_z()
-# test1(True)
-# test1(False)
-# test2()
-# test3()
-# test4(True)
-# test5(True)
-# test5(False)
+conv_test_t()
+conv_test_z()
+test1(True)
+test1(False)
+test2(True)
+test2(False)
+test3()
+test4(True)
+test4(False)
+test5(True)
+test5(False)

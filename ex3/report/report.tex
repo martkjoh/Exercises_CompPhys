@@ -65,69 +65,59 @@
         A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right).
     \end{align*}
     
-    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above.
-
-    The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array. This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statement.
-
+    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above. The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array. This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statement.
+    
     To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \in [0, L]$, relative RMS error is given by
     \begin{equation*}
         \Delta_\mathrm{rms} = \sqrt{\frac{1}{N}\sum_i \left(\frac{C(z_i) - C_0(z_i)}{C_0(z_i)}\right)^2}.
     \end{equation*}
-    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element. 
-
+    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element. The task also requires the spatial integral of the concentration an related quantities. This is done with the SciPy implementation of Simpsons method, \verb|simpson|. 
 
     \section*{Tests}
-    Make sure the implementation gives good answers, it is compared to known solutions. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case, to check this. \autoref{convergence test} shows the result of this. 
+
+    Make sure the implementation gives good answers, a series of tests are run, where the answer is known or there is a method to check error. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case with constant diffusivity $K$ and a Gaussain initial concentration. The result is shown in \autoref{convergence test}. A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$ as described in \cite{exercise}, problem 2. For both, the constant initial concentration is close to unchanged, save for numerical errors. The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, both with constant and non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation. 
+    
+    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}. For a small Biot nuber and given a zero partial pressure in the atmosphere, the depletion of \ce{CO2} from the ocean should follow a exponential decay. Furthermore, the concentration should remain constant througout the depht. This is the case, as \autoref{decay} showscases. Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/conv_test_t}
         \includegraphics[width=.49\textwidth]{../plots/conv_test_z}
-        \caption{Error, measured as the root mean square deviation from a reference value, after 1 day simulation of an Gaussian initial concentration.}
+        \caption{Error, measured as the relative RMS deviation from a reference value, after 1 day simulation of an Gaussian initial concentration.}
         \label{convergence test}
     \end{figure}
-
-    A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$, as long as it is positive. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$. For both, the constant initial concentration is close to unchanged, save for numerical errors.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test1}
         \includegraphics[width=.49\textwidth]{../plots/test1_varK}
-        \caption{The time evolution of an constant concentration. The system on the left has a constant $K(z)$, while system of the right has an oscillatory $K$. The largest deviation of the system is of order $10^{-15}$ and $10^{-13}$, respectively.}
+        \caption{The time evolution of an constant concentration. $K(z)$ is constant in the system on the left, and varies in the system on the right. The largest deviation from the inital calues of the systems are of order $10^{-15}$ and $10^{-13}$, respectively.}
         \label{constant_cons}
     \end{figure}
 
-    The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, with a non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
-
     \begin{figure}
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/test2_c}
-        \includegraphics[width=.45\textwidth]{../plots/test2_m}
-        \caption{The evolution of a Gaussian distribution of \ce{CO2} is shown on the left. On the right, the relative change in mass as a function of time is plotted. }
+        \includegraphics[width=.49\textwidth]{../plots/test2_m}
+        \includegraphics[width=.49\textwidth]{../plots/test2_varK_m}
+        \caption{Relative change in mass of a system with constant (left) and varying (right) diffusivity.}
         \label{Consv mass}
     \end{figure}
-
-    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}.
 
     \begin{figure}
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test3}
         \includegraphics[width=.45\textwidth]{../plots/test3_var}
-        \caption{A system with an initial Gaussain distribution is simulated. On the right, the variance as a function of time is shown. The increase is initially constant, but then approaches a steady state.}
+        \caption{A system with an initial Gaussain distribution. On the right, the variance as a function of time is shown. The increase is initially constant, but then approaches a steady state.}
         \label{var}
     \end{figure}
 
-    \autoref{decay} shows the depletion of \ce{CO2} from the ocean, given a zero partial pressure in the atmosphere. For a small Biot number, this should follow a exponential decay, as this test shows.
-
     \begin{figure}
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/test4}
-        \includegraphics[width=.45\textwidth]{../plots/test4_decay}
-        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.}
+        \includegraphics[width=.49\textwidth]{../plots/test4_decay}
+        \includegraphics[width=.49\textwidth]{../plots/test4_varK_decay}
+        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0. Constant (left) and varying (right) diffusivity.}
         \label{decay}
     \end{figure}
-
-    Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
 
     \begin{figure}
         \centering

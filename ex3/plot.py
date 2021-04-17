@@ -122,11 +122,15 @@ def plot_dM(C, args, name):
     t, z = get_tz(C, args)
     M = get_mass(C, args)
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(8, 6))
     dM = (M-M[0])/M[0]
     ax.plot(t/fact, dM)
     ax.set_xlabel("$t / [\mathrm{ days }]$")
     ax.set_ylabel("$\Delta M / M_0$")
+    fig.suptitle(
+        "$K_0={:.3e},\,\\alpha={:.3e},\,k_w={} $\n\
+        $N_t={},\,N_z={}$".format(K[0], a, kw, Nt, Nz), y=0.9
+        )
     fig.tight_layout()
 
     save_plot(fig, ax, name)
