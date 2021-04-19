@@ -33,8 +33,8 @@ def get_args2(t0_d, Nt, Nz):
 
 
 def prob2_conv_test_t():
-    Nts = (10**(np.linspace(0.4, 4.5, 20))).astype(int)
-    Nts = np.concatenate([Nts, [200_000,]]) # refrence value
+    Nts = (10**(np.linspace(0.5, 5, 20))).astype(int)
+    Nts = np.concatenate([Nts, [1_000_000,]]) # refrence value
     Cs = []
     Nz = 1_001
     for Nt in Nts:
@@ -64,7 +64,7 @@ def prob2_conv_test_z():
 
 
 def prob2():
-    args = get_args2(180, 10_001, 10_001)
+    args = get_args2(180, 10_001, 100_001)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
 
     C0 = np.zeros(Nz)
@@ -131,7 +131,7 @@ def prob3_conv_test_z():
 
 
 def prob3():
-    args = get_args3(10, 10_001, 10_001)
+    args = get_args3(10, 100_001, 100_001)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C0 = Ceq[0] * np.ones(Nz)
     N = 501
@@ -149,6 +149,6 @@ def prob3():
 # prob2_conv_test_z()
 # prob2()
 
-# prob3_conv_test_t()
-# prob3_conv_test_z()
-# prob3()
+prob3_conv_test_t()
+prob3_conv_test_z()
+prob3()

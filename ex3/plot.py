@@ -84,7 +84,7 @@ def plot_Ci(C, indxs, args, name):
     ax.set_xlabel("$z / [\mathrm{ m }]$")
     ax.set_ylabel("$C / [\mathrm{ m/s }]$")
 
-    fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), y=.95)
+    fig.suptitle("$K_0={:.3e},\,\\alpha={:.3e},\,k_w={}$".format(K[0], a, kw), y=.95)
     fig.tight_layout()
 
     plt.legend()
@@ -93,18 +93,17 @@ def plot_Ci(C, indxs, args, name):
 
 def plot_K(args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    fig, ax = plt.subplots(figsize=(7, 7))
+    fig, ax = plt.subplots(figsize=(8, 7))
     z = np.linspace(0, L, Nz)
     ax.plot(z, K, "--k", label="$K(z)$")
     ax.plot(z, 0*z, "-.k")
     ax.set_ylabel("$K / [\mathrm{ mol/m^3 }]$")
     ax.set_xlabel("$z / [\mathrm{ m }]$")
     
-    fig.suptitle("$K_0={:.3e},\,\\alpha={:.2f},\,k_w={}$".format(K[0], a, kw), y=.95)
+    fig.suptitle("$K_0={:.3e},\,\\alpha={:.3e},\,k_w={}$".format(K[0], a, kw), y=.95)
     fig.tight_layout()
     plt.legend()
     save_plot(fig, ax, name)
-
 
 
 def plot_D(args):
@@ -139,8 +138,9 @@ def plot_M(C, args, name):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     t, z = get_tz(C, args)
     M = get_mass(C, args) # mol / m^2
-    V = .36 # * 10e15 m^3
-    M = 2 * 12 * V * M # 10e15 g
+    A = .36 # * 10e15 m^2
+    Mm = 24 #g/mol
+    M = Mm * A * M # 10e15 g
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(t/fact/365, M)
     ax.set_xlabel("$t / [\mathrm{ years }]$")
@@ -202,7 +202,7 @@ def plot_minmax(C, args, name):
     ax.plot(t, Min, label="$\mathrm{ min_z } C(t)$")
     ax.plot(t, Max, label="$\mathrm{ max_z } C(t)$")
     fig.suptitle(
-    "$K_0={:.3e},\,\\alpha={:.2f},\,k_w={} ".format(K[0], a, kw)\
+    "$K_0={:.3e},\,\\alpha={:.3e},\,k_w={} ".format(K[0], a, kw)\
         +",\,C_\mathrm{ eq }"+"= {}$".format(Ceq[0]), 
         fontsize=18, y=0.9
         )
