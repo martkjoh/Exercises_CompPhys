@@ -73,14 +73,17 @@ def plot_Cs(Cs, args):
     plt.show()
 
 
-def plot_Ci(C, indxs, args, name):
+def plot_Ci(C, indxs, args, name, imax=-1, fs=(8, 6), ceq=False):
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=fs)
     C = C[:, ::(Nz//500+1)]
     t, z = get_tz(C, args)
+    if ceq:
+        label = "$C_\mathrm{ eq }$"
+        ax.plot(z, Ceq[-1]*np.ones_like(z), "--k", label=label)
     for i, j in enumerate(indxs):
         label = "$t = {:.2f}".format(t[j]/fact)+" \, \mathrm{ days }$"
-        ax.plot(z, C[j], color=cm.viridis(i/len(indxs)), label=label)
+        ax.plot(z[:imax], C[j, :imax], color=cm.viridis(i/len(indxs)), label=label)
     ax.set_xlabel("$z / [\mathrm{ m }]$")
     ax.set_ylabel("$C / [\mathrm{ m/s }]$")
 
@@ -139,13 +142,25 @@ def plot_M(C, args, name):
     t, z = get_tz(C, args)
     M = get_mass(C, args) # mol / m^2
     A = .36 # * 10e15 m^2
-    Mm = 24 #g/mol
+    Mm = 12 #g/mol
     M = Mm * A * M # 10e15 g
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(t/fact/365, M)
+    fig, ax = plt.subplots(figsize=(8, 7))
+    ax.plot(t/fact/365, M, label="$M(t)$")
     ax.set_xlabel("$t / [\mathrm{ years }]$")
     ax.set_ylabel("$M / [10^{ 15 } \mathrm{ g }]$")
-    fig.suptitle("$\mathrm{ \Delta M }="+"{:.1f}".format(M[-1] - M[0])+"$")
+    fig.suptitle("$\mathrm{ \Delta M }="+"{:.1f}".format(M[-1] - M[0])+"$", y=0.95)
+    fig.tight_layout()
+
+    save_plot(fig, ax, name)
+
+def plot_Ceq(args, name):
+    Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
+    t = np.linspace(0, t0, Nt)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(t/fact/365, Ceq)
+    ax.set_xlabel("$t / [\mathrm{ years }]$")
+    ax.set_ylabel("$C_\mathrm{ eq } / [\mathrm{ mol \, m^{-3} }]$")
+
     fig.tight_layout()
 
     save_plot(fig, ax, name)

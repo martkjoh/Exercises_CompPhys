@@ -69,10 +69,10 @@ def prob2():
 
     C0 = np.zeros(Nz)
     C = simulate(C0, args)
-    plot_C(C, args, "prob2", fs=(12, 6))
+    plot_C(C, args, "prob2", fs=(10, 6))
     plot_minmax(C, args, "prob2_minmax")
     indxs = [0, 10, 50, 100, 250, -1]
-    plot_Ci(C, indxs, args, "prob2_i")
+    plot_Ci(C, indxs, args, "prob2_i", ceq=True)
     plot_K(args, "prob2_K")
 
 
@@ -87,7 +87,7 @@ def get_args3(t0_y, Nt, Nz):
     dt = t0/(Nt - 1)
     a = dt / (2 * dz**2)
 
-    K0 = 1e-3
+    K0 = 1e-4
     K1 = 1e-2
     b = 0.5
     z0 = 100
@@ -131,24 +131,25 @@ def prob3_conv_test_z():
 
 
 def prob3():
-    args = get_args3(10, 100_001, 100_001)
+    args = get_args3(10, 10_001, 10_001)
     Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0 = args
     C0 = Ceq[0] * np.ones(Nz)
     N = 501
     C = simulate(C0, args, save=N)
-    plot_C(C, args, "prob3", fs=(12, 6))
+    plot_C(C, args, "prob3", fs=(10, 6))
     plot_K(args, "prob3_K")
+    plot_Ceq(args, "prob3_Ceq")
 
     indxs = [0, int(N/4), int(N/2), -1]
-    plot_Ci(C, indxs, args, "prob3_i")
+    plot_Ci(C, indxs, args, "prob3_i", imax=500//4, fs=(8, 6))
     plot_M(C, args, "prob3_M")
 
 
 
 # prob2_conv_test_t()
 # prob2_conv_test_z()
-# prob2()
+prob2()
 
-prob3_conv_test_t()
-prob3_conv_test_z()
-prob3()
+# prob3_conv_test_t()
+# prob3_conv_test_z()
+# prob3()
