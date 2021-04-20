@@ -1,12 +1,20 @@
 \documentclass{article}
 
-\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \usepackage{graphicx}
 \usepackage{physics}
-\usepackage{algpseudocode}
 \usepackage{subcaption}
 \usepackage{hyperref}
+\usepackage{float}
 
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.8em}
+
+\usepackage{caption}
+\captionsetup{width=.9\textwidth}
+
+\usepackage{biblatex}
+\addbibresource{report.bib}
 
 \title{Exercise 2, TFY4235 Computational physics}
 \author{Martin Johnsrud}
@@ -17,18 +25,19 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    This report documents the simluation of magnons, as described in~\cite{exercise}. Using Heun's method, the Landua-Lifshitz-Gilbert equations for a classical, interacting ensemble of spins are integrated in time. The algorithm is first investigated by simulating one spin, for which the exact solution is known. The algorithm is the used to investigate the formation of collective modes, magnons, the difference between ferromagnetic and anti-ferromagnetic materials and magnetization. 
+    This report documents the simulation of magnons, as described in \cite{exercise}. Using Heun's method, the Landau-Lifshitz-Gilbert equations for a classical, interacting ensemble of spins are integrated in time. The algorithm is first investigated by simulating one spin, for which the exact solution is known. The algorithm is the used to investigate the formation of collective modes, magnons, the difference between ferromagnetic and anti-ferromagnetic materials and magnetization. 
 
     \section*{Theory}
     \subsection*{Units}
-    The Hamiltonian, as well as the equations of motion inc \cite{exercise} defines some natural units for the problem: 
+
+    The Hamiltonian, as well as the equations of motion in \cite{exercise} defines some natural units for the problem: 
     \begin{itemize}
         \item Energy: $[\mathcal H] = [J \hbar^2 s^2]$
         \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\mu \vec S ]$
         \item Anisotropy: $[d_z] = [J]$
         \item Time : $[t] = [\gamma J \hbar s]^{-1}$
     \end{itemize}
-     where $s$ is the spin of the particles. ($s=1/2$ for electrons) This is included so that $|\vec S|\in[0, 1]$. The defining dimensionfull constants of the system is thus the spin $\hbar s$, the coupling $J$, the magnetic moment $\mu$ and the gyromacnetic ratio $\gamma$. These units are used throughout the exercise, including in all figures. Physical values for a given, actual system is then dependent on its values for $s, J, \mu$ and $\gamma$.
+     where $s$ is the spin of the particles. ($s=1/2$ for electrons) This is included so that $|\vec S|\in[0, 1]$. The defining dimension full constants of the system is thus the spin $\hbar s$, the coupling $J$, the magnetic moment $\mu$ and the gyromagnetic ratio $\gamma$. These units are used throughout the exercise, including in all figures. Physical values for a given, actual system is then dependent on its values for $s, J, \mu$ and $\gamma$.
 
 
     \subsection*{Indices}
@@ -44,7 +53,7 @@
     \begin{equation*}
         \frac{1}{2}\sum_{\langle i, j \rangle, a} (S_{i, a}\delta_{j,k}\delta_{a, b} + S_{j, a}\delta_{i,k}\delta_{a, b}) = \frac{1}{2}\sum_{\langle i, j \rangle} (S_{i, b}\delta_{j,k} + S_{j, b}\delta_{i,k}) = \frac{1}{2}\sum_{\langle j, i \rangle} 2S_{i, b} \delta_{j, k} = \sum_{j \in \mathrm{NN}_k} S_{j, b},
     \end{equation*}
-    where $\mathrm{NN}_k$ are the set of nearest neighbours of lattice point $k$. The Landua-Lifshitz-Gilbert equation for the time evolution of the system is then
+    where $\mathrm{NN}_k$ are the set of nearest neighbours of lattice point $k$. The Landau-Lifshitz-Gilbert equation for the time evolution of the system is then
     \begin{align}
         \dv{t} S_{j, a} &= - \frac{1}{(1 + \alpha^2)}\left[\sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c} + \alpha \sum_{b}\left(S_{j, b}S_{j, b}H_{j, a} - S_{j, b}H_{j, b}S_{j, a}\right)\right], \label{LLG} \\
         H_{k, b} &= J\sum_{j \in \mathrm{NN}_k} S_{j, b} + 2d_z S_{k, 3} \delta_{k, 3} +  B_{k, b}. \label{effective field}
@@ -52,7 +61,7 @@
 
     
     \section*{Implementation}
-    The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|. This contains the components of each of the $N$ spins at each time step. The function \verb|integrate| then runs a loop, calling the implementation of Heun's method \verb|heun_step|. The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function. For example, using a array \verb|eijk[a, b, c]| for the Levi Civita symbol, 
+    The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|. This contains the components of each of the $N$ spins at each time step. The function \verb|integrate| then runs a loop, calling the implementation of Heun's method \verb|heun_step|. The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function. For example, using a array \verb|eijk[a, b, c]| for the Levi-Civita symbol, 
     $$
     \sum_{b c}\varepsilon_{abc}S_{j, b}H_{j,c}
     $$
@@ -61,43 +70,46 @@
         \verb|np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)|.        
     \end{center}
 
-    \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of (\ref{LLG}) as shown above. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements (\ref{effective field}), using NumPy's \verb|roll|-function to sum over all nearest neighbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$. This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|. The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest negihbours in all dimensions.
+    \verb|LLG| takes as arguments \verb|S| and the needed parameters. Then, it first evaluates the first sum of \eqref{LLG} as shown above. If $\alpha \neq 0$, it then evaluates the second sum. \verb|LLG| calls \verb|get_H|. This functions implements \eqref{effective field}, using NumPy's \verb|roll|-function to sum over all nearest neighbours. \verb|LLG| then returns \verb|dtS|, a NumPy-array containing the time derivative of $S$. This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|. The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest neighbours in all dimensions.
 
-    The library \verb|mayavi| is used to make 3D visualization of the spins, as in figure \ref{ground states 3D} and to make videos of the time evolution of the spins. \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video. Videos of one spin, a chain of spins and a configuration of spins in 3D is included in the folder plots. 
+    The library \verb|mayavi| is used to make 3D visualization of the spins, as in \autoref{ground states 3D} and to make videos of the time evolution of the spins. \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video. Videos of one spin, a chain of spins and a configuration of spins in 3D is included in the folder plots. 
 
 
     \section*{Results}
     \subsection*{Single spin}
 
-    \begin{figure}
+    \begin{figure}[H]
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/single.pdf}
-        \caption{caption}
-        \label{single spin}
+        \begin{subfigure}{.53\textwidth}             
+            \includegraphics[width=\textwidth]{../plots/single.pdf}
+            \caption{caption}
+            \label{single spin}
+        \end{subfigure}
+        \begin{subfigure}{.46\textwidth}                    
+            \centering
+            \includegraphics[width=\textwidth]{../plots/err.pdf}
+            \caption{caption}
+            \label{error}
+        \end{subfigure}
     \end{figure}
+    
     The first test of the simulation is to initialize a single spin, in a magnetic field $B = (0, 0, 1)$. This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$. As the torque on the spin is 
     \begin{equation*}
         \vec \tau = \dv{\vec S}{t} = \gamma \vec{S} \times \vec{B},
     \end{equation*}
-    the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$. Figure \ref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
+    the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$. \autoref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
 
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.8\textwidth]{../plots/err.pdf}
-        \caption{caption}
-        \label{error}
-    \end{figure}
 
     
-    To analyze the error, the simulation is run with different step lengths $h$, for the same simulation time $t_0 = 5$. The result is shown in figure \ref{error}. As Heun's method is of higher order than Euler's method, it converges faster. It is, however, necessary to make 2 function calls when using Heun's method, while Euler's method only require one. This should make Euler's method twice as fast, which was observed. Euler's method ran at around 16000 iterations per second, while Heun's method only ran at 8000. The large gain in precision, however, makes Heun's method preferred for this application. 
+    To analyze the error, the simulation is run with different step lengths $h$, for the same simulation time $t_0 = 5$. The result is shown in \autoref{error}. As Heun's method is of higher order than Euler's method, it converges faster. It is, however, necessary to make 2 function calls when using Heun's method, while Euler's method only require one. This should make Euler's method twice as fast, which was observed. Euler's method ran at around 16000 iterations per second, while Heun's method only ran at 8000. The large gain in precision, however, makes Heun's method preferred for this application. 
 
     When including $\alpha > 0$, one should expect the the oscillations to die away, with a lifetime given by
     \begin{equation*}
         \tau = \frac{1}{\alpha \omega}
     \end{equation*}
-    Larger $\alpha$ should give a shorter lifetimes, and thus faster decay. Figure \ref{decay} shows this. Furthermore, we see that the amplitude is proportional to $\exp(-t/\tau)$. We should expect this, not only is this a common form for decay, but as no time is special, the decay should be proportional to the amplitude, which gives exponential decay.
+    Larger $\alpha$ should give a shorter lifetimes, and thus faster decay. \autoref{decay} shows this. Furthermore, we see that the amplitude is proportional to $\exp(-t/\tau)$. We should expect this, not only is this a common form for decay, but as no time is special, the decay should be proportional to the amplitude, which gives exponential decay.
 
-    \begin{figure}
+    \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{../plots/decay_a.pdf}
         \caption{caption}
@@ -105,16 +117,22 @@
     \end{figure}
 
     \subsection*{Spin chain}
-    The simulation now now includes several spins, in a ferromagnetic or anti-ferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectivley. When including damping $\alpha > 0$, both these settle into the ground state of the system, after some time. This is shown in figure \ref{ground states}. However, the two systems have different ground states. In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the anti-ferrromagnetic case the spins are oppositely aligned. The final configuration is shown in figure \ref{ground states 3D}.
+    The simulation now now includes several spins, in a ferromagnetic or anti-ferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectively. When including damping $\alpha > 0$, both these settle into the ground state of the system, after some time. This is shown in \autoref{ground states}. However, the two systems have different ground states. In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the anti-ferrromagnetic case the spins are oppositely aligned. The final configuration is shown in \autoref{ground states 3D}.
 
-    \begin{figure}
+    When the coupling is turned of, $J = 0$, but $d_z>0$ and initializes one spin tilted, it will precess alone, as shown in to the left in \autoref{one tilted}. This is because it is now an uncoupled system, where each spin follows 
+    \begin{equation*}
+        \dv{\vec S}{t} = - 2 d_z S_z \vec S \times \hat z, 
+    \end{equation*}
+    i.e. circular precession around the $z$-axis. Thus, spins parallel to the $z$-axis should not move, while the one tilted spin precesses. However, if the coupling is turned on again, as shown on the right in \autoref{one tilted}, the disturbance will ripple through the chain, in a wave. This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. 
+
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_f.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_af.pdf}
         \caption{caption}
         \label{ground states}
     \end{figure}
-    \begin{figure}
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_f3D.png}
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_af3D.png}
@@ -122,13 +140,7 @@
         \label{ground states 3D}
     \end{figure}
 
-    When the coupling is turned of, $J = 0$, but $d_z>0$ and initializes one spin tilted, it will precess alone, as shown in to the left in figure \ref{one tilted}. This is because it is now an uncoupled system, where each spin follows 
-    \begin{equation*}
-        \dv{\vec S}{t} = - 2 d_z S_z \vec S \times \hat z, 
-    \end{equation*}
-    i.e. circular precession around the $z$-axis. Thus, spins parallel to the $z$-axis should not move, while the one tilted spin precesses. However, if the coupling is turned on again, as shown on the right in figure \ref{one tilted}, the disturbance will ripple through the chain, in a wave. This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. 
-
-    \begin{figure}
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/2221.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/2222.pdf}
@@ -136,9 +148,17 @@
         \label{one tilted}
     \end{figure}
 
-    We can see that the vibrations in the chain is dominated by high frequency oscillations. By turning back on the damping, as shown in figure \ref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system. The plot on the right illustrates the sum of the $x$-component of all the spins. This follows the long-term pattern immediately. The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
+    We can see that the vibrations in the chain is dominated by high frequency oscillations. By turning back on the damping, as shown in \autoref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system. The plot on the right illustrates the sum of the $x$-component of all the spins. This follows the long-term pattern immediately. The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
 
-    \begin{figure}
+    The left plot in \autoref{one tilted dampend af} shows the same situation, but with a antiferromagnetic coupling $J = -1$. This system starts in a much higher energy state, and thus becomes highly excited. However, the excitation dies out much faster than in the ferromagnetic case. The right plot shows the same system, but starting in the ground state, except one tilted spin. Here too, the excitation dies out much faster, without a surviving oscillation.
+
+    The magnetization of the state is, in the units previously described, given by
+    \begin{equation*}
+        M_a = \frac{1}{N} \sum_j S_{j, a}.
+    \end{equation*}
+    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the anti-ferromagnetic case $\vec M = (0, 0, 0)$. This means that a disturbance in the ground state of the ferromagnet, like the sustained magnon oscillation we showed earlier, will result in a sustained loss of magnetization. This is due to the fact that it is the state of maximum magnetization. This is showed in \autoref{mag}. Here, the magnetization quickly approaches the ground state value as the energy is dissipated. However, as the system settles in to the mode of sustained oscillation, the ferromagnetic on the left retains some loss in magnetization, while the anti-ferromagnet reaches the ground state much faster.
+
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.55\textwidth]{../plots/2224.pdf}
         \includegraphics[width=0.44\textwidth]{../plots/2224fit.pdf}
@@ -146,9 +166,8 @@
         \label{one tilted dampend}
     \end{figure}
 
-    The left plot in figure \ref{one tilted dampend af} shows the same situation, but with a antiferromagnetic coupling $J = -1$. This system starts in a much higher energy state, and thus becomes highly exitated. However, the exitation dies out much faster than in the ferromagnetic case. The right plot shows the same system, but starting in the ground state, except one tilted spin. Here too, the exitation dies out much faster, without a surviving oscillation.
 
-    \begin{figure}
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/2225.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/22252.pdf}
@@ -156,13 +175,9 @@
         \label{one tilted dampend af}
     \end{figure}
 
-    The magnetization of the state is, in the units previously described, given by
-    \begin{equation*}
-        M_a = \frac{1}{N} \sum_j S_{j, a}.
-    \end{equation*}
-    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the anti-ferromagnetic case $\vec M = (0, 0, 0)$. This means that a disturbance in the ground state of the ferromagnet, like the sustained magnon oscillation we showed earlier, will result in a sustained loss of magnetization. This is due to the fact that it is the state of maximum magnetization. This is showed in figure \ref{mag}. Here, the magnetization quickly approaches the ground state value as the energy is dissipated. However, as the system settles in to the mode of sustained oscillation, the ferromagnetic on the left retains some loss in magnetization, while the anti-ferromagnet reaches the ground state much faster.
 
-    \begin{figure}
+
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/mag.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/mag2.pdf}
@@ -173,7 +188,5 @@
     \section*{Conclusion}
     Using Heun's method, and the LLG equations materials of interacting spins have been investigated. Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagnetic reaches its ground state almost 10 times faster through dissipation than its ferromagnetic counterpart. Collective modes, magnons, is shown to exist in ferromagnetic materials. These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation. They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state. The simulation confirms this. 
 
-    \bibliography{report}
-    \bibliographystyle{plain}
-
+    \printbibliography
 \end{document}
