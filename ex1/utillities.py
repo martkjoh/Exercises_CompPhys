@@ -58,10 +58,10 @@ def check_dir(dir_path):
         make_dir(dir_path)
 
 
-def save_data(particles, t, dir_path, skip):
+def save_data(particles, t, dir_path, save):
     check_dir(dir_path)
-    np.save(dir_path + "particles.npy", particles[::skip])
-    np.save(dir_path + "t.npy", t[::skip])
+    np.save(dir_path + "particles.npy", particles[::save])
+    np.save(dir_path + "t.npy", t[::save])
 
 
 def read_data(path):
@@ -150,7 +150,7 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi):
 
 
 def energy_condition(particles, args, n):
-    N, T, radii, masses, xi = args
+    N, T, radii, masses, xi, save = args
     E0 = get_energy(particles, masses, 0)
     E = get_energy(particles, masses, n)
     ratio = E/E0
@@ -209,9 +209,9 @@ Main Loop
 
 
 def setup_loop(init, args):
-    N, T, radii, masses, xi = args
+    N, T, radii, masses, xi, save = args
     print("Placing particles")
-    particles = np.empty((T+1, N, 4))
+    particles = np.empty((save, N, 4))
     tic = time.time()
     particles[0] = init(N, radii)
     print("Time placing particles: {}".format(time.time() - tic))
@@ -220,52 +220,56 @@ def setup_loop(init, args):
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
 
-    t = np.zeros(T+1)
+    t = np.zeros(save)
+    assert (T-1)%(save-1)==0
+    skip = (T-1)//(save-1)
+
+    return t, particles, collisions, last_collided, skip
+
+
+def execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip):
+    N, T, radii, masses, xi, save = args
+    t_next, i, j, t_added, col_type  = col
+    k = (skip - 1 + n) // skip
+    kp1 = (skip + n) // skip
+    particles[kp1] = particles[k]
+    dt = col[0] - t[k]
+    t[kp1] = t_next
+
+    if TC:
+        xi = tc_check(i, k, t, last_collided, xi)
+        if j!=-1: xi = tc_check(j, k, t, last_collided, xi)
+
+    transelate(particles, kp1, dt)
+    collide(particles, kp1, i, j, col_type, radii, masses, xi)
+    last_collided[i] = t[kp1]
+    push_next_collision(particles, kp1, i, t[kp1], collisions, radii)
+    if j !=-1: 
+        last_collided[j] = t[kp1]
+        push_next_collision(particles, kp1, j, t[kp1], collisions, radii)
 
     return t, particles, collisions, last_collided
 
 
-def execute_collision(n, t, particles, collisions, last_collided, args, col, TC):
-    N, T, radii, masses, xi = args
-    t_next, i, j, t_added, col_type  = col
-    particles[n+1] = particles[n]
-    dt = col[0] - t[n]
-    t[n+1] = t_next
-
-    if TC:
-        xi = tc_check(i, n, t, last_collided, xi)
-        if j!=-1: xi = tc_check(j, n, t, last_collided, xi)
-
-    transelate(particles, n+1, dt)
-    collide(particles, n+1, i, j, col_type, radii, masses, xi)
-    last_collided[i] = t[n+1]
-    push_next_collision(particles, n+1, i, t[n+1], collisions, radii)
-    if j !=-1: 
-        last_collided[j] = t[n+1]
-        push_next_collision(particles, n+1, j, t[n+1], collisions, radii)
-
-    n += 1
-    return n, t, particles, collisions, last_collided
-
-
 def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
     tic = time.time()
-    t, particles, collisions, last_collided = setup_loop(init, args)
-    N, T, radii, masses, xi = args
+    t, particles, collisions, last_collided, skip = setup_loop(init, args)
+    N, T, radii, masses, xi, save = args
 
     n = 0
     bar = Bar("running simulation", max=T)
-    while n < T:
+    while n < T-1:
         col = heapq.heappop(collisions)
         t_next, i, j, t_added, col_type  = col
         
-        # Skip invalid collisions
+        # skip invalid collisions
         valid_collision = (t_added >= last_collided[i]) \
             and (j==-1 or (t_added >= last_collided[j]))
 
         if valid_collision:
-            n, t, particles, collisions, last_collided = \
-                execute_collision(n, t, particles, collisions, last_collided, args, col, TC)
+            t, particles, collisions, last_collided = \
+                execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip)
+            n += 1
 
             if n%n_check==0: 
                 if condition(particles, args, n): break
@@ -274,4 +278,5 @@ def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
 
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))
-    return particles[:n+1], t[:n+1]
+    kp1 = (skip + n) // skip
+    return particles[:kp1], t[:kp1]

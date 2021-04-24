@@ -115,14 +115,15 @@ def problem1(run_simulation = False):
     xi, N, T, R = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
-    args = (N, T, radii, masses, xi)
 
-    N_save = 200 # number of steps to save (+- 1)
-    skip = T//N_save # values to skip to save N_save values
+    N_save = 201 # number of steps to save (+- 1)
+    skip = (T-1)//(N_save-1) # values to skip to save N_save values
+    args = (N, T, radii, masses, xi, N_save)
 
-    if run_simulation: 
+
+    if run_simulation:
         particles, t = run_loop(random_dist, args)
-        save_data(particles, t, path, skip)
+        save_data(particles, t, path, 1)
 
     else:
         particles, t = read_data(path)
