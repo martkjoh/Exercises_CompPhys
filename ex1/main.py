@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from matplotlib.pyplot import title
 import numpy as np
 import sys
