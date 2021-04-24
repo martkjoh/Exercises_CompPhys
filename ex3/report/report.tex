@@ -69,15 +69,15 @@
     
     The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above. The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array. This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statement.
     
-    To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \in [0, L]$, relative RMS error is given by
+    To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \subset [0, L]$, relative RMS error is given by
     \begin{equation*}
         \Delta_\mathrm{rms} = \sqrt{\frac{1}{N}\sum_i \left(\frac{C(z_i) - C_0(z_i)}{C_0(z_i)}\right)^2}.
     \end{equation*}
-    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element. The task also requires the spatial integral of the concentration an related quantities. This is done with the SciPy implementation of Simpsons method, \verb|simpson|. 
+    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$ for $C$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element. The task also requires the spatial integral of the concentration an related quantities. This is done with the SciPy implementation of Simpsons method, \verb|simpson|. 
 
     \section*{Tests}
 
-    Make sure the implementation gives good answers, a series of tests are run, where the answer is known or there is a method to check error. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case with constant diffusivity $K$ and a Gaussain initial concentration. The result is shown in \autoref{convergence test}. A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$ as described in \cite{exercise}, problem 2. For both, the constant initial concentration is close to unchanged, save for numerical errors. The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, both with constant and non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
+    Make sure the implementation gives accurate answers, a series of tests are run, where the answer is known or there is a method to check error. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case with constant diffusivity $K$ and a Gaussain initial concentration. The result is shown in \autoref{convergence test}. A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$ as described in \cite{exercise}, problem 2. For both, the constant initial concentration is close to unchanged, save for numerical errors. The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, both with constant and non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
     
     
     \begin{figure}[H]
@@ -105,7 +105,7 @@
     \end{figure}
 
     
-    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}. For a small Biot nuber and given a zero partial pressure in the atmosphere, the depletion of \ce{CO2} from the ocean should follow a exponential decay. Furthermore, the concentration should remain constant througout the depht. This is the case, as \autoref{decay} showscases. Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
+    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}. For a small Biot nuber and given a zero partial pressure in the atmosphere, the depletion of \ce{CO2} from the ocean should follow an exponential decay. Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
 
     \begin{figure}[H]
         \centering
@@ -165,7 +165,7 @@
 
     \subsubsection*{Deep waters}
 
-    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity. This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere, as described in \cite{exercise}. \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically.
+    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity. This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere, as described in \cite{exercise}. \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically. The results in this section is obtained using $N_t = N_z = 10 001$, giving a step length of $\Delta z = L / 10 000 = 10^{-4} L $, and $\Delta t = 10 \cdot 365 \, \mathrm{days} / 10 000 \approx 4 \cdot 10^{-1} \, \mathrm{days}$. The convergence test suggests this should give high enough precision, considering the crudeness of the model, and running time is around 3 seconds.
 
     \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation. Figure 2 in \cite{exercise} illustrates the absorption mechanism of the ocean, where a thin layer at the top of the ocean, the mixed layer, absorbs \ce{CO2} easier by the help of wind and turbulence. Then, it slowly seeps into the deep ocean. This phenomenon is illustrated in \autoref{prob3}, where the upper 100 meters of the ocean is more or less in equilibrium with the atmosphere, while the deep ocean lags behind. The slight slope of 10 year line in the figure to the right also shows that shallow water above deep waters might be less in sync than the shallow water that was synced earlier, as it does not have no-flux boundary condition, but rather always have a flux down in to the deep. 
     
@@ -191,7 +191,7 @@
         \centering
         \includegraphics[width=.56\textwidth]{../plots/prob3}
         \includegraphics[width=.43\textwidth]{../plots/prob3_i}
-        \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
+        \caption{The concentration of \ce{CO2}  as a function of time and depth, over 10 years.}
         \label{prob3}
     \end{figure}
 
@@ -199,7 +199,7 @@
         \centering
         \includegraphics[width=.45\textwidth]{../plots/prob3_M}
         \includegraphics[width=.45\textwidth]{../plots/prob3_K}
-        \caption{The concentration of \ce{CO2} in as a function of time, over 10 years.}
+        \caption{On the left, the total mass of carbon in the form of DIC, as a function of time. On the right the diffusivity as a functio of depth.}
         \label{prob3 mass}
     \end{figure}
 

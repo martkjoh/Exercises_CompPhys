@@ -148,8 +148,8 @@ def prob3():
 
 # prob2_conv_test_t()
 # prob2_conv_test_z()
-prob2()
+# prob2()
 
 # prob3_conv_test_t()
 # prob3_conv_test_z()
-# prob3()
+prob3()
