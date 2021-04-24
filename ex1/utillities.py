@@ -60,8 +60,8 @@ def check_dir(dir_path):
 
 def save_data(particles, t, dir_path, N_save):
     check_dir(dir_path)
-    np.N_save(dir_path + "particles.npy", particles)
-    np.N_save(dir_path + "t.npy", t)
+    np.save(dir_path + "particles.npy", particles)
+    np.save(dir_path + "t.npy", t)
 
 
 def read_data(path):
@@ -251,7 +251,7 @@ def execute_collision(n, t, particles, collisions, last_collided, args, col, TC,
     return t, particles, collisions, last_collided
 
 
-def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
+def run_loop(init, args, condition=None, TC=False):
     tic = time.time()
     t, particles, collisions, last_collided, skip = setup_loop(init, args)
     N, T, radii, masses, xi, N_save = args
@@ -269,14 +269,14 @@ def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
         if valid_collision:
             t, particles, collisions, last_collided = \
                 execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip)
+            k = (skip+n-1) // skip
+            kp1 = (skip+n) // skip
+            if kp1-k>0: 
+                if condition(particles, args,kp1): break
             n += 1
-
-            if n%n_check==0: 
-                if condition(particles, args, n): break
-
+            
             bar.next()
 
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))
-    kp1 = (skip + n) // skip
     return particles[:kp1], t[:kp1]

@@ -89,7 +89,7 @@ def test_case_projectile(run_simulation=False):
 
     path = data_dir + name + "/"
     N_save = 1000
-    skip = T//N_save
+    skip = (T-1)//(N_save-1)
 
     if run_simulation:
         init = lambda N, radii : init_projectile(N, radii, 5)
@@ -115,11 +115,10 @@ def problem1(run_simulation = False):
     name = "problem1"
     path = data_dir + name + "/" 
     xi, N, T, R, N_save = read_params(para_dir + name)
-    radii = np.ones(N) * R
-    masses = np.ones(N)
-
     skip = (T-1)//(N_save-1) # collisions bw every saved event
     start = 3*N//skip # start sampling
+    radii = np.ones(N) * R
+    masses = np.ones(N)
     args = (N, T, radii, masses, xi, N_save)
 
     if run_simulation:
@@ -128,7 +127,6 @@ def problem1(run_simulation = False):
 
     else:
         particles, t = read_data(path)
-        print(particles.shape)
         dir = plot_dir + name + "/"
 
         v = np.sqrt(get_vel2(particles, -1))
@@ -143,6 +141,7 @@ def problem2(run_simulation=False):
     name = "problem2"
     path = data_dir + name + "/" 
     xi, N, T, R, N_save = read_params(para_dir + name)
+    skip = (T-1)//(N_save-1)
     radii = np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
@@ -150,9 +149,6 @@ def problem2(run_simulation=False):
     masses[:N//2] = np.ones(N1)
     masses[N//2:] = 4 * np.ones(N2)
     args = (N, T, radii, masses, xi, N_save)
-
-    N_save = 200
-    skip = T//N_save
 
     if run_simulation:
         particles, t = run_loop(random_dist, args)
@@ -169,7 +165,8 @@ def problem2(run_simulation=False):
 def problem3(run_simulation=False):
     name = "problem3"
     path = data_dir + name + "/" 
-    _, N, T, R = read_params(para_dir + name)
+    _, N, T, R, N_save = read_params(para_dir + name)
+    skip = (T-1)//(N_save-1)
     xis = [1, 0.9, 0.8]
     radii =np.ones(N) * R
     masses = np.empty(N)
@@ -178,18 +175,14 @@ def problem3(run_simulation=False):
     masses[:N//2] = np.ones(N1)
     masses[N//2:] = 4 * np.ones(N2)
 
-    N_save = 200
-    skip = T//N_save
-
-    if run_simulation: 
-        for i, xi in enumerate(xis):
+    for i, xi in enumerate(xis):
+        if run_simulation: 
             path_xi = path + "xi_" + str(i) + "/"
             args = (N, T, radii, masses, xi, N_save)
             particles, t = run_loop(random_dist, args, TC=True)
             save_data(particles, t, path_xi, skip)
 
-    else:
-        for i, xi in enumerate(xis):
+        else:
             dir = "xi_" + str(i) + "/"
             path_xi = path + dir
             particles, t = read_data(path_xi)
@@ -199,28 +192,25 @@ def problem3(run_simulation=False):
 def problem4(i, j, run_simulation=False):
     name = "problem4"
     xi, N, T, R, N_save, all_Rs = read_params(para_dir + name)
+    skip = (T-1)//(N_save-1)
     radii = np.ones(N) * R
     masses = np.ones(N) * R**2
     Rs = all_Rs[i:j]
-
-    N_save = 1
-    skip = T//N_save
-
-    if run_simulation:
-        for i, R in enumerate(Rs):
+    crater_size = np.zeros_like(Rs)
+    print(N_save)
+    for i, R in enumerate(Rs):
+        if run_simulation:
             radii[0] = R
             masses[0] = R**2
             args = (N, T, radii, masses, xi, N_save)
 
             path = data_dir + name + "/sweep_{}/".format(R)
             init = lambda N, radii : init_projectile(N, radii, 1)
-            particles, t = run_loop(init, args, TC=True, n_check=100, condition=energy_condition)
-            save_data(particles[-1][None], t, path, skip)
+            particles, t = run_loop(init, args, TC=True, condition=energy_condition)
+            save_data(particles, t, path, skip)
             # The None is a hack to make sure the list have the right amount of indices
-
-    else:
-        crater_size = np.zeros_like(Rs)
-        for i, R in enumerate(Rs):
+            print(particles.shape)
+        else:        
             radii[0] = R
             masses[0] = R**2
             args = (N, T, radii, masses, xi, N_save)
@@ -232,10 +222,10 @@ def problem4(i, j, run_simulation=False):
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
             dir_path = "plots/" + name + "/"
-            plot_particles(particles, 0, N, radii, dir_path, "particles{}".format(R))
+            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(R))
             plot_crater(free_space, y_max, dir_path, "crater{}".format(R))
         
-        plot_crater_size(Rs, crater_size, dir_path)
+    if not run_simulation: plot_crater_size(Rs, crater_size, dir_path)
 
 
 
