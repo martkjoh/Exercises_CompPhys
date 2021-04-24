@@ -42,7 +42,9 @@
 
     \verb|profile.ipynb| shows the profiling of \verb|run_loop|, and the subroutines that takes the most time. This shows that it is the loop that pushes the next collisions to the priority queue that is the bottle neck. A speedup of about 10 times, for 1000 particles and 10,000 steps was found by rewriting the function that finds the collisions. The notebook \verb|profile_old.ipynb| shows the time used by the old version. The old version of the functions took the index \verb|i| of the particle in question, then found if and when it was to collide with all other collisions, and returned this time as a list. The new version utilizes the fact that everything is contained in numpy-arrays. It does the same operations as the old function, only on arrays instead of single elements. This is done by using masks. An array of booleans can serve as indices, so \verb|lst[np.arange(N) != i]| gives an array with all the elements of \verb|lst[i]|. The profiling show that while most of the time went to the calculation of the next collision, it now goes to pushing to the \verb|collisions|-heap.
 
-    To investigate the creation of craters by a projectile, a function that measures the size of crater is needed. This is done by laying a grid with with a spacing $\Delta x$, looping through each cell to check if there is a particle inside it. The process for checking if a disk is inside each square cell is illustrated in \autoref{check if disk is inside}. Then, the size of the crater is given by $m \Delta x^2$, where $m$ is the number of unoccupied cells. This method relies on choosing a cell size $\Delta x$ large enough so that only cells within the crater are marked as empty. This is done by inspecting the result, and comparing it to a plot of the crater as shown in \ref{crater}
+    To investigate the creation of craters by a projectile, a function that measures the size of crater is needed. This is done by laying a grid with with a spacing $\Delta x$, looping through each cell to check if there is a particle inside it. The process for checking if a disk is inside each square cell is illustrated in \autoref{check if disk is inside}. Then, the size of the crater is given by $m \Delta x^2$, where $m$ is the number of unoccupied cells. This method relies on choosing a cell size $\Delta x$ large enough so that only cells within the crater are marked as empty. This is done by inspecting the result, and comparing it to a plot of the crater as shown in \ref{crater}.
+
+    To avoid inelastic collapse, the simulation was implemented as at TC-model as described in~\cite{TC}. This is only needed when $\xi<0$, and there are extremely many collisions in a short time step. inelastic collapse were observed when the projectile is approaching the bottom of the box. Good results were found with $t_c = 10^{-8}$.
 
     \begin{figure}[H]
         \centering
@@ -50,6 +52,7 @@
         \caption{Checking if a disk of radius $R$ is inside of a square of side length $\Delta x$, is equivalent to checking if the center of the disk is inside the shape on the left side. Thus, the task is reduced to checking if the center is inside the larger square of side lengths $R + 2 \Delta x$, but not at the corners, or inside one of the circles of radius $R$ centered at the corners of the square.}
         \label{check if disk is inside}
     \end{figure}
+
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.4\textwidth}                    
@@ -64,10 +67,11 @@
         \label{crater}
     \end{figure}
 
-    To avoid inelastic collapse, the simulation was implemented as at TC-model as described in~\cite{TC}. This is only needed when $\xi<0$, and there are extremely many collisions in a short time step. inelastic collapse were observed when the projectile is approaching the bottom of the box. Good results were found with $t_c = 10^{-8}$.
 
     \section*{Tests}
-    Several functions were developed to test the accuracy of the simulation. First, one particle, starting at in the middle of the box all the way to the left with a velocity with at $45^\circ$ to the $x$-axis, should move in a titled rectangle. With $\xi=1$ it should also conserve energy. \autoref{single particle} shows that this is still the case after $10,000$ events. \autoref{single particle energy} shows that the energy of the system is conserved.
+    Several functions were developed to test the implementation for errors and bugs. First, one particle, starting at in the middle of the box all the way to the left with a velocity with at $45^\circ$ to the $x$-axis, should move in a titled rectangle. With $\xi=1$ it should also conserve energy. \autoref{single particle} shows that this is still the case after $10,000$ events. \autoref{single particle energy} shows that the energy of the system is conserved.
+    
+    To test the validity of the particle collision, one small, light particle is sent towards a single, large and heavy particle, with varying impact parameter. The relationship between the impact parameter and the escape angle is $s(\theta) = a \cos(\theta / 2)$, where $a$ is the radius of the stationary particle \cite{klasmek}. The result is shown i \autoref{scattering}, and is in good agreement with the theory. Lastly, the energy from a simulation of 2000 particles over 20,000 events is shown in \autoref{test many particles}, together with a snapshot of the particles. The energy is conserved, aside from negligible fluctuations.
 
     \begin{figure}[H]
         \centering
@@ -87,8 +91,6 @@
             \label{single particle energy}
         \end{subfigure}
     \end{figure}
-    
-    To test the validity of the particle collision, one small, light particle is sent towards a single, large and heavy particle, with varying impact parameter. The relationship between the impact parameter and the x-axis is $s(\theta) = a \cos(\theta / 2)$.\cite{klasmek} The result is shown i \autoref{scattering}, and is in good agreement with the theory. Lastly, the energy from a simulation of 2000 particles over 20,000 events is shown in \autoref{test many particles}, together with a snapshot of the particles. The energy is conserved, aside from negligible fluctuations.
 
     \begin{figure}[H]
         \centering

@@ -281,3 +281,12 @@ def cl_arguments(args):
 
 if __name__ == "__main__":
     cl_arguments(sys.argv)
+
+    """
+    To run a the program, use commands "python ./main.py " then
+    - "test 0 1 2 (run)" to (run simulation and) plot stored data for test case 0, 1, and 2
+    - "problem 0 1 (run)" to (run simulation and) plot stored data for problem1, problem2
+    - "sweep 0 10 (run)" to (run simulations and) plot sored data with R-valuse nr 0 to (not incl) 10
+    to run sweep in parallel, execute for example
+    "sweep run 0 4", "sweep run 4 8", etc. in different terminal. The first R's take a lot less time.
+    """
