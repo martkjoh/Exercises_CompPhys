@@ -58,10 +58,10 @@ def check_dir(dir_path):
         make_dir(dir_path)
 
 
-def save_data(particles, t, dir_path, save):
+def save_data(particles, t, dir_path, N_save):
     check_dir(dir_path)
-    np.save(dir_path + "particles.npy", particles)
-    np.save(dir_path + "t.npy", t)
+    np.N_save(dir_path + "particles.npy", particles)
+    np.N_save(dir_path + "t.npy", t)
 
 
 def read_data(path):
@@ -73,12 +73,12 @@ def read_data(path):
 
 def read_params(path):
     params = np.loadtxt(path + ".txt")
-    xi, N, T, R = params[:4]
-    N, T = int(N), int(T)
-    if len(params) > 4:
-        return xi, N, T, R, params[4:]
+    xi, N, T, R, N_save = params[:5]
+    N, T, N_save = int(N), int(T), int(N_save)
+    if len(params) > 5:
+        return xi, N, T, R, N_save, params[5:]
     else:
-        return xi, N, T, R
+        return xi, N, T, R, N_save
 
 
 """
@@ -150,7 +150,7 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi):
 
 
 def energy_condition(particles, args, n):
-    N, T, radii, masses, xi, save = args
+    N, T, radii, masses, xi, N_save = args
     E0 = get_energy(particles, masses, 0)
     E = get_energy(particles, masses, n)
     ratio = E/E0
@@ -209,9 +209,9 @@ Main Loop
 
 
 def setup_loop(init, args):
-    N, T, radii, masses, xi, save = args
+    N, T, radii, masses, xi, N_save = args
     print("Placing particles")
-    particles = np.empty((save, N, 4))
+    particles = np.empty((N_save, N, 4))
     tic = time.time()
     particles[0] = init(N, radii)
     print("Time placing particles: {}".format(time.time() - tic))
@@ -220,15 +220,15 @@ def setup_loop(init, args):
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
 
-    t = np.zeros(save)
-    assert (T-1)%(save-1)==0
-    skip = (T-1)//(save-1)
+    t = np.zeros(N_save)
+    assert (T-1)%(N_save-1)==0
+    skip = (T-1)//(N_save-1)
 
     return t, particles, collisions, last_collided, skip
 
 
 def execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip):
-    N, T, radii, masses, xi, save = args
+    N, T, radii, masses, xi, N_save = args
     t_next, i, j, t_added, col_type  = col
     k = (skip - 1 + n) // skip
     kp1 = (skip + n) // skip
@@ -254,10 +254,10 @@ def execute_collision(n, t, particles, collisions, last_collided, args, col, TC,
 def run_loop(init, args, condition=None, n_check=np.inf, TC=False):
     tic = time.time()
     t, particles, collisions, last_collided, skip = setup_loop(init, args)
-    N, T, radii, masses, xi, save = args
+    N, T, radii, masses, xi, N_save = args
 
     n = 0
-    bar = Bar("running simulation", max=T)
+    bar = Bar("running simulation", max=T-1)
     while n < T-1:
         col = heapq.heappop(collisions)
         t_next, i, j, t_added, col_type  = col

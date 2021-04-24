@@ -15,12 +15,14 @@ data_dir = "data/"
 para_dir = "parameters/"
 plot_dir = "plots/"
 
+
 def test_case_one_particle():
     name = "test_case_one_particle"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
+    print(N_save)
     radii = np.ones(N) * R
     masses = np.ones(N)
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(init_one_testparticle, args)
     
@@ -31,10 +33,10 @@ def test_case_one_particle():
 
 def test_case_two_particles():
     name = "test_case_two_particles"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(init_two_testparticles, args)
     anim_particles(particles, t, N, radii, 5, title=name)
@@ -43,10 +45,10 @@ def test_case_two_particles():
 
 def test_case_many_particles():
     name = "test_case_many_particles"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(random_dist, args)
     # anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
@@ -56,11 +58,11 @@ def test_case_many_particles():
 
 def test_case_collision_angle():
     name = "test_case_collision_angle"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     a = 0.01
     radii = np.array([a, R])
     masses = np.array([1e6, 1])
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     m = 100
     bs = np.linspace(0, a, m)
@@ -78,12 +80,12 @@ def test_case_collision_angle():
 
 def test_case_projectile(run_simulation=False):
     name = "test_case_projectile"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     radii[0] = 0.05
     masses = np.ones(N)
     masses[0] = 25
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     path = data_dir + name + "/"
     N_save = 1000
@@ -102,24 +104,23 @@ def test_case_projectile(run_simulation=False):
 def profile_run():
     # https://web.archive.org/web/20140513005858im_/http://www.appneta.com/blog/line-profiler-python/
     name = "profile_run"
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
     particles, t = run_loop(random_dist, args)
 
 
 def problem1(run_simulation = False):
     name = "problem1"
     path = data_dir + name + "/" 
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N)
 
-    N_save = 201 # number of steps to save (+- 1)
-    skip = (T-1)//(N_save-1) # values to skip to save N_save values
+    skip = (T-1)//(N_save-1) # collisions bw every saved event
+    start = 3*N//skip # start sampling
     args = (N, T, radii, masses, xi, N_save)
-
 
     if run_simulation:
         particles, t = run_loop(random_dist, args)
@@ -129,11 +130,11 @@ def problem1(run_simulation = False):
         particles, t = read_data(path)
         print(particles.shape)
         dir = plot_dir + name + "/"
-        start = 3*N // skip
-        plot_vel_dist(particles[start:], masses, dir)
+
         v = np.sqrt(get_vel2(particles, -1))
         bins = np.linspace(np.min(v), np.max(v), 100)
         plot_vel_dist(particles[0:1], masses, dir + "2/", graph=False, bins=bins)
+        plot_vel_dist(particles[start:], masses, dir)
         plot_av_vel(particles, T, skip, dir)
         plot_particles(particles, -1, N, radii, dir)
 
@@ -141,14 +142,14 @@ def problem1(run_simulation = False):
 def problem2(run_simulation=False):
     name = "problem2"
     path = data_dir + name + "/" 
-    xi, N, T, R = read_params(para_dir + name)
+    xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.empty(N)
     N1 = N//2
     N2 = N - N1
     masses[:N//2] = np.ones(N1)
     masses[N//2:] = 4 * np.ones(N2)
-    args = (N, T, radii, masses, xi)
+    args = (N, T, radii, masses, xi, N_save)
 
     N_save = 200
     skip = T//N_save
@@ -183,7 +184,7 @@ def problem3(run_simulation=False):
     if run_simulation: 
         for i, xi in enumerate(xis):
             path_xi = path + "xi_" + str(i) + "/"
-            args = (N, T, radii, masses, xi)
+            args = (N, T, radii, masses, xi, N_save)
             particles, t = run_loop(random_dist, args, TC=True)
             save_data(particles, t, path_xi, skip)
 
@@ -197,7 +198,7 @@ def problem3(run_simulation=False):
     
 def problem4(i, j, run_simulation=False):
     name = "problem4"
-    xi, N, T, R, all_Rs = read_params(para_dir + name)
+    xi, N, T, R, N_save, all_Rs = read_params(para_dir + name)
     radii = np.ones(N) * R
     masses = np.ones(N) * R**2
     Rs = all_Rs[i:j]
@@ -209,7 +210,7 @@ def problem4(i, j, run_simulation=False):
         for i, R in enumerate(Rs):
             radii[0] = R
             masses[0] = R**2
-            args = (N, T, radii, masses, xi)
+            args = (N, T, radii, masses, xi, N_save)
 
             path = data_dir + name + "/sweep_{}/".format(R)
             init = lambda N, radii : init_projectile(N, radii, 1)
@@ -222,7 +223,7 @@ def problem4(i, j, run_simulation=False):
         for i, R in enumerate(Rs):
             radii[0] = R
             masses[0] = R**2
-            args = (N, T, radii, masses, xi)
+            args = (N, T, radii, masses, xi, N_save)
 
             path = data_dir + name + "/sweep_{}/".format(R)
             particles, t = read_data(path)
