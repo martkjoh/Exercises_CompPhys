@@ -60,8 +60,8 @@ def check_dir(dir_path):
 
 def save_data(particles, t, dir_path, save):
     check_dir(dir_path)
-    np.save(dir_path + "particles.npy", particles[::save])
-    np.save(dir_path + "t.npy", t[::save])
+    np.save(dir_path + "particles.npy", particles)
+    np.save(dir_path + "t.npy", t)
 
 
 def read_data(path):

@@ -127,6 +127,7 @@ def problem1(run_simulation = False):
 
     else:
         particles, t = read_data(path)
+        print(particles.shape)
         dir = plot_dir + name + "/"
         start = 3*N // skip
         plot_vel_dist(particles[start:], masses, dir)
