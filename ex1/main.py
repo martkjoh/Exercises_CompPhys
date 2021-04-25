@@ -16,6 +16,10 @@ para_dir = "parameters/"
 plot_dir = "plots/"
 
 
+#TODO: Run test cases, set params
+#TODO: fix crater checking
+#TODO: run profiler
+
 def test_case_one_particle():
     name = "test_case_one_particle"
     xi, N, T, R, N_save = read_params(para_dir + name)
@@ -187,40 +191,37 @@ def problem3(run_simulation=False):
     
 def problem4(i, j, run_simulation=False):
     name = "problem4"
-    xi, N, T, R, N_save, all_Rs = read_params(para_dir + name)
+    xi, N, T, R, N_save, N_R = read_params(para_dir + name)
     skip = (T-1)//(N_save-1)
     radii = np.ones(N) * R
     masses = np.ones(N) * R**2
-    Rs = all_Rs[i:j]
+    Rs = np.linspace(0.01, 0.04, int(N_R))
     crater_size = np.zeros_like(Rs)
+    all = i==0 and j==N_R
 
-    for i, R in enumerate(Rs):
+    for i in range(i, j):
+        R = Rs[i]
+        radii[0] = R
+        masses[0] = R**2
+        args = (N, T, radii, masses, xi, N_save)
+        path = data_dir + name + "/sweep_{}/".format(i)
+
         if run_simulation:
-            radii[0] = R
-            masses[0] = R**2
-            args = (N, T, radii, masses, xi, N_save)
-
-            path = data_dir + name + "/sweep_{}/".format(R)
             init = lambda N, radii : init_projectile(N, radii, 1)
             particles, t = run_loop(init, args, TC=True, condition=energy_condition)
             save_data(particles, t, path, skip)
 
-        else:        
-            radii[0] = R
-            masses[0] = R**2
-            args = (N, T, radii, masses, xi, N_save)
-
-            path = data_dir + name + "/sweep_{}/".format(R)
+        if all:
             particles, t = read_data(path)
             dx = 0.012
             y_max = 0.5
             free_space = check_crater_size(particles, radii, -1, y_max, dx)
             crater_size[i] = 0.5 - dx**2 * np.sum(free_space)
             dir_path = "plots/" + name + "/"
-            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(R))
-            plot_crater(free_space, y_max, dir_path, "crater{}".format(R))
+            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
+            plot_crater(free_space, y_max, dir_path, "crater{}".format(i))
         
-    if not run_simulation: plot_crater_size(Rs, crater_size, dir_path)
+    if all: plot_crater_size(Rs, crater_size, dir_path)
 
 
 

@@ -57,12 +57,12 @@
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.4\textwidth}                    
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.01.pdf}
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.035.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater1.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater9.pdf}
         \end{subfigure}
         \begin{subfigure}{.59\textwidth}                    
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.01.pdf}
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.035.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles1.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles9.pdf}
         \end{subfigure}
         \caption{The grid cells with a particle inside is marked yellow, while the ones without a particle inside, i.e. those counted as making up the grid, are purple. The plot to the right shows the crater.}
         \label{crater}
@@ -118,9 +118,11 @@
     \end{equation*}
     when using units in which $k_b = 1$. The equipartition theorem gives the temperature $T = E$ in 2D. \autoref{problem1 av vel} shows the average velocity as a function of time. It is a indication of when the system has reached equilibrium, and was used to find a good point to start sampling. After that, the simulation is sampled every $N$ event, where $N$ is the number of particles. This ensures somewhat independent samples. \autoref{problem1 dist} shows the velocity distribution, compared to the Maxwell Boltzmann distribution.
 
+    Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$. As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium). \autoref{problem2 av vel} shows how the average speed evolves over time. After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature. The peak will nonetheless be at different velocities. This is, however, only the case when the restitution coefficient $\xi$ is set to 1. For values less than one, the two sub systems approach each other in temperature, but does not come into equilibrium, as shown in \autoref{problem2 av en}.
+
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/problem1/v_av.pdf}
+        \includegraphics[width=0.7\textwidth]{../plots/problem1/v_av.pdf}
         \caption{Average velocity, as a function of collisions. The distribution reaches equilibrium around $6000$ collisions, or $3N$}
         \label{problem1 av vel}
     \end{figure}
@@ -132,21 +134,19 @@
         \caption{The velocity distribution is a good fit with the Maxwell-Boltzmann distribution, shown as a blue line.}
         \label{problem1 dist}
     \end{figure}
-
-    Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$. As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium). \autoref{problem2 av vel} shows how the average speed evolves over time. After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature. The peak will nonetheless be at different velocities. This is, however, only the case when the restitution coefficient $\xi$ is set to 1. For values less than one, the two sub systems approach each other in temperature, but does not come into equilibrium, as shown in \autoref{problem2 av en}.
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.9\textwidth]{../plots/problem2/vel_dist.pdf}
-        \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
-        \label{problem2 dist}
-    \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{../plots/problem2/v_av.pdf}
         \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
         \label{problem2 av vel}
     \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{../plots/problem2/vel_dist.pdf}
+        \caption{The velocity distribution of the particles with $m=1$ and $m=4$ is show left and right, resp. and compared to the Maxwell-Boltzmann distribution.}
+        \label{problem2 dist}
+    \end{figure}
+ 
     \begin{figure}[H]
         \centering
         \hspace{-5mm}
