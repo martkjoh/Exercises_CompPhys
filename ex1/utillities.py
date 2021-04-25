@@ -38,11 +38,11 @@ def push_next_collision(particles, n, i, t, collisions, radii):
     push_particle_collision(particles, n, i, t, collisions, radii)
 
 
-def init_collisions(particles, radii):
+def init_collisions(particles, radii, t=0):
     collisions = []
     N = len(particles[0])
     for i in range(N):
-        push_next_collision(particles, 0, i, 0, collisions, radii)
+        push_next_collision(particles, 0, i, t, collisions, radii)
     return collisions
 
 
@@ -220,17 +220,17 @@ def setup_loop(init, args):
     collisions = init_collisions(particles, radii)
     # When has particle i last collided? Used to remove invalid collisions
     last_collided = -np.ones(N)
-
     t = np.zeros(N_save)
-    assert (T-1)%(N_save-1)==0
 
     return t, particles, collisions, last_collided
 
 
 def execute_collision(k, kp1, system, args, col, TC):
+    # This got out of hand
     N, T, radii, masses, xi, N_save = args
     t, particles, collisions, last_collided = system
-    t_next, i, j, t_added, col_type  = col
+    t_next, i, j, t_added, col_type = col
+
     particles[kp1] = particles[k]
     dt = col[0] - t[k]
     t[kp1] = t_next
@@ -250,20 +250,42 @@ def execute_collision(k, kp1, system, args, col, TC):
     return t, particles, collisions, last_collided
 
 
+def run_check(system, check, args, kp1):
+    """Checks if the loop has slowed down significantly, can delete cumulated collisions"""
+    t, particles, collisions, last_collided = system
+    N, T, radii, masses, xi, N_save = args
+    check.append((time.time(), len(collisions)))
+    dt = (check[-1][0]-check[-2][0])
+    dt0 = (check[1][0]-check[0][0])
+    delta = (dt - dt0)/dt0
+    
+    if delta>1 and check[-1][1]>check[-2][1]: # if it takes twice as long, dump collisions
+        print("\ndiscarding collisions")
+        collisions = init_collisions(particles[kp1:], radii, t=t[kp1])
+        system = t, particles, collisions, -np.ones(N)
+
+    print("\ntime since last check: {}, number of collisions: {}".format(dt, check[-1][1]))
+    return system, check
+
+
 def run_loop(init, args, condition=None, TC=False):
     tic = time.time()
     system = setup_loop(init, args) # tuple describing the simulated system
+    t, particles, collisions, last_collided = system
     N, T, radii, masses, xi, N_save = args
+    assert (T-1)%(N_save-1)==0
     skip = (T-1)//(N_save-1)
-
+    
     n = 0 # index for how many collisions have happened
     k = 0 # Index for reading out of particles
     kp1 = 1 # Index for writing to particles, =k or =k+1
     bar = Bar("running simulation", max=T-1)
+    check = [(time.time(), len(collisions))]
+
     while n < T-1:
         t, particles, collisions, last_collided = system
         col = heapq.heappop(collisions)
-        t_next, i, j, t_added, col_type  = col
+        t_next, i, j, t_added, col_type = col
         
         # skip invalid collisions
         valid_collision = (t_added >= last_collided[i]) \
@@ -271,8 +293,10 @@ def run_loop(init, args, condition=None, TC=False):
 
         if valid_collision:
             system = execute_collision(k, kp1, system, args, col, TC)
-            if not(condition is None) and (kp1-k)>0: 
-                if condition(system, args, kp1): break
+            
+            if (kp1-k)>0 and k!=0:
+                if not(condition is None) and condition(system, args, kp1): break
+                system, check = run_check(system, check, args, kp1)
 
             n += 1
             k = (skip+n-1) // skip

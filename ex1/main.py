@@ -252,20 +252,13 @@ def cl_arguments(args):
 
     elif args[1] == "problem":
         for arg in args[2:]:
-            try: 
-                int(arg)
-            except:
-                break
-            if args[-1] == "run":
-                problems[int(arg)](True)
-            problems[int(arg)]()
+            try: int(arg)
+            except: break
+            problems[int(arg)](args[-1] == "run")
 
     elif args[1] == "sweep":
         i, j = int(args[2]), int(args[3])
-        if args[-1] == "run":
-            problem4(i, j, True)
-        else:
-            problem4(i, j)
+        problem4(i, j, args[-1]=="run")
 
 
 if __name__ == "__main__":
