@@ -27,7 +27,7 @@ def init_collision_angle(b, N, radii):
 
 # Particles must wholly inside the box, and not overlapping
 @njit()
-def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
+def random_dist_jit(N, radii, x, y, v):
     # particle_no, (x, y, vx, vy)
     particles = np.zeros((N, 4))
     i = 0
@@ -60,6 +60,13 @@ def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
             raise Exception("can't fit particles")
     
     return particles
+
+
+def random_dist(N, radii, x=(0, 1), y=(0, 1), v=1):
+    A = (x[1] - x[0]) * (y[1] -y[0])
+    packing_ratio = np.pi * np.sum(radii**2)/A
+    print("Attempting packing with ratio {}".format(packing_ratio))
+    return random_dist_jit(N, radii, x, y, v)
 
 
 def init_projectile(N, radii, v_proj):

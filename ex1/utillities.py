@@ -149,8 +149,9 @@ def collide(particles, n, i, j,  collision_type, radii, masses, xi):
         particles[n, j, 2:] += -a / masses[j] * dx
 
 
-def energy_condition(particles, args, n):
+def energy_condition(system, args, n):
     N, T, radii, masses, xi, N_save = args
+    t, particles, collisions, last_collided = system
     E0 = get_energy(particles, masses, 0)
     E = get_energy(particles, masses, n)
     ratio = E/E0
@@ -222,16 +223,14 @@ def setup_loop(init, args):
 
     t = np.zeros(N_save)
     assert (T-1)%(N_save-1)==0
-    skip = (T-1)//(N_save-1)
 
-    return t, particles, collisions, last_collided, skip
+    return t, particles, collisions, last_collided
 
 
-def execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip):
+def execute_collision(k, kp1, system, args, col, TC):
     N, T, radii, masses, xi, N_save = args
+    t, particles, collisions, last_collided = system
     t_next, i, j, t_added, col_type  = col
-    k = (skip - 1 + n) // skip
-    kp1 = (skip + n) // skip
     particles[kp1] = particles[k]
     dt = col[0] - t[k]
     t[kp1] = t_next
@@ -253,12 +252,16 @@ def execute_collision(n, t, particles, collisions, last_collided, args, col, TC,
 
 def run_loop(init, args, condition=None, TC=False):
     tic = time.time()
-    t, particles, collisions, last_collided, skip = setup_loop(init, args)
+    system = setup_loop(init, args) # tuple describing the simulated system
     N, T, radii, masses, xi, N_save = args
+    skip = (T-1)//(N_save-1)
 
-    n = 0
+    n = 0 # index for how many collisions have happened
+    k = 0 # Index for reading out of particles
+    kp1 = 1 # Index for writing to particles, =k or =k+1
     bar = Bar("running simulation", max=T-1)
     while n < T-1:
+        t, particles, collisions, last_collided = system
         col = heapq.heappop(collisions)
         t_next, i, j, t_added, col_type  = col
         
@@ -267,16 +270,16 @@ def run_loop(init, args, condition=None, TC=False):
             and (j==-1 or (t_added >= last_collided[j]))
 
         if valid_collision:
-            t, particles, collisions, last_collided = \
-                execute_collision(n, t, particles, collisions, last_collided, args, col, TC, skip)
+            system = execute_collision(k, kp1, system, args, col, TC)
+            if not(condition is None) and (kp1-k)>0: 
+                if condition(system, args, kp1): break
+
+            n += 1
             k = (skip+n-1) // skip
             kp1 = (skip+n) // skip
-            if kp1-k>0: 
-                if condition(particles, args,kp1): break
-            n += 1
-            
             bar.next()
 
     bar.finish()
     print("Time elapsed: {}".format(time.time() - tic))
+    t, particles, collisions, last_collided = system
     return particles[:kp1], t[:kp1]

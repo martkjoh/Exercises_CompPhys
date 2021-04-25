@@ -125,16 +125,15 @@ def problem1(run_simulation = False):
         particles, t = run_loop(random_dist, args)
         save_data(particles, t, path, 1)
 
-    else:
-        particles, t = read_data(path)
-        dir = plot_dir + name + "/"
+    particles, t = read_data(path)
+    dir = plot_dir + name + "/"
 
-        v = np.sqrt(get_vel2(particles, -1))
-        bins = np.linspace(np.min(v), np.max(v), 100)
-        plot_vel_dist(particles[0:1], masses, dir + "2/", graph=False, bins=bins)
-        plot_vel_dist(particles[start:], masses, dir)
-        plot_av_vel(particles, T, skip, dir)
-        plot_particles(particles, -1, N, radii, dir)
+    v = np.sqrt(get_vel2(particles, -1))
+    bins = np.linspace(np.min(v), np.max(v), 100)
+    plot_vel_dist(particles[0:1], masses, dir + "2/", 0, 1, graph=False, bins=bins)
+    plot_vel_dist(particles, masses, dir, 3*N//skip, N//skip, bins=100)
+    plot_av_vel(particles, args, dir)
+    plot_particles(particles, -1, N, radii, dir)
 
 
 def problem2(run_simulation=False):
@@ -154,12 +153,11 @@ def problem2(run_simulation=False):
         particles, t = run_loop(random_dist, args)
         save_data(particles, t, path, skip)
 
-    else:
-        particles, t = read_data(path)
-        start = 3*N // skip
-        dir = plot_dir + name + "/"
-        titles = ("$m = 1,$", "$m = 4,$")
-        plot_prob_2(particles, start, N1, masses, t, dir, titles, "vel_dist")
+    particles, t = read_data(path)
+    start = 3*N // skip
+    dir = plot_dir + name + "/"
+    titles = ("$m = 1,$", "$m = 4,$")
+    plot_prob_2(particles, start, N1, masses, t, dir, titles, "vel_dist")
 
 
 def problem3(run_simulation=False):
@@ -182,11 +180,10 @@ def problem3(run_simulation=False):
             particles, t = run_loop(random_dist, args, TC=True)
             save_data(particles, t, path_xi, skip)
 
-        else:
-            dir = "xi_" + str(i) + "/"
-            path_xi = path + dir
-            particles, t = read_data(path_xi)
-            plot_energy_prob3(particles, t, masses, N1, N2, plot_dir + name + "/" + dir)
+        dir = "xi_" + str(i) + "/"
+        path_xi = path + dir
+        particles, t = read_data(path_xi)
+        plot_energy_prob3(particles, t, masses, N1, N2, plot_dir + name + "/" + dir)
 
     
 def problem4(i, j, run_simulation=False):
@@ -208,8 +205,7 @@ def problem4(i, j, run_simulation=False):
             init = lambda N, radii : init_projectile(N, radii, 1)
             particles, t = run_loop(init, args, TC=True, condition=energy_condition)
             save_data(particles, t, path, skip)
-            # The None is a hack to make sure the list have the right amount of indices
-            print(particles.shape)
+
         else:        
             radii[0] = R
             masses[0] = R**2
@@ -246,7 +242,6 @@ problems = [
 def cl_arguments(args):
     """ function for processing arguments from the command line """
     
-    # run the tests. syntax: python main.py test 0 2 (run) for test 0 and 2 (run simulation)
     if args[1] == "test":
         for arg in args[2:]:
             if args[-1] == "run":
@@ -263,8 +258,7 @@ def cl_arguments(args):
                 break
             if args[-1] == "run":
                 problems[int(arg)](True)
-            else:
-                problems[int(arg)]()
+            problems[int(arg)]()
 
     elif args[1] == "sweep":
         i, j = int(args[2]), int(args[3])

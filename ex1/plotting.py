@@ -30,27 +30,25 @@ def plot_energy(particles, t, masses, dir_path):
     save_plot(fig, ax, "energy", dir_path)
 
 
-def plot_av_vel(particles, T, skip, dir_path):
+def plot_av_vel(particles, args, dir_path):
     fig, ax = plt.subplots(figsize=(12, 5))
+    N, T, radii, masses, xi, N_save = args
 
     N = len(particles[0])
     v = particles[:, :, 2:]
     v_av = np.einsum("tn -> t", np.sqrt(v[:, :, 0]**2 + v[:, :, 1]**2)) / N
-    t = np.arange(0, T+1, skip)
+    t = np.linspace(0, T, N_save)
     ax.plot(t, v_av)
     ax.set_xlabel("# collisions")
     ax.set_ylabel("$\\langle v \\rangle$")
     save_plot(fig, ax, "v_av", dir_path)
 
 
-def get_plot_vel_dist(ax, particles, masses, title, bins=100, graph=True, n0=0, dn=1):
+def get_plot_vel_dist(ax, particles, masses, title, n0, dn, bins=100, graph=True):
     T = len(particles)
     N = len(particles[0])
     
-    v2 = []
-    n = n0
-    temp = 0
-    m = 0
+    v2 = []; temp = 0; m = 0; n = n0
     while n < T:
         v2.append(get_vel2(particles, n))
         temp += get_temp(particles, masses, n, N) 
@@ -59,22 +57,23 @@ def get_plot_vel_dist(ax, particles, masses, title, bins=100, graph=True, n0=0, 
     temp = temp/m
     v2 = np.concatenate(v2)
     v = np.linspace(0, np.sqrt(np.max(v2)), 1000)
- 
+
+    ax.hist(np.sqrt(v2), bins=bins, density=True)
+    ax.set_title(title + "$T = {:.3f} ,\, N = {}$".format(temp, N))
+    ax.set_xlabel("$v$")
+    ax.set_ylabel("prob.dens.")
+    
     if graph:
         label = "$f(v) = \\frac{mv}{T} \exp\left( - \\frac{m v^2}{2 T}\\right)$"
         ax.plot(v, MaxBoltz(v, masses[0], temp), label=label)
+        ax.legend()
     
 
-    ax.hist(np.sqrt(v2), bins=bins, density=True)
-    ax.set_title(title + "$\, T = {:.3f}$".format(temp))
-    ax.set_xlabel("$v$")
-    ax.set_ylabel("prob.dens.")
-    if graph: ax.legend()
-    
-
-def plot_vel_dist(particles, masses, dir_path, bins=100, graph=True, n0=1, dn=1, title="", fname="vel_dist"):
+def plot_vel_dist(
+        particles, masses, dir_path, n0, dn, bins=100, graph=True, title="", fname="vel_dist"
+        ):
     fig, ax = plt.subplots(figsize=(8, 5))
-    get_plot_vel_dist(ax, particles, masses, title, bins=bins, graph=graph)
+    get_plot_vel_dist(ax, particles, masses, title, n0, dn, bins=bins, graph=graph)
 
     save_plot(fig, ax, fname, dir_path)
 
