@@ -78,16 +78,18 @@ def plot_vel_dist(
     save_plot(fig, ax, fname, dir_path)
 
 
-def plot_prob_2(particles, start, N1, masses, t, dir_path, titles, fname):
-    fig, ax = plt.subplots(2, 2, figsize=(16, 6), sharex=True)
+def plot_prob_2(particles, args, N1, t, dir_path, titles, fname):
+    N, T, radii, masses, xi, N_save = args
+    skip = (T-1)//(N_save-1)
 
+    fig, ax = plt.subplots(2, 2, figsize=(18, 8), sharex=True)
     v = np.sqrt(get_vel2(particles, -1))
     bins = np.linspace(np.min(v), np.max(v), 100)
-    get_plot_vel_dist(ax[0, 0], particles[0:1, :N1], masses[:N1], titles[0], graph=False, bins=bins)
-    get_plot_vel_dist(ax[0, 1], particles[0:1, N1:], masses[N1:], titles[1], graph=False, bins=bins)
+    get_plot_vel_dist(ax[0, 0], particles[0:1, :N1], masses[:N1], titles[0], 0, 1,graph=False, bins=bins)
+    get_plot_vel_dist(ax[0, 1], particles[0:1, N1:], masses[N1:], titles[1], 0, 1, graph=False, bins=bins)
 
-    get_plot_vel_dist(ax[1, 0], particles[start:, :N1], masses[:N1], titles[0])
-    get_plot_vel_dist(ax[1, 1], particles[start:, N1:], masses[N1:], titles[1])
+    get_plot_vel_dist(ax[1, 0], particles[:, :N1], masses[:N1], titles[0], n0=3*N//skip, dn=N//skip)
+    get_plot_vel_dist(ax[1, 1], particles[:, N1:], masses[N1:], titles[1], n0=3*N//skip, dn=N//skip)
     
     save_plot(fig, ax, fname, dir_path)
 

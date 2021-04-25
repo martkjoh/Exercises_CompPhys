@@ -154,10 +154,9 @@ def problem2(run_simulation=False):
         save_data(particles, t, path, skip)
 
     particles, t = read_data(path)
-    start = 3*N // skip
     dir = plot_dir + name + "/"
     titles = ("$m = 1,$", "$m = 4,$")
-    plot_prob_2(particles, start, N1, masses, t, dir, titles, "vel_dist")
+    plot_prob_2(particles, args, N1, t, dir, titles, "vel_dist")
 
 
 def problem3(run_simulation=False):
@@ -194,7 +193,7 @@ def problem4(i, j, run_simulation=False):
     masses = np.ones(N) * R**2
     Rs = all_Rs[i:j]
     crater_size = np.zeros_like(Rs)
-    print(N_save)
+
     for i, R in enumerate(Rs):
         if run_simulation:
             radii[0] = R
