@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 
-\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[left=2.5cm, right=2.5cm, top=2cm, bottom=2cm]{geometry}
 \setlength{\parindent}{0em}
 \setlength{\parskip}{0.8em}
 
@@ -34,7 +34,7 @@
     Though this implementation is largely based on the description in \cite{exercise}, some specific choices have been made, which this section aims to illuminate.
     It describes the overarching structure of the code and some of the main data structures.
     The most important function in the code is \verb|run_loop()| in \verb|utillities.py|.
-    It instantiates the reuqired objects, and executes a while loop containing the algorithm, as laid out in \cite{exercise}, using the objects:
+    It instantiates the required objects, and executes a while loop containing the algorithm, as laid out in \cite{exercise}, using the objects:
     \begin{itemize}
         \item \verb|particles|, a numpy array with the position and velocity of all the particles.
         \item \verb|t|, a list where \verb|t[i]| is the time of collision number \verb|i|.
@@ -48,7 +48,6 @@
     In the while loop, the next collision is found by the \verb|heappop| method of \verb|collisions|.
     The list \verb|last_collided| is used to check if the next collision is valid.
     The function \verb|exectue_collision| translates the particles forward in time, finds the new velocities for the particles involved in the collision, before finally finding the new collisions, given the updated positions and velocities.
-
     
     The \verb|run_loop| function can be given the argument \verb|TC=True|.
     Then, it runs a TC-model, as described in \cite{TC}.
@@ -60,12 +59,11 @@
     This makes it possible to exit the loop early.
     It is used to run the simulation until $10\%$ of the energy is remaining, as described later in the report.
 
-
     As the program runs, the heap \verb|collision| becomes longer and longer, as more than one collision is added each time one is removed.
     This is often not a problem, however when it becomes too long, it is beneficiary to discard the \verb|collision| heap, and start from scratch.
     This is handled by \verb|run_check|.
     This function is called regularly in the main loop, at the same spot as \verb|func| as described in the paragraph above.
-    If the time between each call is twice as long as it initially was, all collisions are discarded, and \verb|collisions| are instantiated anew.
+    If the time between each call is more than four times as long as it initially was, all collisions are discarded, and \verb|collisions| are instantiated anew.
     This also decreases the risk of running out of RAM.
 
     The \verb|init| function depends on the situation that is being simulated.
@@ -99,7 +97,7 @@
         \centering
         \includegraphics[width=0.8\textwidth]{figure.pdf}
         \caption{Checking if a disk of radius $R$ is inside of a square of side length $\Delta x$, is equivalent to checking if the center of the disk is inside the shape on the left side.
-        Thus, the task is reduced to checking if the center is inside the larger square of side lengths $R + 2 \Delta x$, but not at the corners, or inside one of the circles of radius $R$ centered at the corners of the square.}
+        Thus, the task is reduced to checking if the center is inside the larger square of side lengths $2R + \Delta x$, but not at the corners, or inside one of the circles of radius $R$ centered at the corners of the square.}
         \label{check if disk is inside}
     \end{figure}
 
@@ -137,7 +135,7 @@
     The result is shown i \autoref{scattering}, and is in good agreement with the theory.
     The energy from a simulation of 10000 particles over 100,000 events is shown in \autoref{test many particles}, together with a snapshot of the particles.
     The energy is conserved, aside from negligible fluctuations.
-    Lastly, to test the 
+    Lastly, a video showcasing one large particle crashing into a large mass of small, inert particles is available at \verb|video/test_case_projectile.mp4|. This illustrates that the TC-simulation is working.
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.35\textwidth}
@@ -170,7 +168,7 @@
         \includegraphics[width=0.35\textwidth]{../plots/test_case_many_particles/test_case_many_particles.pdf}
         \includegraphics[width=0.54\textwidth]{../plots/test_case_many_particles/energy.pdf}
         \caption{On the left is a snapshot of the particles.
-        The arrows represent the velocities.
+        The arrows and colors represent the velocities.
         On the right, the energy is plotted as a function of events.
         The energy loss can be seen to be negligible.}
         \label{test many particles}
@@ -193,7 +191,7 @@
     \autoref{problem1 dist} shows the velocity distribution, compared to the Maxwell Boltzmann distribution.
 
     Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$.
-    As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different energies (although temperature is in fact only defined in equilibrium).
+    As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different temperatures (although temperature is in fact only defined in equilibrium).
     \autoref{problem2 av vel} shows how the average speed evolves over time.
     After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature.
     The peak will nonetheless be at different velocities.
@@ -204,7 +202,7 @@
         \centering
         \includegraphics[width=0.7\textwidth]{../plots/problem1/v_av.pdf}
         \caption{Average velocity, as a function of collisions.
-        The distribution reaches equilibrium around $6000$ collisions, or $3N$}
+        The distribution reaches equilibrium around $3000$ collisions, or $3N$}
         \label{problem1 av vel}
     \end{figure}
     

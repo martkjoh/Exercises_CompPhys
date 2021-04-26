@@ -203,8 +203,8 @@ def check_crater_size(particles, radii, n, Nx):
         x0, y0 = particles[n, i, 0:2]
         R = radii[i]
         # What coordinates might the particles be inside
-        x_might = np.logical_and(x>(x0-R-dx), x<(x0+R+dx))
-        y_might = np.logical_and(y>(y0-R-dx), y<(y0+R+dx))
+        x_might = np.logical_and(x>(x0-R-dx), x<(x0+R+2*dx))
+        y_might = np.logical_and(y>(y0-R-dx), y<(y0+R+2*dx))
         for j in indices_x[x_might]:
             for k in indices_y[y_might]:
                 # Check if actually is inside
@@ -269,9 +269,7 @@ def run_check(system, check, args, kp1):
     check.append((time.time(), len(collisions)))
     dt = (check[-1][0]-check[-2][0])
     dt0 = (check[1][0]-check[0][0])
-    delta = (dt - dt0)/dt0
-    
-    if delta>1 and check[-1][1]>check[-2][1]: # if it takes twice as long, dump collisions
+    if dt/dt0>4 and check[-1][1]>check[-2][1]:
         print("\ndiscarding collisions")
         collisions = init_collisions(particles[kp1:], radii, t=t[kp1])
         system = t, particles, collisions, -np.ones(N)

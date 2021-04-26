@@ -14,10 +14,6 @@ data_dir = "data/"
 # Path for reading parameters
 para_dir = "parameters/"
 plot_dir = "plots/"
-
-
-#TODO: Run test cases, set params
-#TODO: fix crater checking
 #TODO: run profiler
 
 def test_case_one_particle():
