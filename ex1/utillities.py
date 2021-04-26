@@ -155,7 +155,7 @@ def energy_condition(system, args, n):
     E0 = get_energy(particles, masses, 0)
     E = get_energy(particles, masses, n)
     ratio = E/E0
-    print("\nenergy ratio: ", ratio, end="")
+    print("\nenergy ratio: ", ratio)
     return ratio<0.1
 
 

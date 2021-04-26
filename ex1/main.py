@@ -14,6 +14,7 @@ data_dir = "data/"
 # Path for reading parameters
 para_dir = "parameters/"
 plot_dir = "plots/"
+
 #TODO: run profiler
 
 def test_case_one_particle():
@@ -78,8 +79,10 @@ def test_case_collision_angle():
     plot_collision_angle(theta, bs, a, plot_dir + name + "/")
 
 
-def test_case_projectile(run_simulation=False):
+def test_case_projectile():
     name = "test_case_projectile"
+    dir_path = "plots/" + name + "/"
+    path = data_dir + name + "/"
     xi, N, T, R, N_save = read_params(para_dir + name)
     radii = np.ones(N) * R
     radii[0] = 0.05
@@ -88,12 +91,13 @@ def test_case_projectile(run_simulation=False):
     args = (N, T, radii, masses, xi, N_save)
 
     init = lambda N, radii : init_projectile(N, radii, 5)
-    particles, t = run_loop(init, args, TC=True)
+    # particles, t = run_loop(init, args, TC=True)
+    # save_data(particles, t, path, 1)
+    particles, t = read_data(path)
     free_space = check_crater_size(particles[:, 1:], radii, -1, 180)
-    dir_path = "plots/" + name + "/"
     plot_particles(particles, -1, N, radii, dir_path, name + "_particles")
     plot_crater(free_space, dir_path, name +"_crater")
-    anim_particles(particles, t, N, radii, 0.005, title=name)
+    anim_particles(particles, t, N, radii, 0.004, title=name)
     
 
 
@@ -187,7 +191,7 @@ def problem4(i, j, run_simulation=False):
     skip = (T-1)//(N_save-1)
     radii = np.ones(N) * R
     masses = np.ones(N) * R**2
-    Rs = np.linspace(0.01, 0.04, int(N_R))
+    Rs = np.linspace(0.005, 0.02, int(N_R))
     crater_size = np.zeros_like(Rs)
     all = i==0 and j==N_R
 
