@@ -188,37 +188,30 @@ def particle_insde(x, y, dx, R, particle):
     return (center_inside and not centre_at_corners) or overlap_corner
 
 
-def check_crater_size(particles, radii, n, y_max, dx):
+def check_crater_size(particles, radii, n, Nx):
     print("Measuring crater")
+    ymax = 0.5
     tic = time.time()
-    Nx = int(1 / dx) + 1
-    Ny = int(y_max * (Nx - 1)) + 1
-    N = len(particles[n])
-    x, dx= np.linspace(0, 1, Nx, retstep=True)
-    y = np.linspace(0, y_max, Ny)
+    Ny = int(Nx*ymax)
+    x, dx= np.linspace(0, 1, Nx, retstep=True, endpoint=False)
+    y = np.linspace(0, ymax, Ny)
     indices_x = np.arange(Nx)
     indices_y = np.arange(Ny)
     free_space = np.zeros((Nx, Ny))
+
     for i in range(len(particles[n])):
         x0, y0 = particles[n, i, 0:2]
         R = radii[i]
         # What coordinates might the particles be inside
-        x_might = np.logical_and(x>(x0-R), x<(x0+R))
-        y_might = np.logical_and(y>(y0-R), y<(y0+R))
+        x_might = np.logical_and(x>(x0-R-dx), x<(x0+R+dx))
+        y_might = np.logical_and(y>(y0-R-dx), y<(y0+R+dx))
         for j in indices_x[x_might]:
             for k in indices_y[y_might]:
                 # Check if actually is inside
                 is_inside = particle_insde(j*dx, k*dx, dx, radii[i], particles[n, i])
                 if is_inside:
                     free_space[j, k] = 1.
-    # for i in range(Nx):
-    #     for j in range(Ny):
-    #         is_inside = False
-    #         for k in range(1, N):
-    #             is_inside = particle_insde(i*dx, j*dx, dx, radii[k], particles[n, k])
-    #             if is_inside:
-    #                 free_space[i, j] = 1. 
-    #                 break
+
     print("Time measuring crater: {}".format(time.time() - tic))
     return free_space
 

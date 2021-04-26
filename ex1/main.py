@@ -55,7 +55,7 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(random_dist, args)
-    # anim_particles(particles, t, N, radii, 0.001, intr=100, title=name)
+    anim_particles(particles, t, N, radii, 0.0005, interval=100, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -93,14 +93,11 @@ def test_case_projectile(run_simulation=False):
 
     init = lambda N, radii : init_projectile(N, radii, 5)
     particles, t = run_loop(init, args, TC=True)
-    
-    dx = 0.001; y_max = 0.5
-    free_space = check_crater_size(particles[:, 1:], radii, -1, y_max, dx)
-    print()
+    free_space = check_crater_size(particles[:, 1:], radii, -1, 180)
     dir_path = "plots/" + name + "/"
     plot_particles(particles, -1, N, radii, dir_path, name + "_particles")
-    plot_crater(free_space, y_max, dir_path, name +"_crater")
-    # anim_particles(particles, t, N, radii, 0.005, title=name)
+    plot_crater(free_space, dir_path, name +"_crater")
+    anim_particles(particles, t, N, radii, 0.005, title=name)
     
 
 

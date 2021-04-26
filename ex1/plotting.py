@@ -136,10 +136,10 @@ def plot_energy_prob3(particles, t, masses, N1, N2, dir_path="plots/"):
     save_plot(fig, ax, "energy_ex3", dir_path)
 
 
-def plot_crater(free_space, y_max, dir_path, fname):
+def plot_crater(free_space, dir_path, fname):
     Nx, Ny = np.shape(free_space)
     x = np.linspace(0, 1, Nx)
-    y = np.linspace(0, y_max, Ny)
+    y = np.linspace(0, 0.5, Ny)
     x, y = np.meshgrid(x, y)
     
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -184,7 +184,10 @@ def plot_particles(particles, n, N, radii, dir_path, fname="particles"):
     circles  = get_particles_plot(particles, n, N, radii)
     arrows = get_arrows_plot(particles, n, N, radii)
     patches = PatchCollection(circles + arrows)
-    colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
+    v = np.sqrt(particles[n, :, 2]**2 + particles[n, :, 3]**2)
+    vmax = np.max(v)
+    if vmax<1e-10: vmax = 1 # avoid divide by zero
+    colors = np.concatenate([v/vmax, np.zeros(N)])
     patches.set_array(colors)
     ax.add_collection(patches)
 
@@ -200,7 +203,10 @@ def anim_particles(particles, t, N, radii, dt, interval=100, title="vid", plot_v
     arrows = get_arrows_plot(particles, 0, N, radii)
 
     patches = PatchCollection(circles + arrows)
-    colors = np.concatenate([np.linspace(0.2, 0.8, N), np.zeros(N)])
+    v = np.sqrt(particles[0, :, 2]**2 + particles[0, :, 3]**2)
+    vmax = np.max(v)
+    if vmax<1e-10: vmax = 1 # avoid divide by zero
+    colors = np.concatenate([v/vmax, np.zeros(N)])
     patches.set_array(colors)
     ax.add_collection(patches)
     txt1 = ax.text(0.8, 0.8, "t = {:.3f}".format(t[0]), size=12)
@@ -218,6 +224,11 @@ def anim_particles(particles, t, N, radii, dt, interval=100, title="vid", plot_v
         circles = get_particles_plot(particles, n, N, radii)
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
+        v = np.sqrt(particles[n, :, 2]**2 + particles[n, :, 3]**2)
+        vmax = np.max(v)
+        if vmax<1e-10: vmax = 1 # avoid divide by zero
+        colors = np.concatenate([v/vmax, np.zeros(N)])
+        patches.set_array(colors)
 
     a = FA(fig, anim, interval=interval, frames=frames)
     a.save("video/" + title + ".mp4", dpi=300)
