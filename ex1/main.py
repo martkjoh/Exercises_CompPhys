@@ -43,7 +43,7 @@ def test_case_two_particles():
     args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(init_two_testparticles, args)
-    anim_particles(particles, t, N, radii, 5, title=name)
+    anim_particles(particles, t, N, radii, 0.001, title=name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
 
@@ -91,18 +91,17 @@ def test_case_projectile(run_simulation=False):
     masses[0] = 25
     args = (N, T, radii, masses, xi, N_save)
 
-    path = data_dir + name + "/"
-    N_save = 1000
-    skip = (T-1)//(N_save-1)
-
-    if run_simulation:
-        init = lambda N, radii : init_projectile(N, radii, 5)
-        particles, t = run_loop(init, args, TC=True)
-        save_data(particles, t,  path, skip)
-
-    else:
-        particles, t = read_data(path)
-        anim_particles(particles, t, N, radii, 0.005, title=name)
+    init = lambda N, radii : init_projectile(N, radii, 5)
+    particles, t = run_loop(init, args, TC=True)
+    
+    dx = 0.001; y_max = 0.5
+    free_space = check_crater_size(particles[:, 1:], radii, -1, y_max, dx)
+    print()
+    dir_path = "plots/" + name + "/"
+    plot_particles(particles, -1, N, radii, dir_path, name + "_particles")
+    plot_crater(free_space, y_max, dir_path, name +"_crater")
+    # anim_particles(particles, t, N, radii, 0.005, title=name)
+    
 
 
 def profile_run():
@@ -228,7 +227,7 @@ def problem4(i, j, run_simulation=False):
 tests = [
     test_case_one_particle, 
     test_case_two_particles, 
-    test_case_many_particles, 
+    test_case_many_particles,
     test_case_collision_angle,
     test_case_projectile
     ]
@@ -241,14 +240,9 @@ problems = [
 
 def cl_arguments(args):
     """ function for processing arguments from the command line """
-    
     if args[1] == "test":
         for arg in args[2:]:
-            if args[-1] == "run":
-                if arg == "run" : break # not very elegant
-                tests[int(arg)](True)
-            else:
-                tests[int(arg)]()
+            tests[int(arg)]()
 
     elif args[1] == "problem":
         for arg in args[2:]:
@@ -266,7 +260,7 @@ if __name__ == "__main__":
 
     """
     To run a the program, use commands "python ./main.py " then
-    - "test 0 1 2 (run)" to (run simulation and) plot stored data for test case 0, 1, and 2
+    - "test 0 1 2" to run simulation and plot stored data for test case 0, 1, and 2
     - "problem 0 1 (run)" to (run simulation and) plot stored data for problem1, problem2
     - "sweep 0 10 (run)" to (run simulations and) plot sored data with R-valuse nr 0 to (not incl) 10
     to run sweep in parallel, execute for example

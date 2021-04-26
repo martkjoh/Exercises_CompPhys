@@ -191,7 +191,7 @@ def plot_particles(particles, n, N, radii, dir_path, fname="particles"):
     save_plot(fig, ax, fname, dir_path)
 
 
-def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=True):
+def anim_particles(particles, t, N, radii, dt, interval=100, title="vid", plot_vel=True):
     fig, ax = plt.subplots()
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -219,5 +219,5 @@ def anim_particles(particles, t, N, radii, dt, intr=100, title="vid", plot_vel=T
         arrows = get_arrows_plot(particles, n, N, radii)
         patches.set_paths(circles + arrows)
 
-    a = FA(fig, anim, interval=intr, frames=frames)
+    a = FA(fig, anim, interval=interval, frames=frames)
     a.save("video/" + title + ".mp4", dpi=300)
