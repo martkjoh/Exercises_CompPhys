@@ -73,15 +73,20 @@ def plot_decay(Ss, alphas, h, args, name):
     t = np.linspace(0, T*h, T)
     coo = ["x", "y"]
     col = ["limegreen", "royalblue"]
+    def f(x, a, w, t):
+        return a * np.cos(w * x) * np.exp(-x/t)
 
     fig, ax = plt.subplots(1, 3, figsize=(16, 5), sharey=True)
     for k, S in enumerate(Ss):
         a = alphas[k]
+        (a0, w, tau), _ = curve_fit(f, t, S[:, 0, 0])
+        print(w)
         for i in range(2):
             ax[k].plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
         ax[k].plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
         ax[k].set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + "$")
         ax[k].set_xlabel("$t$")
+
     ax[0].legend()
     ax[0].set_ylabel("$S$")
     plt.tight_layout()
@@ -101,27 +106,31 @@ def plot_zs(S, h, name, args):
         label="$S_"+spins[i]+"$",
         color=cm.viridis(i/N))
 
-        
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    fig.suptitle("$ J = " + str(J) +  "$")
+    fig.suptitle(
+        "$ \\alpha = " + str(a) + ",\, d_z=" + str(dz) + ",\,J=" + str(J) +"$",
+        y = 0.95
+        )
 
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 
-def plot_coords(S, h, name, args, alpha=1, coords=(0, 1, 2)):
+def plot_coords(S, h, name, args, alpha=1, coords=(0, 1, 2), fs=(8, 10), lim=None):
     J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
 
-    fig, ax = plt.subplots(len(coords), sharex=True, figsize=(12, 2*len(coords) + 4))
+    fig, ax = plt.subplots(len(coords), sharex=True, figsize=fs)
     if len(coords) == 1: ax = [ax, ]
     for i in range(N):
         for n, j in enumerate(coords):
-            ax[n].plot(t, S[:, i, j],
-            color=cm.viridis(i/N), alpha=alpha
+            if lim is not None:
+                ax[n].set_ylim(lim[0], lim[1])
+            ax[n].plot(
+                t, S[:, i, j], color=cm.viridis(i/N), alpha=alpha
             )
     
     ax[-1].set_xlabel("$t$")
@@ -129,24 +138,24 @@ def plot_coords(S, h, name, args, alpha=1, coords=(0, 1, 2)):
     coord_name=["x", "y", "z"]
     for n, i in enumerate(coords):
         ax[n].set_title("$S_" + coord_name[i] + "$")
-    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z=" + str(dz) + ",\,J=" + str(J) +"$")
 
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
 
 
-def plot_fit_to_sum(S, h, args, name):
+def plot_fit_to_sum(S, h, args, name, fs=(10, 6)):
     J, dz, B, a = args
     T = len(S)
     N = len(S[0])
     t = np.linspace(0, T*h, T)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=fs)
 
-    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z=" + str(dz) + ",\,J=" + str(J) +"$")
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    ax.set_ylim(np.min(S[:, :, 0]), np.max(S[:, :, 0]))
+    # ax.set_ylim(np.min(S[:, :, 0]), np.max(S[:, :, 0]))
 
     def f(x, a, w, t):
         return a * np.cos(w * x) * np.exp(-x/t)
@@ -158,7 +167,7 @@ def plot_fit_to_sum(S, h, args, name):
     Ssum1 = np.einsum("tnx -> tx", S)[:, 0]/N
     Ssum = Ssum1[::10]; t2 = t[::10]
     (a, w, tau), _ = curve_fit(f, t2, Ssum, maxfev=int(1e5))
-    ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}$")
+    ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}/N$")
     ax.plot(
         t, f(t, a, w, tau), "k--", 
         label="$"+sci(a)+"\cos("+sci(w)+"t)\exp(-t/"+sci(tau)+")$"
@@ -174,7 +183,7 @@ def plot_mag(Mz, h, name, args, gs):
     T = len(Mz)
     t = np.linspace(0, T*h, T)
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     ax.plot(t, Mz, label="$M_z$")
     ax.plot(t, gs*np.ones_like(t), "k--")

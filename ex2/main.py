@@ -59,7 +59,10 @@ INITIALIZATION
 
 
 def get_S(n):
-    """ randomly distributed spins """
+    """ 
+    Randomly distributed spins 
+    Not uniform, but i does not matter 
+    """
     theta = np.random.random(n) * pi
     phi = np.random.random(n) * 2 * pi
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
@@ -72,11 +75,11 @@ def get_S1(n, offset=0.5):
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
 
-def get_S2(n):
+def get_S2(n, offset=1):
     """ one spin tilted, af """
     theta = np.zeros(n)
     theta[::2] = np.ones(n//2) * np.pi
-    theta[0] = np.pi - 1
+    theta[0] = np.pi - offset
     phi = np.zeros(n)
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
@@ -137,14 +140,14 @@ def ex213():
 
 
 def ex2211():
-    T, N, h = 20_000, 10, 0.01
+    T, N, h = 30_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S(N)
     args = (1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
     integrate(LLG, S, h, heun_step, args)
     plot_zs(S, h, "ground_state_f", args)
-    plot_spins(S[-1], "ground_state_f3D")
-    anim_spins(S, "gs_f", 20)
+    # plot_spins(S[-1], "ground_state_f3D")
+    # anim_spins(S, "gs_f", 20)
 
 def ex2212():
     T, N, h = 5_000, 10, 0.01
@@ -153,10 +156,22 @@ def ex2212():
     args = (-1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
     integrate(LLG, S, h, heun_step, args)
     plot_zs(S, h, "ground_state_af", args)
-    plot_spins(S[-1], "ground_state_af3D")
-    anim_spins(S, "gs_af", 10)
+    # plot_spins(S[-1], "ground_state_af3D")
+    # anim_spins(S, "gs_af", 10)
 
-def ex2221():
+
+def ex2221a():
+    T, N, h = 7_000, 10, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S(N)
+
+    args = (0, 0.1, [0, 0, 0], 0.0) # (J, dz, B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "2221a", args, coords=(0,), fs=(12, 6))
+
+
+def ex2221b():
     T, N, h = 7_000, 10, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
@@ -164,7 +179,7 @@ def ex2221():
     args = (0, 0.1, [0, 0, 0], 0.0) # (J, dz, B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h, "2221", args)
+    plot_coords(S, h, "2221b", args)
 
 
 def ex2222():
@@ -181,12 +196,12 @@ def ex2222():
 def ex2224():
     T, N, h = 40_000, 10, 0.01
     S = np.empty([T, N, dim])
-    S[0] = get_S1(N)
+    S[0] = get_S1(N, offset=0.2)
 
     args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h, "2224", args, coords=[0])
+    plot_coords(S, h, "2224", args, coords=[0], fs=(12, 6))
     plot_fit_to_sum(S, h, args, "2224fit")
 
 
@@ -209,13 +224,13 @@ def ex22252():
     args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
-    plot_coords(S, h, "22252", args)
+    plot_coords(S, h, "22252", args, lim=(-1, 1))
     # anim_spins(S, "test", skip=10)
 
 def ex22261():
     T, N, h = 50_000, 10, 0.01
     S = np.empty([T, N, dim])
-    S[0] = get_S1(N)
+    S[0] = get_S1(N, offset=0.5)
 
     args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
@@ -224,9 +239,10 @@ def ex22261():
     plot_mag(Mz, h, "mag", args, gs=1)
 
 def ex22262():
+
     T, N, h = 50_000, 10, 0.01
     S = np.empty([T, N, dim])
-    S[0] = get_S2(N)
+    S[0] = get_S2(N, offset=0.1)
 
     args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
 
@@ -237,12 +253,14 @@ def ex22262():
 
 # ex211()
 # ex212()
-ex213()
+ex213() # Hvorfor endres ikke rekvensen
 # ex2211()
 # ex2212()
-# ex2221()
+# ex2221a()
+# ex2221b()
 # ex2222()
 # ex2224()
+# ex2225()
 # ex22252()
-# ex22261()
-# ex22262()
+ex22261()
+ex22262()
