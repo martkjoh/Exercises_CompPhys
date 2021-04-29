@@ -269,12 +269,13 @@ def run_check(system, check, args, kp1):
     check.append((time.time(), len(collisions)))
     dt = (check[-1][0]-check[-2][0])
     dt0 = (check[1][0]-check[0][0])
+    print("\ntime since last check: {}, \
+        number of collisions in queue: {}".format(dt, check[-1][1]))
     if dt/dt0>2 and check[-1][1]>check[-2][1]:
         print("\ndiscarding collisions")
         collisions = init_collisions(particles[kp1:], radii, t=t[kp1])
         system = t, particles, collisions, -np.ones(N)
 
-    print("\ntime since last check: {}, number of collisions: {}".format(dt, check[-1][1]))
     return system, check
 
 

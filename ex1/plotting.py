@@ -147,14 +147,14 @@ def plot_crater(free_space, dir_path, fname):
     save_plot(fig, ax, fname, dir_path)
     
 
-def plot_crater_size(Rs, crater_sizes, dir_path):
-    av_rise = np.sum(crater_sizes/ Rs) / len(Rs)
-    r = np.linspace(0, np.max(Rs))
+def plot_crater_size(ms, crater_sizes, dir_path):
+    av_rise = np.sum(crater_sizes/ ms) / len(ms)
+    r = np.linspace(0, np.max(ms))
     fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(Rs, crater_sizes, "rx", label="Sampled sizes")
-    ax.plot(r, av_rise * r, "k--", label="${:.3f} R$".format(av_rise))
+    ax.plot(ms, crater_sizes, "rx", label="Sampled sizes")
+    ax.plot(r, av_rise * r, "k--", label="${:.3f} m$".format(av_rise))
     ax.legend()
-    ax.set_xlabel("$R$")
+    ax.set_xlabel("$m$")
     ax.set_ylabel("Crater area")
     save_plot(fig, ax, "crater_size", dir_path)
 

@@ -37,25 +37,11 @@
     This simulations lends itself to simple parallelization, especially the last task where the same system with different parameters is simulated 20 times.
     This is handled by the \verb|cl_arguments| functions, which allows for running the system from the command line in several instantiation, with different parameters.
     
-    % \begin{itemize}
-    %     \item \verb|particles|, a numpy array with the position and velocity of all the particles.
-    %     \item \verb|t|, a list where \verb|t[i]| is the time of collision number \verb|i|.
-    %     \item \verb|collisions|, a priority queue containing a list for each collision.
-    %     The list has the time of the collision, the index of the particle(s) involved, and the type of collision it is.
-    %     The list is sorted by the time of the collision.
-    %     \item \verb|last_collided|, a list of when each particle was involved in a collision.
-    % \end{itemize}
-    % \verb|run_loop| takes the parameters for the simulation, \verb|(N, T, radii, masses, xi)|, which is respectively the number of particles, number of time steps to be executed, a list with the radii of the particles, a list of the masses, and the restitution coefficient $\xi$.
-    % It also takes a function \verb|init|, which is used to set the initial distribution of particles.
-    % In the while loop, the next collision is found by the \verb|heappop| method of \verb|collisions|.
-    % The list \verb|last_collided| is used to check if the next collision is valid.
-    % The function \verb|exectue_collision| translates the particles forward in time, finds the new velocities for the particles involved in the collision, before finally finding the new collisions, given the updated positions and velocities.
-    
     The \verb|run_loop| function can be given the argument \verb|TC=True|.
     Then, it runs a TC-model, as described in \cite{TC}.
     This is done to avoid inelastic collapse.
     This is only needed when $\xi<1$, and there are extremely many collisions in a short time step.
-    Inelastic collapse were observed when the projectile were approaching the bottom of the box, as in \autoref{crater}.
+    Inelastic collapse were observed when the projectile created a wave, as \autoref{crater}, and especially if it approach the bottom of the box.
     Good results were found with $t_c = 10^{-8}$.
     If the function is passed the argument \verb|condition=func|, it will check the function \verb|condition| at regular intervals.
     This makes it possible to exit the loop early.
@@ -253,8 +239,8 @@
     The crater is measured as described in the implementation section.
     The mass of the projectile is proportional to $R^2$, so that the density is constant.
     The simulation uses the value $\xi = 0.5$, and it is run until the total energy of the system is $10\%$ of the original value.
-    There are placed out 2000 particles, of mass radius $R=0.0063$ and mass $R^2$.
-    This means the packing fraction is $2000 \cdot \pi R^2 / 0.5 \approx 0.500$.
+    There are placed out 4000 particles, of radius $R=0.0045$ and mass in the range $[0.02, 0.15]$.
+    This means the packing fraction is $4000 \cdot \pi R^2 / 0.5 \approx 0.509$.
     \autoref{crater size} shows the size of the crater, as a function of the radius of the projectile.
     The relationship is close to linear.
 
