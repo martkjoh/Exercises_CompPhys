@@ -60,16 +60,14 @@
     Then, if the particle overlaps with any of the other particle already in the box, it is rejected.
     If too many particles in a row are rejected, There is a ``emergency break'', and the codes throws an error.
     As this function only returns a numpy array, the just-in-time compilation library Numba is compatible with it.
-    With 2000 particles, of radius 0.008, the \verb|@njit()|-decorator gives a speedup from 15.1 seconds to 0.8 seconds.
+    With 2\,000 particles, of radius 0.008, the \verb|@njit()|-decorator gives a speedup from 15.1 seconds to 0.8 seconds.
 
-    %TODO: Rerun and check these results
     \verb|profile.ipynb| shows the profiling of \verb|run_loop|, and the subroutines that takes the most time.
     This shows that it is the loop that pushes the next collisions to the priority queue that is the bottle neck.
-    A speedup of about 10 times, for 1000 particles and 10,000 steps was found by rewriting the function that finds the collisions.
-    The notebook \verb|profile_old.ipynb| shows the time used by the old version.
-    The old version of the functions took the index \verb|i| of the particle in question, then found if and when it was to collide with all other collisions, and returned this time as a list.
+    A speedup of around 20 times, for 1\,000 particles simulated over 10\,000 steps was found by rewriting the function that finds the collisions.
+    The notebook \verb|profile_old.ipynb| shows the time used by the old version of the function. It took as a argument the index \verb|i| of the particle in question, then found if and when it was to collide with all other particles, and returned this time as a list.
     The new version utilizes the fact that everything is contained in numpy-arrays.
-    It does the same operations as the old function, only on arrays instead of single elements.
+    It does the same operations as the old function, only on arrays instead of single particles.
     This is done by using masks.
     An array of booleans can serve as indices, so \verb|lst[np.arange(N) != i]| gives an array with all the elements of \verb|lst|, exept \verb|lst[i]|.
     The profiling show that while most of the time went to the calculation of the next collision, it now goes to pushing to the \verb|collisions|-heap.
@@ -93,11 +91,11 @@
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.4\textwidth}                    
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater1.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.pdf}
             \includegraphics[width=0.7\textwidth]{../plots/problem4/crater19.pdf}
         \end{subfigure}
         \begin{subfigure}{.59\textwidth}                    
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles1.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.pdf}
             \includegraphics[width=0.49\textwidth]{../plots/problem4/particles19.pdf}
         \end{subfigure}
         \caption{The grid cells with a particle inside is marked yellow, while the ones without a particle inside, i.e.
@@ -108,21 +106,23 @@
 
 
     \section*{Tests}
+
     Several functions were developed to test the implementation for errors and bugs.
     First, one particle, starting at in the middle of the box all the way to the left with a velocity with at $45^\circ$ to the $x$-axis, should move in a titled rectangle.
     With $\xi=1$ it should also conserve energy.
-    \autoref{single particle} shows that this is still the case after $10,000$ events.
+    \autoref{single particle} shows that this is still the case after 10\,000 events.
     \autoref{single particle energy} shows that the energy of the system is conserved.
     A test of two particles bouncing of each other is shown in the video \verb|video/test_case_two_particles.mp4|.
     This shows that two projectiles behave as expected, and follow a predictable pattern.
     After around 70 collisions, however, numerical errors accumulate such that the system is thrown into a chaotic state.
     This is expected behavior, and may even be argued is more realistic than perfectly predictable behavior, as this is not observed in nature.
+    A video showcasing 10\,000 particles over 100\,000 collisions is found in \verb|video/test_case_many_particles.mp4|
 
     
     To test the validity of the particle collision, one small, light particle is sent towards a single, large and heavy particle, with varying impact parameter.
     The relationship between the impact parameter and the escape angle is $s(\theta) = a \cos(\theta / 2)$, where $a$ is the radius of the stationary particle \cite{klasmek}.
     The result is shown i \autoref{scattering}, and is in good agreement with the theory.
-    The energy from a simulation of 10000 particles over 100,000 events is shown in \autoref{test many particles}, together with a snapshot of the particles.
+    The energy from a simulation of 10\,000 particles over 100\,000 events is shown in \autoref{test many particles}, together with a snapshot of the particles.
     The energy is conserved, aside from negligible fluctuations.
     Lastly, a video showcasing one large particle crashing into a large mass of small, inert particles is available at \verb|video/test_case_projectile.mp4|. This illustrates that the TC-simulation is working.
     \begin{figure}[H]
@@ -133,7 +133,7 @@
             \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-3.pdf}
             \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-2.pdf}
             \includegraphics[width=0.49\textwidth]{../plots/test_case_one_particle/particle-1.pdf}
-            \caption{After $10 000$ steps, the disk still follows a regular pattern}
+            \caption{After 10\,000 steps, the disk still follows a regular pattern}
             \label{single particle}
         \end{subfigure}
         \begin{subfigure}{.64\textwidth}
@@ -191,7 +191,7 @@
         \centering
         \includegraphics[width=0.7\textwidth]{../plots/problem1/v_av.pdf}
         \caption{Average velocity, as a function of collisions.
-        The distribution reaches equilibrium around $30000$ collisions, or $3N$}
+        The distribution reaches equilibrium around 30\,000 collisions, or $3N$}
         \label{problem1 av vel}
     \end{figure}
     
@@ -199,7 +199,7 @@
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/problem1/2/vel_dist.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/problem1/vel_dist.pdf}
-        \caption{On the left, the initial velocity distribution of 10 000 particles is shown. The ploit on the right uses from a total of 200 000 collisions, and shows a good fit with the Maxwell-Boltzmann distribution.}
+        \caption{On the left, the initial velocity distribution of 10\,000 particles is shown. The ploit on the right uses from a total of 200\,000 collisions, and shows a good fit with the Maxwell-Boltzmann distribution.}
         \label{problem1 dist}
     \end{figure}
     \begin{figure}[H]
@@ -239,10 +239,15 @@
     The crater is measured as described in the implementation section.
     The mass of the projectile is proportional to $R^2$, so that the density is constant.
     The simulation uses the value $\xi = 0.5$, and it is run until the total energy of the system is $10\%$ of the original value.
-    There are placed out 4000 particles, of radius $R=0.0045$ and mass in the range $[0.02, 0.15]$.
-    This means the packing fraction is $4000 \cdot \pi R^2 / 0.5 \approx 0.509$.
+    There are placed out 4\,000 particles, of radius $R=0.0045$ and mass in the range $[0.02, 0.15]$.
+    This means the packing fraction is $4\,000 \cdot \pi R^2 / 0.5 \approx 0.509$.
     \autoref{crater size} shows the size of the crater, as a function of the radius of the projectile.
-    The relationship is close to linear.
+    
+    The relationship between the crater size and the mass of the projectile is close to linear, suggesting that the size of the crater might be proportional to either the initial energy or momentum.
+    One would hope this hypothesis could be tested by simulating the projectile with different velocities, however even a large span in velocities leaves the crater nearly unchanged, not a very physically plausible result. 
+    This might be due to the criterion for stopping the simulation.
+    It runs until the system has 10\% of its initial energy, meaning high velocity projectiles still has a large velocity when the simulation is stopped. 
+    One plausible alternative is to stop the simulation when the projectile stops moving downwards, however this leads to untenably long simulations.
 
     \begin{figure}[H]
         \centering
@@ -256,7 +261,10 @@
     A good indication of this is how well the energy is conserved, as show by \autoref{test many particles}.
     The fluctuations here are mostly due to numerical inaccuracies, an negligible for the purposes of these simulations.
     Discrepancies between the histograms and the Maxwell-Boltzmann distribution comes from the fact that the simulated system is finite, and thus subject to stochastic fluctuations away from perfect equilibrium.
-    The most straight forward way to get better samples would be to simulate more particles, for longer periods of time.
+    The results from the simulation of a projectile are suggestive of a linear relationship between either momentum or energy, and the crater size.
+    Further investigations, with a better cutoff criterion is needed to tease these apart.
+
+    When it comes to the thermodynamic properties, the most straight forward way to get better samples would be to simulate more particles, for longer periods of time.
     At this point, however, the simulation will become increasingly slow, even with the measures taken to speed it up.
     The larges bottleneck at this time is pushing the collisions to the priority queue.
     Some measures could be taken to limit this, for example given particle $i$, only push the next collision with, say $j$.

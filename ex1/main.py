@@ -15,7 +15,6 @@ data_dir = "data/"
 para_dir = "parameters/"
 plot_dir = "plots/"
 
-#TODO: run profiler
 
 def test_case_one_particle():
     name = "test_case_one_particle"
