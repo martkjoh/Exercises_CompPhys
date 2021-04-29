@@ -25,7 +25,6 @@
     \maketitle
     \section*{Introduction}
     The goal of this exercise is to simulate particles as flat, hard disks in a square, 2D container.
-
     This is done with a event-driven simulation, as described in the exercise \cite{exercise}.
     This is implemented in Python, using the built-in library heapq.
     The simulation is used to first tested with scenarios we know the outcome of, then used to demonstrate the Maxwell-Boltzmann distribution and to investigate the effect of a large, heavy disk hitting a large number of small, inert particles.
@@ -34,20 +33,23 @@
     Though this implementation is largely based on the description in \cite{exercise}, some specific choices have been made, which this section aims to illuminate.
     It describes the overarching structure of the code and some of the main data structures.
     The most important function in the code is \verb|run_loop()| in \verb|utillities.py|.
-    It instantiates the required objects, and executes a while loop containing the algorithm, as laid out in \cite{exercise}, using the objects:
-    \begin{itemize}
-        \item \verb|particles|, a numpy array with the position and velocity of all the particles.
-        \item \verb|t|, a list where \verb|t[i]| is the time of collision number \verb|i|.
-        \item \verb|collisions|, a priority queue containing a list for each collision.
-        The list has the time of the collision, the index of the particle(s) involved, and the type of collision it is.
-        The list is sorted by the time of the collision.
-        \item \verb|last_collided|, a list of when each particle was involved in a collision.
-    \end{itemize}
-    \verb|run_loop| takes the parameters for the simulation, \verb|(N, T, radii, masses, xi)|, which is respectively the number of particles, number of time steps to be executed, a list with the radii of the particles, a list of the masses, and the restitution coefficient $\xi$.
-    It also takes a function \verb|init|, which is used to set the initial distribution of particles.
-    In the while loop, the next collision is found by the \verb|heappop| method of \verb|collisions|.
-    The list \verb|last_collided| is used to check if the next collision is valid.
-    The function \verb|exectue_collision| translates the particles forward in time, finds the new velocities for the particles involved in the collision, before finally finding the new collisions, given the updated positions and velocities.
+    It instantiates the required objects, and executes a while loop containing the algorithm, as laid out in \cite{exercise}.
+    This simulations lends itself to simple parallelization, especially the last task where the same system with different parameters is simulated 20 times.
+    This is handled by the \verb|cl_arguments| functions, which allows for running the system from the command line in several instantiation, with different parameters.
+    
+    % \begin{itemize}
+    %     \item \verb|particles|, a numpy array with the position and velocity of all the particles.
+    %     \item \verb|t|, a list where \verb|t[i]| is the time of collision number \verb|i|.
+    %     \item \verb|collisions|, a priority queue containing a list for each collision.
+    %     The list has the time of the collision, the index of the particle(s) involved, and the type of collision it is.
+    %     The list is sorted by the time of the collision.
+    %     \item \verb|last_collided|, a list of when each particle was involved in a collision.
+    % \end{itemize}
+    % \verb|run_loop| takes the parameters for the simulation, \verb|(N, T, radii, masses, xi)|, which is respectively the number of particles, number of time steps to be executed, a list with the radii of the particles, a list of the masses, and the restitution coefficient $\xi$.
+    % It also takes a function \verb|init|, which is used to set the initial distribution of particles.
+    % In the while loop, the next collision is found by the \verb|heappop| method of \verb|collisions|.
+    % The list \verb|last_collided| is used to check if the next collision is valid.
+    % The function \verb|exectue_collision| translates the particles forward in time, finds the new velocities for the particles involved in the collision, before finally finding the new collisions, given the updated positions and velocities.
     
     The \verb|run_loop| function can be given the argument \verb|TC=True|.
     Then, it runs a TC-model, as described in \cite{TC}.
@@ -55,14 +57,14 @@
     This is only needed when $\xi<1$, and there are extremely many collisions in a short time step.
     Inelastic collapse were observed when the projectile were approaching the bottom of the box, as in \autoref{crater}.
     Good results were found with $t_c = 10^{-8}$.
-    If the function is passed the argument \verb|condition=func|, it will check the function \verb|func| at regular intervals.
+    If the function is passed the argument \verb|condition=func|, it will check the function \verb|condition| at regular intervals.
     This makes it possible to exit the loop early.
     It is used to run the simulation until $10\%$ of the energy is remaining, as described later in the report.
 
-    As the program runs, the heap \verb|collision| becomes longer and longer, as more than one collision is added each time one is removed.
-    This is often not a problem, however when it becomes too long, it is beneficiary to discard the \verb|collision| heap, and start from scratch.
+    As the program runs, the priority queue \verb|collision|, containing the collisions, becomes longer and longer as more than one collision is added each time one is removed.
+    When it becomes too long, it is beneficiary to discard the \verb|collision| heap, and start from scratch.
     This is handled by \verb|run_check|.
-    This function is called regularly in the main loop, at the same spot as \verb|func| as described in the paragraph above.
+    This function is called regularly in the main loop, at the same spot as \verb|condition| as described in the paragraph above.
     If the time between each call is more than four times as long as it initially was, all collisions are discarded, and \verb|collisions| are instantiated anew.
     This also decreases the risk of running out of RAM.
 
@@ -70,10 +72,11 @@
     To place out particles randomly, in either the whole box or in a smaller part of the box, the \verb|random_dist| function, located in \verb|particle_init.py| is used.
     This function contains a loop that places a particle randomly within the desired bounds, and gives them velocity with a given magnitude, but uniformly distributed direction.
     Then, if the particle overlaps with any of the other particle already in the box, it is rejected.
-    If too many particles in a row are rejected, There is a "emergency break", and the codes throws an error.
+    If too many particles in a row are rejected, There is a ``emergency break'', and the codes throws an error.
     As this function only returns a numpy array, the just-in-time compilation library Numba is compatible with it.
     With 2000 particles, of radius 0.008, the \verb|@njit()|-decorator gives a speedup from 15.1 seconds to 0.8 seconds.
 
+    %TODO: Rerun and check these results
     \verb|profile.ipynb| shows the profiling of \verb|run_loop|, and the subroutines that takes the most time.
     This shows that it is the loop that pushes the next collisions to the priority queue that is the bottle neck.
     A speedup of about 10 times, for 1000 particles and 10,000 steps was found by rewriting the function that finds the collisions.
@@ -86,10 +89,10 @@
     The profiling show that while most of the time went to the calculation of the next collision, it now goes to pushing to the \verb|collisions|-heap.
 
     To investigate the creation of craters by a projectile, a function that measures the size of crater is needed.
-    This is done by laying a grid with with a spacing $\Delta x$ on top of the box, looping through each cell to check if there is a particle inside it.
+    This is done by laying a grid with with a spacing $\Delta x$ on top of the box, looping through each particles, and checking if it is inside the nearby gird cells.
     The process for checking if a disk is inside each square cell is illustrated in \autoref{check if disk is inside}.
     Then, the size of the crater is given by $m \Delta x^2$, where $m$ is the number of unoccupied cells.
-    This method relies on choosing a cell size $\Delta x$ large enough so that only cells within the crater are marked as empty.
+    This method relies on choosing a cell size $\Delta x$ large enough so that only cells within the crater are marked as empty, while the cells around untouched particles are deemed full.
     This is done by inspecting the result, and comparing it to a plot of the crater as shown in \autoref{crater}.
 
 
@@ -105,11 +108,11 @@
         \centering
         \begin{subfigure}{.4\textwidth}                    
             \includegraphics[width=0.7\textwidth]{../plots/problem4/crater1.pdf}
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater9.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater19.pdf}
         \end{subfigure}
         \begin{subfigure}{.59\textwidth}                    
             \includegraphics[width=0.49\textwidth]{../plots/problem4/particles1.pdf}
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles9.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles19.pdf}
         \end{subfigure}
         \caption{The grid cells with a particle inside is marked yellow, while the ones without a particle inside, i.e.
         those counted as making up the grid, are purple.
@@ -191,7 +194,7 @@
     \autoref{problem1 dist} shows the velocity distribution, compared to the Maxwell Boltzmann distribution.
 
     Next, two different types of particles are simulated, one with a mass of $1$, the other with a mass of $4$.
-    As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different temperatures (although temperature is in fact only defined in equilibrium).
+    As the particles have the same magnitude of velocity, but different masses, they will have different energies, and thus have different temperatures.
     \autoref{problem2 av vel} shows how the average speed evolves over time.
     After the system equilibrates, the both sets of particles should reach the Maxwell-Boltzmann distribution with a common temperature.
     The peak will nonetheless be at different velocities.
@@ -202,7 +205,7 @@
         \centering
         \includegraphics[width=0.7\textwidth]{../plots/problem1/v_av.pdf}
         \caption{Average velocity, as a function of collisions.
-        The distribution reaches equilibrium around $3000$ collisions, or $3N$}
+        The distribution reaches equilibrium around $30000$ collisions, or $3N$}
         \label{problem1 av vel}
     \end{figure}
     
@@ -210,7 +213,7 @@
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/problem1/2/vel_dist.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/problem1/vel_dist.pdf}
-        \caption{The velocity distribution is a good fit with the Maxwell-Boltzmann distribution, shown as a blue line.}
+        \caption{On the left, the initial velocity distribution of 10 000 particles is shown. The ploit on the right uses from a total of 200 000 collisions, and shows a good fit with the Maxwell-Boltzmann distribution.}
         \label{problem1 dist}
     \end{figure}
     \begin{figure}[H]
@@ -243,9 +246,9 @@
     \end{figure}
 
     \subsection*{Projectile}
-    To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -20)$.
+    To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -10)$.
     The lower half of the square box is filled with small, light particles.
-    The impact from the large disk into the densely packed disks will create a crater.
+    As the large disk  disk into the densely packed disks will create a crater.
     To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius.
     The crater is measured as described in the implementation section.
     The mass of the projectile is proportional to $R^2$, so that the density is constant.

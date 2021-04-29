@@ -187,36 +187,37 @@ def problem3(run_simulation=False):
     
 def problem4(i, j, run_simulation=False):
     name = "problem4"
-    xi, N, T, R, N_save, N_R = read_params(para_dir + name)
+    xi, N, T, R, N_save, samples = read_params(para_dir + name)
+    samples = int(samples)
+    R0 = 0.05
     skip = (T-1)//(N_save-1)
+    ms = np.linspace(0.02, 0.15  , int(samples))
     radii = np.ones(N) * R
-    masses = np.ones(N) * R**2
-    Rs = np.linspace(0.005, 0.02, int(N_R))
-    crater_size = np.zeros_like(Rs)
-    all = i==0 and j==N_R
+    radii[0] = R0
+    crater_size = np.zeros(samples)
+    all = i==0 and j==samples
 
     for i in range(i, j):
-        R = Rs[i]
-        radii[0] = R
-        masses[0] = R**2
+        m = ms[i]
+        masses = np.ones(N) * 0.005
+        masses[0] = m
         args = (N, T, radii, masses, xi, N_save)
         path = data_dir + name + "/sweep_{}/".format(i)
 
         if run_simulation:
-            init = lambda N, radii : init_projectile(N, radii, 1)
+            init = lambda N, radii : init_projectile(N, radii, 10)
             particles, t = run_loop(init, args, TC=True, condition=energy_condition)
             save_data(particles, t, path, skip)
 
-        if all:
-            particles, t = read_data(path)
-            Nx = 100
-            free_space = check_crater_size(particles[:, 1:], radii, -1, Nx)
-            crater_size[i] = 0.5 - (1/Nx)**2 * np.sum(free_space)
-            dir_path = "plots/" + name + "/"
-            plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
-            plot_crater(free_space, dir_path, "crater{}".format(i))
+        particles, t = read_data(path)
+        Nx = 100
+        free_space = check_crater_size(particles[:, 1:], radii, -1, Nx)
+        crater_size[i] = 0.5 - (1/Nx)**2 * np.sum(free_space)
+        dir_path = "plots/" + name + "/"
+        plot_particles(particles, -1, N, radii, dir_path, "particles{}".format(i))
+        plot_crater(free_space, dir_path, "crater{}".format(i))
         
-    if all: plot_crater_size(Rs, crater_size, dir_path)
+    if all: plot_crater_size(ms, crater_size, dir_path)
 
 
 
