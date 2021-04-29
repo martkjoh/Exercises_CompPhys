@@ -38,7 +38,7 @@
         \item Energy: $[\mathcal H] = [J \hbar^2 s^2]$
         \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\mu \vec S ]$
         \item Anisotropy: $[d_z] = [J]$
-        \item Time : $[t] = [\gamma J \hbar s]^{-1}$
+        \item Time : $[t] = [\mu/\gamma J \hbar s]^{-1}$
     \end{itemize}
      where $s$ is the spin of the particles.
      ($s=1/2$ for electrons)
@@ -112,26 +112,11 @@
     This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$.
     As the torque on the spin is 
     \begin{equation*}
-        \vec \tau = \dv{\vec S}{t} = \gamma \vec{S} \times \vec{B},
+        \vec \tau = \dv{\vec S}{t} = \vec{S} \times \vec{B},
     \end{equation*}
-    the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -\gamma B$.
-    \autoref{single spin} shows the $x,y$-components of this spin, as a function time, together with the expected analytical result.
+    the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -B$.
+    \autoref{single spin} shows the $x,y$-components of this spin as a function time, together with the expected analytical result.
 
-    \begin{figure}[H]
-        \centering
-        \begin{subfigure}{.52\textwidth}             
-            \includegraphics[width=\textwidth]{../plots/single.pdf}
-            \caption{The motion of the $x$ and $y$ component of the spin in a constant magnetic field, together with the analytical result.}
-            \label{single spin}
-        \end{subfigure}
-        \begin{subfigure}{.44\textwidth}                    
-            \centering
-            \includegraphics[width=\textwidth]{../plots/err.pdf}
-            \caption{The error from the simulation using the euler method, $\Delta S_e$ and Heun's method, $\Delta S_h$.}
-            \label{error}
-        \end{subfigure}
-    \end{figure}
-    
     To analyze the error, the simulation is run with different step lengths $h$, for the same simulation time $t_0 = 5$.
     The result is shown in \autoref{error}.
     As Heun's method is of higher order than Euler's method, it converges faster.
@@ -139,6 +124,22 @@
     This should make Euler's method twice as fast, which was observed.
     Euler's method ran at around 16\,000 iterations per second, while Heun's method only ran at 8\,000.
     The large gain in precision, however, makes Heun's method preferred for this application.
+
+
+    \begin{figure}[H]
+        \centering
+            \includegraphics[width=.7\textwidth]{../plots/single.pdf}
+            \caption{The motion of the $x$ and $y$ component of the spin in a constant magnetic field, together with the analytical result.}
+            \label{single spin}
+
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.7\textwidth]{../plots/err.pdf}
+        \caption{The error from the simulation using the euler method, $\Delta S_e$ and Heun's method, $\Delta S_h$.}
+        \label{error}
+    \end{figure}
 
     When including $\alpha > 0$, one should expect the the oscillations to die away, with a lifetime given by
     \begin{equation*}

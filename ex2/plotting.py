@@ -74,15 +74,15 @@ def plot_decay(Ss, alphas, h, args, name):
     coo = ["x", "y"]
     col = ["limegreen", "royalblue"]
 
-    fig, ax = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
+    fig, ax = plt.subplots(1, 3, figsize=(16, 5), sharey=True)
     for k, S in enumerate(Ss):
         a = alphas[k]
         for i in range(2):
             ax[k].plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
         ax[k].plot(t, S[0, 0, 0]*exp(-t*a), "k--", label="$\exp(-t / \\tau)$")
-        ax[k].legend()
         ax[k].set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + "$")
         ax[k].set_xlabel("$t$")
+    ax[0].legend()
     ax[0].set_ylabel("$S$")
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
