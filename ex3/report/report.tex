@@ -28,15 +28,22 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-        This paper documents the implementation and results of the simulation as given in \cite{exercise}. By using a finite difference scheme, the process of absorption of \ce{CO2} by the global ocean in the form of dissolved inorganic carbon (DIC). A simplified model of the physics is used, where both the atmospheric and oceanic concentration of carbon is constant at a given height, meaning there is in effect only one spatial dimension. The method is tested against known solutions, and the convergence is monitored. It is then used to extract results of how the ocean absorbs carbon, and at what rate.
+        This paper documents the implementation and results of the simulation as given in \cite{exercise}.
+        By using a finite difference scheme, the process of absorption of \ce{CO2} by the global ocean in the form of dissolved inorganic carbon (DIC).
+        A simplified model of the physics is used, where both the atmospheric and oceanic concentration of carbon is constant at a given height, meaning there is in effect only one spatial dimension.
+        The method is tested against known solutions, and the convergence is monitored.
+        It is then used to extract results of how the ocean absorbs carbon, and at what rate.
 
 
     \section*{Theory and implementation}
-    The implementation of the simulation largely follows \cite{exercise}, as laid out in the appendix. This section describes the particular choices made, and in a notation consistent with the code. The diffusion equation can be written as
+    The implementation of the simulation largely follows \cite{exercise}, as laid out in the appendix.
+    This section describes the particular choices made, and in a notation consistent with the code.
+    The diffusion equation can be written as
     \begin{equation*}
         \Delta t \pdv{t} C(z, t) = \Delta t \left(K(z) \pdv[2]{z} + \dv{K(z)}{z}\pdv{z}\right) C(z, t) = \mathcal{D} C(z, t).
     \end{equation*}
-    $\mathcal{D}$ is thus a linear operator which can be approximated by a discretization. With the scheme as descirbed in \cite{exercise}, and including the boundary condition this gives   
+    $\mathcal{D}$ is thus a linear operator which can be approximated by a discretization.
+    With the scheme as descirbed in \cite{exercise}, and including the boundary condition this gives   
     \begin{equation*}
         \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_n(t) + S_n(t),
     \end{equation*}
@@ -67,17 +74,48 @@
         A_{mn} = \left(\delta_{nm} - \frac{1}{2} \mathcal{D}_{nm}\right).
     \end{align*}
     
-    The implementation of this system of equation uses SciPy's sparse matrix library. After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$. This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition. The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above. The results of the simulation of $C$ is kept in a NumPy array. However, it is not necessary to keep all steps made in time. \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array. This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statement.
+    The implementation of this system of equation uses SciPy's sparse matrix library.
+    After creating sparse realizations of $A$, SciPy's \verb|splu| is used to generate the LU decomposition \verb|LU| of $A$.
+    This is an object with methods such as \verb|.solve()|, which utilizes the LU decomposition.
+    The wrapper \verb|simulate| then loops over $N_t-1$ steps, using \verb|solve(V) = lambda V: LU.solve(V)|, where \verb|V| is as given above.
+    The results of the simulation of $C$ is kept in a NumPy array.
+    However, it is not necessary to keep all steps made in time.
+    \verb|simulate| can be passed a integer argument \verb|save|, the number of time steps to be kept in the array.
+    This entails that $N_t-1$ is divisible by $\mathrm{save}-1$, which is checked by an \verb|assert| statement.
     
-    To check convergence of the method, both in time and space, a way of measuring error is needed. In this project, relative root mean square (RMS) error is used. Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \subset [0, L]$, relative RMS error is given by
+    To check convergence of the method, both in time and space, a way of measuring error is needed.
+    In this project, relative root mean square (RMS) error is used.
+    Given a concentration $C(z)$ and a reference $C_0(z)$ at a given time, sampled at a set of points $\{z_i\}_{i=1}^N \subset [0, L]$, relative RMS error is given by
     \begin{equation*}
         \Delta_\mathrm{rms} = \sqrt{\frac{1}{N}\sum_i \left(\frac{C(z_i) - C_0(z_i)}{C_0(z_i)}\right)^2}.
     \end{equation*}
-    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$. This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$ for $C$. Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$. This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared. This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element. The task also requires the spatial integral of the concentration an related quantities. This is done with the SciPy implementation of Simpsons method, \verb|simpson|. 
+    When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$.
+    This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$ for $C$.
+    Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$.
+    This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared.
+    This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element.
+    The task also requires the spatial integral of the concentration an related quantities.
+    This is done with the SciPy implementation of Simpsons method, \verb|simpson|.
+
 
     \section*{Tests}
 
-    Make sure the implementation gives accurate answers, a series of tests are run, where the answer is known or there is a method to check error. The method used in this implementation has quadratic convergence, both in time and space. A convergence test was implemented for a simple test case with constant diffusivity $K$ and a Gaussain initial concentration. The result is shown in \autoref{convergence test}. A constant concentration of \ce{CO2} should remain constant, regardless of $K(z)$. This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$ as described in \cite{exercise}, problem 2. For both, the constant initial concentration is close to unchanged, save for numerical errors. The systems should also, given $k_w=0$, conserve mass. To test this, a initial distribution of two Gaussian functions were evolved in time, both with constant and non-constant diffusivity. The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
+    Make sure the implementation gives accurate answers, a series of tests are run, where the answer is known or there is a method to check error.
+    The method used in this implementation has quadratic convergence, both in time and space.
+    A convergence test was implemented for a simple test case with constant diffusivity $K$ and a Gaussain initial concentration.
+    The result is shown in \autoref{convergence test}.
+    A constant concentration of DIC should remain constant, regardless of $K(z)$.
+    This test is shown in \autoref{constant_cons}, with a both a constant $K(z)$, and a smooth step function between two values of $K$ as described in \cite{exercise}, problem 2.
+    For both, the constant initial concentration is close to unchanged, save for numerical errors.
+    The systems should also, given $k_w=0$, conserve mass.
+    To test this, a initial distribution as the sum of two Gaussian functions were evolved in time, both with constant and non-constant diffusivity.
+    The result is shown in \autoref{Consv mass}, where the mass is conserved to a good approximation.
+
+    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state.
+    This is shown in \autoref{var}.
+    For a small Biot number and given a zero partial pressure in the atmosphere, the depletion of DIC from the ocean should follow an exponential decay, where the characteristic time is $\tau = L/k_w$.
+    This is shown in \autoref{decay}.
+    Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
     
     
     \begin{figure}[H]
@@ -92,7 +130,9 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test1}
         \includegraphics[width=.49\textwidth]{../plots/test1_varK}
-        \caption{The time evolution of an constant concentration. $K(z)$ is constant in the system on the left, and varies in the system on the right. The largest deviation from the inital calues of the systems are of order $10^{-15}$ and $10^{-13}$, respectively.}
+        \caption{The time evolution of an constant concentration.
+        $K(z)$ is constant in the system on the left, and varies in the system on the right.
+        The largest deviation from the initial values of the systems are of order $10^{-15}$ and $10^{-13}$, respectively.}
         \label{constant_cons}
     \end{figure}
 
@@ -104,14 +144,13 @@
         \label{Consv mass}
     \end{figure}
 
-    
-    A sharply peaked Gaussian package should have a variance that increases linearly with time, then approach a steady state. This is shown in \autoref{var}. For a small Biot nuber and given a zero partial pressure in the atmosphere, the depletion of \ce{CO2} from the ocean should follow an exponential decay. Lastly, \autoref{minmax} shows how the ocean reaches a equilibrium with the atmosphere, given a non-zero, positive mass-transfer coefficient $k_w$ and either constant or non-constant diffusivity.
-
     \begin{figure}[H]
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test3}
         \includegraphics[width=.45\textwidth]{../plots/test3_var}
-        \caption{A system with an initial Gaussain distribution. On the right, the variance as a function of time is shown. The increase is initially constant, but then approaches a steady state.}
+        \caption{A system with an initial Gaussain distribution.
+        On the right, the variance as a function of time is shown.
+        The increase is initially constant, but then approaches a steady state.}
         \label{var}
     \end{figure}
 
@@ -119,7 +158,8 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test4_decay}
         \includegraphics[width=.49\textwidth]{../plots/test4_varK_decay}
-        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0. Constant (left) and varying (right) diffusivity.}
+        \caption{The slow removal of \ce{CO2} from the ocean, when the atmosphere contains a partial pressure of 0.
+        Constant (left) and varying (right) diffusivity.}
         \label{decay}
     \end{figure}
 
@@ -127,16 +167,29 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/test5_minmax}
         \includegraphics[width=.49\textwidth]{../plots/test5_varK_minmax}
-        \caption{Equilibration of the ocean with a atmosphere with $C_\mathrm{eq}=0.5$. The figure on the left is a system with constant diffusivity, the left side has a oscillating but always positive diffusivity.}
+        \caption{Equilibration of the ocean with a atmosphere with $C_\mathrm{eq} = H p_{\ce{CO2}}=2.0999\si{mol/m^{-3}}$.
+        The figure on the left is a system with constant diffusivity, the left side has a oscillating but always positive diffusivity.}
         \label{minmax}
     \end{figure}
 
     \section*{Results and discussion}
     \subsubsection*{Shallow waters}
 
-    To simulate the uptake of \ce{CO2} in shallow areas, $L=\SI{100}{m}$, diffusivity $K(z)$ is used as given in equation (11) in \cite{exercise}. The diffusivity is illustrated in \autoref{prob2}. \autoref{prob2 conv} illustrates the convergence of the simulation, which shows that the simulation still has quadratic convergence both in time and space. The convergence test are run for a time of $\SI{10}{days}$.
+    To simulate the uptake of \ce{CO2} in shallow areas, $L=\SI{100}{m}$, diffusivity $K(z)$ is used as given in equation (11) in \cite{exercise}.
+    The diffusivity is illustrated in \autoref{prob2}.
+    \autoref{prob2 conv} illustrates the convergence of the simulation, which shows that the simulation still has quadratic convergence both in time and space.
+    The convergence test are run for a time of $\SI{10}{days}$.
 
-    The simulation is then run for 180 days, with $N_t = 10001, \, N_z = 100001$. This corresponds to $\Delta t = 180 / 10000 = 1.8 \cdot 10^{-2} \si{days}$, and $\Delta z = L/100000 = 10^{-5} L$. This gives error well bellow 0.1\%, and takes very little time. The results are shown in \autoref{prob2}, together with the form of the diffusivity, $K(z)$. \autoref{prob2 minmax} shows how the minimum and maximum concentration evolves as a function of time, together with some snap shots of the concentration as it evolves. The surface of the ocean, where wind dominates the diffusion, first absorbs the \ce{CO2}. The deeper parts of the ocean lacks behind some, as there low diffusivity around 40 meters are a bottle neck, but it does not take long before it penetrates down to the ocean floor. This shows that after 90 days, the ocean is nearly in equilibrium with the atmosphere, and at 180 it is so close as does not make a difference. The model therefore suggests that, at least in shallow waters, the concentration of DIC in the ocean is in sync with the changes in atmosphere. It will in less than a year catch up to differences that are as large as the actual concentration of DIC.
+    The simulation is then run for 180 days, with $N_t = 10001, \, N_z = 100001$.
+    This corresponds to $\Delta t = 180 / 10000 = 1.8 \cdot 10^{-2} \si{days}$, and $\Delta z = L/100000 = 10^{-5} L$.
+    This gives error well bellow 0.1\%, and takes very little time.
+    The results are shown in \autoref{prob2}, together with the form of the diffusivity, $K(z)$.
+    \autoref{prob2 minmax} shows how the minimum and maximum concentration evolves as a function of time, together with some snap shots of the concentration as it evolves.
+    The surface of the ocean, where wind dominates the diffusion, first absorbs the \ce{CO2}.
+    The deeper parts of the ocean lacks behind some, as there low diffusivity around 40 meters are a bottle neck, but it does not take long before it penetrates down to the ocean floor.
+    This shows that after 90 days, the ocean is nearly in equilibrium with the atmosphere, and at 180 it is so close as does not make a difference.
+    The model therefore suggests that, at least in shallow waters, the concentration of DIC in the ocean is in sync with the changes in atmosphere.
+    It will in less than a year catch up to differences that are as large as the actual concentration of DIC.
 
     \begin{figure}[H]
         \centering
@@ -165,17 +218,33 @@
 
     \subsubsection*{Deep waters}
 
-    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity. This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere, as described in \cite{exercise}. \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically. The results in this section is obtained using $N_t = N_z = 10 001$, giving a step length of $\Delta z = L / 10 000 = 10^{-4} L $, and $\Delta t = 10 \cdot 365 \, \mathrm{days} / 10 000 \approx 4 \cdot 10^{-1} \, \mathrm{days}$. The convergence test suggests this should give high enough precision, considering the crudeness of the model, and running time is around 3 seconds.
+    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity.
+    This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere, as described in \cite{exercise}.
+    \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically.
+    The results in this section is obtained using $N_t = N_z = 10 001$, giving a step length of $\Delta z = L / 10 000 = 10^{-4} L $, and $\Delta t = 10 \cdot 365 \, \mathrm{days} / 10 000 \approx 4 \cdot 10^{-1} \, \mathrm{days}$.
+    The convergence test suggests this should give high enough precision, considering the crudeness of the model, and running time is around 3 seconds.
 
-    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation. Figure 2 in \cite{exercise} illustrates the absorption mechanism of the ocean, where a thin layer at the top of the ocean, the mixed layer, absorbs \ce{CO2} easier by the help of wind and turbulence. Then, it slowly seeps into the deep ocean. This phenomenon is illustrated in \autoref{prob3}, where the upper 100 meters of the ocean is more or less in equilibrium with the atmosphere, while the deep ocean lags behind. The slight slope of 10 year line in the figure to the right also shows that shallow water above deep waters might be less in sync than the shallow water that was synced earlier, as it does not have no-flux boundary condition, but rather always have a flux down in to the deep. 
+    \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation.
+    Figure 2 in \cite{exercise} illustrates the absorption mechanism of the ocean, where a thin layer at the top of the ocean, the mixed layer, absorbs \ce{CO2} easier by the help of wind and turbulence.
+    Then, it slowly seeps into the deep ocean.
+    This phenomenon is illustrated in \autoref{prob3}, where the upper 100 meters of the ocean is more or less in equilibrium with the atmosphere, while the deep ocean lags behind.
+    The slight slope of 10 year line in the figure to the right also shows that shallow water above deep waters might be less in sync than the shallow water that was modeled earlier, as it does not have no-flux boundary condition, but rather always have a flux down in to the deep.
+
     
-    The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the "mass" given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean. Using $A = 0.36 \cdot 10^{15}\si{m^2}$ as the value of the surface area of the global oceans, and $\mathrm{Mm} = \SI{12}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total weight of the carbon stored in the ocean as a function of time is given by
+    The units of $C$ in this exercise is $\si{mol / m^{-3}}$, so the ``mass'' given by the formula $M = \int \dd z C(z)$ is mol per square meter of ocean.
+    Using $A = 0.36 \cdot 10^{15}\,\si{m^2}$ as the value of the surface area of the global oceans, and $\mathrm{Mm} = \SI{12}{g / mol}$ as the molar weight of carbon in \ce{CO2}, the total weight of the carbon stored in the ocean as a function of time is given by
     \begin{equation*}
         M(t) = \mathrm{Mm} \, A \int_0^L \dd z \, C(z, t).
     \end{equation*}
-    The mass given by the simulation is plotted in \autoref{prob3 mass}. This simulation results in a uptake of $\Delta M = 120.8 \cdot 10^{15} \si{g}$ carbon over 10 years, i.e. an average absorption rate of $12.08 \cdot 10^{15} \si{g/year}$. 
+    The mass given by the simulation is plotted in \autoref{prob3 mass}.
+    This simulation results in a uptake of $\Delta M = 120.8 \cdot 10^{15} \si{g}$ carbon over 10 years, i.e. an average absorption rate of $12.08 \cdot 10^{15} \si{g/year}$.
 
-    \citeauthor{Gruber1193} \cite{Gruber1193} esitmates that the ocean had an annual uptake of carbon of around $2.6\cdot 10^{15}\si{g}$ from 1994 to 2007. This simulation obtained a result that is about 4.6 times large. This error is likely due to the many simplifications made to the model, for example modeling the ocean as having the same depth everywhere, modeling it and the atmosphere above it as 1 dimensional, and the diffusivity as constant in time and a simple Sigmoid curve. Taking into account all these simplifications, the result seems to indicate that this simulation is a good stepping stone towards a more accurate one.
+    \citeauthor{Gruber1193} \cite{Gruber1193} esitmates that the ocean had an annual uptake of carbon of around $2.6\cdot 10^{15}\si{g}$ from 1994 to 2007.
+    This simulation obtained a result that is about 4.6 times large.
+    This error is likely due to the many simplifications made to the model, for example modeling the ocean as having the same depth everywhere, modeling it and the atmosphere above it as 1 dimensional, and the diffusivity as constant in time and a simple Sigmoid curve.
+    Furthermore, we assume the ocean starts out perfectly in equilibrium, even though the concentration of \ce{CO2} in the atmosphere already have been rising rapidly for decades, and this simulation shows that the deep ocean lags significantly behind quick changes at the surface.
+    Though the magnitude of these errors are not known, one should expect them to swamp numerical errors, as they have been shown to be close to negligible.
+    Taking into account all these simplifications, the result seems to indicate that this simulation is a good stepping stone towards a more accurate one.
 
 
 
@@ -199,9 +268,15 @@
         \centering
         \includegraphics[width=.45\textwidth]{../plots/prob3_M}
         \includegraphics[width=.45\textwidth]{../plots/prob3_K}
-        \caption{On the left, the total mass of carbon in the form of DIC, as a function of time. On the right the diffusivity as a functio of depth.}
+        \caption{On the left, the total mass of carbon in the form of DIC, as a function of time.
+        On the right the diffusivity as a function of depth.}
         \label{prob3 mass}
     \end{figure}
+
+    \section*{Conclusion}
+    This paper has documented the implementation, testing and results of the numerical simulation of absorption of \ce{CO2} into the ocean in the form of DIC.
+    The test showed that the finite-difference scheme used yielded accurate result when compared to known solutions, and had quadratic convergence both in time and space. 
+    This simulation was used to illustrate how shallow waters keeps in sync with the concentration of \ce{CO2}, and gave a result for the annual absorption of carbon to be $12.08 \cdot 10^{15} \si{g/year}$. Comparing this to empirical results shows that even though it is a very simple model, it yields result within an order of magnitude of these studies.
 
     \printbibliography
 \end{document}

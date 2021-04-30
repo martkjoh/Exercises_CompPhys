@@ -195,8 +195,15 @@ def plot_M_decay(C, args, name):
     Bi = kw * L / np.min(K)
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(t, M, label="$M(t)$")
-    ax.plot(t, M[0] * np.exp(-t / tau), "--k", label="$M(0)\exp(-t/\\tau)$")
-    fig.suptitle("$\mathrm{ Bi }="+"{:.3e}".format(Bi) + ",\, \\tau = {:.3f}".format(tau) + "\,\mathrm{ days }$")
+    ax.plot(
+        t, M[0] * np.exp(-t / tau), "k", ls=(0, (3, 5)), lw=3, 
+        label="$M(0)\exp(-t/\\tau)$"
+        )
+    fig.suptitle(
+        "$\mathrm{ Bi }="+"{:.3e}".format(Bi) + \
+        ",\, \\tau = {:.3f}".format(tau) + "\,\mathrm{ days }$",
+        y=0.9
+    )
     ax.set_xlabel("$t / [\mathrm{days}]$")
     ax.set_ylabel("$M/[\mathrm{ mol/m^2 }]$")
     ax.legend()

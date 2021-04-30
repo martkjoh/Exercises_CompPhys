@@ -138,7 +138,8 @@ def test5(const_K):
     K0 = 2e-2
     if const_K: K = K0 * np.ones(Nz)
     else: K = K0*(2 + np.sin(np.linspace(0, 10, Nz)))
-    Ceq = np.ones(Nt)
+    H = 5060; ppco2 = 415e-6
+    Ceq = np.ones(Nt) * H * ppco2
 
     args = Ceq, K, Nt, Nz, a, dz, dt, kw, L, t0
     name = "test5"
@@ -150,14 +151,14 @@ def test5(const_K):
     plot_minmax(C, args, name+"_minmax")
 
 
-conv_test_t()
-conv_test_z()
-test1(True)
-test1(False)
-test2(True)
-test2(False)
-test3()
-test4(True)
-test4(False)
+# conv_test_t()
+# conv_test_z()
+# test1(True)
+# test1(False)
+# test2(True)
+# test2(False)
+# test3()
+# test4(True)
+# test4(False)
 test5(True)
 test5(False)
