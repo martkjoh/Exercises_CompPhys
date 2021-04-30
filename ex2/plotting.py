@@ -25,20 +25,40 @@ def plot_single(S, h, args, name):
     J, dz, B, a = args
     T = len(S)
     N = len(S[0])
-    t = np.linspace(0, T*h, T)
+    t = np.linspace(0, (T-1)*h, T)
     coo = ["x", "y"]
     col = ["limegreen", "royalblue"]
+    lin =[(0, (8, 15)), (0, (3, 5))]
+    labels = ["$S_0 \cos(\omega t)$", "$S_0 \sin(\omega t)$"]
 
     fig, ax = plt.subplots(figsize=(12, 6))
+    S_sim = [S[:, 0,  i] for i in range(2)]
+    S_ana = [S[0, 0, 0] * np.cos(t), S[0, 0, 0] * np.sin(-t)]
     for i in range(2):
-        ax.plot(t, S[:, 0,  i], label="$S_"+coo[i]+"$", color=col[i])
-    ax.plot(t, S[0, 0, 0] * np.cos(t), "k", linestyle=(0, (8, 15)), lw=3, label="$S_0 \cos(\omega t)$")
-    ax.plot(t, S[0, 0, 0] * np.sin(-t), "k", linestyle=(0, (3, 5)), lw=3, label="$S_0 \sin(\omega t)$")
+        ax.plot(t, S_sim[i], label="$S_"+coo[i]+"$", color=col[i])
+        ax.plot(t, S_ana[i], "k", linestyle=lin[i], lw=3,label=labels[i])
+
     ax.legend()
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    ax.set_title("$ B_z = " + str(B[2]) + ",\, \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ", \, h = " +str(h) + "$")
+    ax.set_title(
+        "$ B_z = " + str(B[2]) + ",\,\\alpha=" + str(a) + ",\,d_z= "\
+        + str(dz) + ",\,h = " +str(h) + "$"
+        )
     plt.savefig(path + name + ".pdf")
+    plt.clf()
+    fig2, ax2 = plt.subplots(figsize=(12, 6))
+    for i in range(2):
+        ax2.plot(t, S_sim[i] - S_ana[i], color=col[i], label="$\Delta S_"+coo[i]+"$")
+    ax2.legend()
+    ax2.set_xlabel("$t$")
+    ax2.set_ylabel("$S$")
+    ax2.set_title(
+        "$ B_z = " + str(B[2]) + ",\,\\alpha=" + str(a) + ",\,d_z= "\
+        + str(dz) + ",\,h = " +str(h) + "$"
+        )
+    plt.savefig(path + name + "_diff.pdf")
+
 
 
 def plot_err_afh(Sx, hs, Ts, S0, args, pows, names, name):

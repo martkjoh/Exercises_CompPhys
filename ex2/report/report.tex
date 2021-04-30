@@ -35,24 +35,22 @@
 
     The Hamiltonian and the equations of motion as given in \cite{exercise} gives natural units for this problem,
     \begin{itemize}
-        \item Energy: $[\mathcal H] = [J \hbar^2 s^2]$
-        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\mu \vec S ]$
+        \item Energy: $[\mathcal H] = [J]$
+        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\vec S /\mu ]$
         \item Anisotropy: $[d_z] = [J]$
-        \item Time : $[t] = [\mu/\gamma J \hbar s]$
+        \item Time : $[t] = [\mu/\gamma J]$
     \end{itemize}
-     where $s$ is the spin of the particles.
-     ($s=1/2$ for electrons)
-     This is included so that $|\vec S|\in[0, 1]$.
-     The defining dimensionful constants of the system are thus the spin $\hbar s$, the coupling $J$, the magnetic moment $\mu$ and the gyromagnetic ratio $\gamma$.
+    The dynamical variables of the problem, $ \vec S $, are assumed to be dimensionless, and normalized to $|\vec S|\in[0, 1]$.
+     The defining dimensionful constants of the system are thus the coupling $J$, the magnetic moment $\mu$ and the gyromagnetic ratio $\gamma$.
      These units are used throughout the exercise, including in all figures.
-     Physical values for a given, actual system is then dependent on its values for $s, J, \mu$ and $\gamma$.
+     Physical values for a given, actual system is then dependent on its values for $J, \mu$ and $\gamma$, as well as substitution $\vec S \rightarrow S_0 \vec S$, where $S_0$ is the physical magnitude of the spins.
      In this paper as well as in the code it documents, all equations and quantities are given in these units, including the Hamiltonian \autoref{hamiltonian}, and the equations of motion \autoref{LLG} and \autoref{effective field}.
 
 
     \subsection*{Indices}
     For easy implementation, the Hamiltonian can be written on index form and using the units as described above
     \begin{equation}
-        \mathcal{H}(S; d_z, a, B) = -\frac{1}{2} J \sum_{\langle i, j \rangle, a} S_{i, a} S_{j, a} - d_z \sum_{j} (S_{j,3})^2 -  \sum_{j, a} B_{j, a} S_{j,a}.
+        \mathcal{H}(S; J, d_z, B) = -\frac{1}{2} J \sum_{\langle i, j \rangle, a} S_{i, a} S_{j, a} - d_z \sum_{j} (S_{j,3})^2 -  \sum_{j, a} B_{j, a} S_{j,a}.
         \label{hamiltonian}
     \end{equation}
     Here, $J\in\{-1, 0, 1\}$, $i\in\{1, ..., N\}$ is the site index, $a$ is vector component index.
@@ -116,20 +114,27 @@
     \end{equation*}
     the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -B$.
     \autoref{single spin} shows the $x,y$-components of this spin as a function time, together with the expected analytical result.
+    The video \verb|plots/test.mp4| shows a animation of the motion of an arrow representing the spin. On the right, the plot shows the error in each components.
+    The error in the $z$ component can then be tested checking the deviation from $\vec S^2=1$, which in this case was around $10^{-7}$.
 
-    To analyze the error, the simulation is run with different step lengths $h$, for the same simulation time $t_0 = 5$.
+    To analyze the convergence of the method, the simulation is run with different step lengths $h$, for the same simulation time $t_0 = 5$.
     The result is shown in \autoref{error}.
     As Heun's method is of higher order than Euler's method, it converges faster.
     It is, however, necessary to make 2 function calls when using Heun's method, while Euler's method only require one.
     This should make Euler's method twice as fast, which was observed.
     Euler's method ran at around 16\,000 iterations per second, while Heun's method only ran at 8\,000.
-    The large gain in precision, however, makes Heun's method preferred for this application.
+    The large gain in precision, however, makes Heun's method preferred for this application. 
+    Throughout this exercise, the step length used is $h=0.01$, as it is deemed to give high enough precession.
 
     \begin{figure}[H]
-        \centering
-            \includegraphics[width=.7\textwidth]{../plots/single.pdf}
-            \caption{The motion of the $x$ and $y$ component of the spin in a constant magnetic field, together with the analytical result.}
-            \label{single spin}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=1.1\textwidth]{../plots/single.pdf}            
+        \end{subfigure}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=1.1\textwidth]{../plots/single_diff.pdf}            
+        \end{subfigure}
+        \caption{On the left, motion of the $x$ and $y$ component of the spin in a constant magnetic field, together with the analytical result. On the right, the difference between the simulated and the analytical result.}
+        \label{single spin}
     \end{figure}
 
     \begin{figure}[H]
@@ -188,7 +193,7 @@
     Thus, spins parallel to the $z$-axis should not move, while the one tilted spin precesses.
     If only one spin is tilted, it will precess alone, as shown in to the left in \autoref{one tilted}.
     However, if the coupling is turned on again, as shown on the right in \autoref{one tilted}, the disturbance will ripple through the chain, in a wave.
-    This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain.
+    This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. This implementation uses, as mentioned earlier, a periodic boundary condition. This means that the wave continues through the wall, and appears on the other side, thus approximating an infinite system. This behavior is evident in the video \verb|plots/gs_f.mp4|. 
 
     We can see that the vibrations in the chain is dominated by high frequency oscillations.
     By turning back on the damping, as shown in \autoref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system.
@@ -245,7 +250,7 @@
     This is due to the fact that it is the state of maximum magnetization.
     This is showed in \autoref{mag}.
     Here, the magnetization quickly approaches the ground state value as the energy is dissipated.
-    However, as the system settles in to the mode of sustained oscillation, the ferromagnetic on the left retains some loss in magnetization, while the anti-ferromagnet reaches the ground state much faster.
+    However, as the system settles in to the mode of sustained oscillation, the ferromagnetic on the left retains some loss in magnetization, while the anti-ferromagnet reaches the ground state much faster, and has no sustained difference in magnetization.
 
 
     \begin{figure}[H]
@@ -257,13 +262,11 @@
     \end{figure}
 
     \section*{Conclusion}
-    Using Heun's method, and the LLG equations materials of interacting spins have been investigated.
+    This report has documented the simulation of the classical Heisenberg model. By simulating a single spin, we have demonstrated that the expected that the analytical result is recreated, and the convergence properties of Heun's method.
     Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagnetic reaches its ground state almost 10 times faster through dissipation than its ferromagnetic counterpart.
     Collective modes, magnons, is shown to exist in ferromagnetic materials.
     These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation.
     They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state.
-    The simulation confirms this.
-
 
     \printbibliography
 \end{document}

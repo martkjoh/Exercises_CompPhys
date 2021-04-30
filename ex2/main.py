@@ -67,6 +67,7 @@ def get_S(n):
     phi = np.random.random(n) * 2 * pi
     return np.array([cos(phi)*sin(theta), sin(phi)*sin(theta), cos(theta)]).T
 
+
 def get_S1(n, offset=0.5):
     """ one spin tilted """
     theta = np.zeros(n)
@@ -89,7 +90,7 @@ EXERCISES
 """
 
 def ex211():
-    T, N, h = 1000, 1, 0.01
+    T, N, h = 1_000, 1, 0.01
     S = np.empty([T, N, dim])
     S[0] = get_S1(N)
     args = (0, 0, [0, 0, 1], 0) # (J, dz, B, a)
@@ -98,6 +99,7 @@ def ex211():
 
     plot_single(S, h, args, "single")
     anim_spins(S, "single", 10)
+    print(1 - np.max(np.einsum("tia -> ti", S**2)))
 
 
 def ex212():
@@ -109,7 +111,7 @@ def ex212():
     args = (0, 0, [0, 0, 1], 0) # (J, dz, B, a)
 
     n = 40
-    hs = 10**(-np.linspace(0, 4, n))
+    hs = 10**(-np.linspace(1, 5, n))
     Sx = np.empty((2, n))
     Ts = np.empty((2, n))
     S0 = get_S1(N)[0, 0]
@@ -124,6 +126,7 @@ def ex212():
             Sx[i, j] = S[-1, 0, 0]
 
     plot_err_afh(Sx, hs, Ts, S0, args, pows, names, "err")
+    
 
 
 def ex213():
@@ -251,8 +254,8 @@ def ex22262():
     plot_mag(Mz, h, "mag2", args, gs=0)
 
 
-# ex211()
-# ex212()
+ex211()
+# ex212() # run again
 # ex213() # Hvorfor endres ikke frekvensen?
 # ex2211()
 # ex2212()

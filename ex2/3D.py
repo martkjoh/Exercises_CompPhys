@@ -60,7 +60,7 @@ def get_comp(S, t, i):
 
 
 path = "plots/"
-name = "test_anim"
+name = "3D_B"
 ext = ".png"
 
 def anim_spins(S, skip=1):
@@ -78,6 +78,7 @@ def anim_spins(S, skip=1):
     pad = len(str(N))
     @mlab.animate(delay=50)
     def anim():
+        """Writes each frame, with a name ffmpeg recognize"""
         for i in range(T//skip):
             quiver.mlab_source.u = get_comp(S, i*skip, 0)
             quiver.mlab_source.v = get_comp(S, i*skip, 1)
@@ -85,6 +86,7 @@ def anim_spins(S, skip=1):
 
             zeros = '0'*(pad - len(str(i)))
             filename = path + name + "_{}{}".format(zeros, i) + ext
+            print(filename)
             mlab.savefig(filename)
             yield
         
@@ -95,7 +97,7 @@ def anim_spins(S, skip=1):
     anim()
     mlab.show()
 
-
+    # Makes viedo out of saved frames
     input = ffmpeg.input(path + name + "_%0" + str(len(str(N))) + "d.png")
     output = path + name + ".mp4"
     stream = ffmpeg.output(input, output, framerate=20)
@@ -103,14 +105,17 @@ def anim_spins(S, skip=1):
     if os.path.isfile(output): os.remove(output)
     ffmpeg.run(stream)  
 
-    [os.remove(path + f) for f in os.listdir(path) if f.endswith(".png") and f[:len(name)]==name]
+    [ # Delete all frames, after video is made
+        os.remove(path + f) for f in os.listdir(path) \
+        if f.endswith(".png") and f[:len(name)]==name
+    ]
 
 
 T, N, h = 10_000, 30, 0.01
 S = np.empty([T] + [N] * dim + [dim])
 S[0] = random(N)
 
-args = (1, 0.1, [0, 0, 0], 0.05) # (J, dz, B, a)
+args = (1, 0, [1, 0, 0], 0.05) # (J, dz, B, a)
 
 integrate(LLG, S, h, heun_step, args)
 anim_spins(S, 10)
