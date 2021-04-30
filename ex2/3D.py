@@ -64,10 +64,9 @@ name = "3D_B"
 ext = ".png"
 
 def anim_spins(S, skip=1):
-    T = len(S)
-    N = len(S[0])
+    T, N = S.shape[0], S.shape[1]
     l = N/2
-    x, y, z= np.mgrid[-l:l:N*1j, -l:l:N*1j, -l:l:N*1j]
+    x, y, z = np.mgrid[-l:l:N*1j, -l:l:N*1j, -l:l:N*1j]
     fig = mlab.figure(size=(1_000, 1_000))
     quiver = mlab.quiver3d(
         x, y, z, get_comp(S, 0, 0), get_comp(S, 0, 1), get_comp(S, 0, 2),
@@ -76,25 +75,21 @@ def anim_spins(S, skip=1):
     quiver.glyph.color_mode = "color_by_scalar"
     
     pad = len(str(N))
-    @mlab.animate(delay=50)
+    @mlab.animate(delay=10, ui=False)
     def anim():
         """Writes each frame, with a name ffmpeg recognize"""
-        for i in range(T//skip):
+        frames = T // skip
+        for i in range(frames):
             quiver.mlab_source.u = get_comp(S, i*skip, 0)
             quiver.mlab_source.v = get_comp(S, i*skip, 1)
             quiver.mlab_source.w = get_comp(S, i*skip, 2)
 
             zeros = '0'*(pad - len(str(i)))
             filename = path + name + "_{}{}".format(zeros, i) + ext
-            print(filename)
             mlab.savefig(filename)
             yield
-        
-        mlab.clf()
-        mlab.close(all=True)
 
-
-    anim()
+    an = anim()
     mlab.show()
 
     # Makes viedo out of saved frames
@@ -115,8 +110,7 @@ T, N, h = 10_000, 30, 0.01
 S = np.empty([T] + [N] * dim + [dim])
 S[0] = random(N)
 
-args = (1, 0, [1, 0, 0], 0.05) # (J, dz, B, a)
+args = (1, 0.1, [0, 0, 1], 0.05) # (J, dz, B, a)
 
 integrate(LLG, S, h, heun_step, args)
 anim_spins(S, 10)
-
