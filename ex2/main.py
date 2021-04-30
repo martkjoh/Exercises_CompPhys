@@ -232,7 +232,7 @@ def ex22261():
     S = np.empty([T, N, dim])
     S[0] = get_S1(N, offset=0.5)
 
-    args = (1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+    args = (1, 0.1, [0, 0, 0], 0.005) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
     Mz = np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
@@ -244,7 +244,7 @@ def ex22262():
     S = np.empty([T, N, dim])
     S[0] = get_S2(N, offset=0.1)
 
-    args = (-1, 0.1, [0, 0, 0], 0.01) # (J, dz, 5B, a)
+    args = (-1, 0.1, [0, 0, 0], 0.005) # (J, dz, 5B, a)
 
     integrate(LLG, S, h, heun_step, args)
     Mz = np.einsum("tn -> t", S[:, :, 2]) / len(S[0])
@@ -253,7 +253,7 @@ def ex22262():
 
 # ex211()
 # ex212()
-ex213() # Hvorfor endres ikke rekvensen
+# ex213() # Hvorfor endres ikke frekvensen?
 # ex2211()
 # ex2212()
 # ex2221a()
@@ -262,5 +262,5 @@ ex213() # Hvorfor endres ikke rekvensen
 # ex2224()
 # ex2225()
 # ex22252()
-ex22261()
-ex22262()
+# ex22261()
+# ex22262()

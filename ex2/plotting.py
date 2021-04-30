@@ -169,7 +169,7 @@ def plot_fit_to_sum(S, h, args, name, fs=(10, 6)):
     (a, w, tau), _ = curve_fit(f, t2, Ssum, maxfev=int(1e5))
     ax.plot(t, Ssum1, color="royalblue", label="$\Sigma_i S_{i, x}/N$")
     ax.plot(
-        t, f(t, a, w, tau), "k--", 
+        t, f(t, a, w, tau), "k", linestyle=(0, (8, 15)), lw=3,
         label="$"+sci(a)+"\cos("+sci(w)+"t)\exp(-t/"+sci(tau)+")$"
         )
     ax.legend()
@@ -191,7 +191,10 @@ def plot_mag(Mz, h, name, args, gs):
     ax.set_ylabel("$M$")
     ax.set_xlabel("$t$")
 
-    fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z =  " + str(dz) + ",\, J = " + str(J) +  "$")
+    fig.suptitle(
+        "$\\alpha=" + str(a) + ",\, d_z=" + str(dz) + ",\,J=" + str(J) +  "$",
+        y = 0.9
+        )
 
     plt.tight_layout()
     plt.savefig(path + name + ".pdf")
