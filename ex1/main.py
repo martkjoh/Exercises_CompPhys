@@ -51,7 +51,7 @@ def test_case_many_particles():
     args = (N, T, radii, masses, xi, N_save)
 
     particles, t = run_loop(random_dist, args)
-    anim_particles(particles, t, N, radii, 0.0005, interval=100, title=name)
+    anim_particles(particles, t, N, radii, 0.001, interval=100, title=name)
     plot_particles(particles, -1, N, radii, plot_dir + name + "/", name)
     plot_energy(particles, t, masses, plot_dir + name + "/")
 
@@ -90,10 +90,10 @@ def test_case_projectile():
     args = (N, T, radii, masses, xi, N_save)
 
     init = lambda N, radii : init_projectile(N, radii, 5)
-    # particles, t = run_loop(init, args, TC=True)
+    particles, t = run_loop(init, args, TC=True)
     # save_data(particles, t, path, 1)
-    particles, t = read_data(path)
-    free_space = check_crater_size(particles[:, 1:], radii, -1, 180)
+    # particles, t = read_data(path)
+    free_space = check_crater_size(particles[:, 1:], radii, -1, 120)
     plot_particles(particles, -1, N, radii, dir_path, name + "_particles")
     plot_crater(free_space, dir_path, name +"_crater")
     anim_particles(particles, t, N, radii, 0.004, title=name)
@@ -185,12 +185,12 @@ def problem3(run_simulation=False):
 
     
 def problem4(i, j, run_simulation=False):
-    name = "problem4"
+    name = "problem4_2"
     xi, N, T, R, N_save, samples = read_params(para_dir + name)
     samples = int(samples)
-    R0 = 0.05
+    R0 = R*5 # radius of porjectile
     skip = (T-1)//(N_save-1)
-    ms = np.linspace(0.02, 0.15  , int(samples))
+    ms = np.linspace(.1, 1, int(samples))
     radii = np.ones(N) * R
     radii[0] = R0
     crater_size = np.zeros(samples)
@@ -198,18 +198,18 @@ def problem4(i, j, run_simulation=False):
 
     for i in range(i, j):
         m = ms[i]
-        masses = np.ones(N) * 0.005
+        masses = np.ones(N) * (R/R0)**2
         masses[0] = m
         args = (N, T, radii, masses, xi, N_save)
         path = data_dir + name + "/sweep_{}/".format(i)
 
         if run_simulation:
-            init = lambda N, radii : init_projectile(N, radii, 10)
+            init = lambda N, radii : init_projectile(N, radii, 5)
             particles, t = run_loop(init, args, TC=True, condition=energy_condition)
             save_data(particles, t, path, skip)
 
         particles, t = read_data(path)
-        Nx = 100
+        Nx =  80
         free_space = check_crater_size(particles[:, 1:], radii, -1, Nx)
         crater_size[i] = 0.5 - (1/Nx)**2 * np.sum(free_space)
         dir_path = "plots/" + name + "/"
@@ -252,13 +252,20 @@ def cl_arguments(args):
 
 
 if __name__ == "__main__":
-    cl_arguments(sys.argv)
-
     """
     To run a the program, use commands "python ./main.py " then
     - "test 0 1 2" to run simulation and plot stored data for test case 0, 1, and 2
     - "problem 0 1 (run)" to (run simulation and) plot stored data for problem1, problem2
-    - "sweep 0 10 (run)" to (run simulations and) plot sored data with R-valuse nr 0 to (not incl) 10
+    - "sweep 0 10 (run)" to (run simulations and) plot sored data with R-valuse nr 0 to (not incl) 10. To get the plot of m vs. crater size, argumets 0 N, where N is the max value as given in parameters/problem4.txt
     to run sweep in parallel, execute for example
     "sweep run 0 4", "sweep run 4 8", etc. in different terminal. The first R's take a lot less time.
+
+    It is also possible to run any of the test/problem function by commenting out cl_arguments, and insted just calling the functions, for example "problem1()"
+    
+    test_case_many_particles() should take around one minute, and is a good test.
+    It also creates a video, which takes a bit of time, but not much. Comment out anim_particles to remove this.
     """
+
+    cl_arguments(sys.argv)
+    # test_case_many_particles()
+    # test_case_projectile()

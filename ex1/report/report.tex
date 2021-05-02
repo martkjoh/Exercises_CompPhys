@@ -29,7 +29,7 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    The goal of this exercise is to simulate particles as flat, hard disks in a square, 2D container.
+    The goal of this exercise is to simulate a gas as being made up of particles modeled as flat, hard disks in a square, 2D container.
     This is done with a event-driven simulation, as described in the exercise \cite{exercise}.
     This is implemented in Python, using the built-in library heapq.
     The simulation is used to first tested with scenarios we know the outcome of, then used to demonstrate the Maxwell-Boltzmann distribution and to investigate the effect of a large, heavy disk hitting a large number of small, inert particles.
@@ -40,7 +40,9 @@
     The most important function in the code is \verb|run_loop()| in \verb|utillities.py|.
     It instantiates the required objects, and executes a while loop containing the algorithm, as laid out in \cite{exercise}.
     This simulations lends itself to simple parallelization, especially the last task where the same system with different parameters is simulated 20 times.
-    This is handled by the \verb|cl_arguments| functions, which allows for running the system from the command line in several instantiation, with different parameters.
+    This is handled by the \verb|cl_arguments| functions, which allows for running the system from the command line in several instantiation, with different parameters. 
+    How to use this is described in comments in \verb|main.py|.
+    The different problems may also be run by calling the functions for each problem, e.g. \verb|problem1()| in \verb|main.py|.
     
     The \verb|run_loop| function can be given the argument \verb|TC=True|.
     Then, it runs a TC-model, as described in \cite{TC}.
@@ -96,12 +98,12 @@
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.4\textwidth}                    
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater0.pdf}
-            \includegraphics[width=0.7\textwidth]{../plots/problem4/crater19.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4_2/crater0.pdf}
+            \includegraphics[width=0.7\textwidth]{../plots/problem4_2/crater19.pdf}
         \end{subfigure}
         \begin{subfigure}{.59\textwidth}                    
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles0.pdf}
-            \includegraphics[width=0.49\textwidth]{../plots/problem4/particles19.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4_2/particles0.pdf}
+            \includegraphics[width=0.49\textwidth]{../plots/problem4_2/particles19.pdf}
         \end{subfigure}
         \caption{The grid cells with a particle inside is marked yellow, while the ones without a particle inside, i.e.
         those counted as making up the grid, are purple.
@@ -237,15 +239,13 @@
     \end{figure}
 
     \subsection*{Projectile}
-    To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -10)$.
-    The lower half of the square box is filled with small, light particles.
-    As the large disk  disk into the densely packed disks will create a crater.
-    To investigate the effect of the size of projectile on the crater, the simulation is run 10 times, using projectiles with different radius.
-    The crater is measured as described in the implementation section.
-    The mass of the projectile is proportional to $R^2$, so that the density is constant.
+    To simulate the impact of a projectile, one particle is placed at $\vec x = (0.5, 0.75)$, and given a velocity of $v = (0, -5)$.
+    The lower half of the square box is filled with 2\,000 small, light particles of radius $R = 0.0064$, making the packing fraction $2\,000 \cdot \pi R^2 / 0.5 \approx 0.515$.
+    The radius of the projectile is $R_0$.
+    To investigate the effect of the mass of projectile on the crater, the simulation is run 20 times, using projectiles with different radius.
+    The mass of the small particles is $M=(R/R_0)^2$, while the mass of the projectile ranges from $0.1$ to $1$.
+    The crater created by the impact is measured as described in the implementation section.
     The simulation uses the value $\xi = 0.5$, and it is run until the total energy of the system is $10\%$ of the original value.
-    There are placed out 4\,000 particles, of radius $R=0.0045$ and mass in the range $[0.02, 0.15]$.
-    This means the packing fraction is $4\,000 \cdot \pi R^2 / 0.5 \approx 0.509$.
     \autoref{crater size} shows the size of the crater, as a function of the radius of the projectile.
     
     The relationship between the crater size and the mass of the projectile is close to linear, suggesting that the size of the crater might be proportional to either the initial energy or momentum.
@@ -256,7 +256,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.7\textwidth]{../plots/problem4/crater_size.pdf}
+        \includegraphics[width=0.7\textwidth]{../plots/problem4_2/crater_size.pdf}
         \caption{The size of the crater, as a function of the radius of the incoming projectile.}
         \label{crater size}
     \end{figure}

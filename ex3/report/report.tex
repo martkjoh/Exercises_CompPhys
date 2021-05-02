@@ -45,7 +45,7 @@
     $\mathcal{D}$ is thus a linear operator which can be approximated by a discretization.
     With the scheme as descirbed in \cite{exercise}, and including the boundary condition this gives   
     \begin{equation*}
-        \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_n(t) + S_n(t),
+        \Delta t \pdv{t} C_n(t) = \mathcal{D}_{nm} C_m(t) + S_n(t),
     \end{equation*}
     where summation over repeated indices are implied, and
     \begin{align*}
@@ -92,9 +92,10 @@
     When comparing concentrations with different values for $N_z$, as is necessary to find the convergence of the method in space, one must make sure that the points of comparison are the same for both $C$ and $C_0$.
     This is done by setting $N_z = 5\cdot 2^Na + 1$ for $C_0$, and $N_z = 2^n a + 1$ for $C$.
     Here, $a$ and $N$ are integers, and $n$ is some integer less or equal to $N$.
-    This ensures that the set of points $\{z_i\}_{i=1}^{2^na+1}$ that $C(z)$ is simulated on, $C_0(z)$ is as well, and they can be compared.
-    This is implemented by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element.
-    The task also requires the spatial integral of the concentration an related quantities.
+    This ensures that $\{z_i\}_{i=1}^{2^na+1} \subset \{z_i\}_{i=1}^{5\cdot2^Na+1}$, i.e. that for all points $C(z)$ is simulated on $C_0(z)$ is as well, and they can be compared.
+    RMS-error is found by \verb|get_rms| in \verb|utilities.py|, which takes a list of arrays and compare each with the last element.
+    The task also requires the spatial integral of the concentration an related quantities, for example to compute the total mass of carbon stored in the ocean.
+
     This is done with the SciPy implementation of Simpsons method, \verb|simpson|.
 
 
@@ -180,8 +181,8 @@
     \autoref{prob2 conv} illustrates the convergence of the simulation, which shows that the simulation still has quadratic convergence both in time and space.
     The convergence test are run for a time of $\SI{10}{days}$.
 
-    The simulation is then run for 180 days, with $N_t = 10001, \, N_z = 100001$.
-    This corresponds to $\Delta t = 180 / 10000 = 1.8 \cdot 10^{-2} \si{days}$, and $\Delta z = L/100000 = 10^{-5} L$.
+    The simulation is then run for 180 days, with $N_t = 10\,001, \, N_z = 100\,001$.
+    This corresponds to $\Delta t = 180 / 10\,000 = 1.8 \cdot 10^{-2} \si{days}$, and $\Delta z = L/100\,000 = 10^{-5} L$.
     This gives error well bellow 0.1\%, and takes very little time.
     The results are shown in \autoref{prob2}, together with the form of the diffusivity, $K(z)$.
     \autoref{prob2 minmax} shows how the minimum and maximum concentration evolves as a function of time, together with some snap shots of the concentration as it evolves.
@@ -218,10 +219,10 @@
 
     \subsubsection*{Deep waters}
 
-    In this section, the ocean is modeled as $\SI{4000}{m}$ deep, and with a 2-layered diffusivity.
+    In this section, the ocean is modeled as $\SI{4\,000}{m}$ deep, and with a 2-layered diffusivity.
     This model is run for a longer time of several years, and therefore includes the increase in \ce{CO2} in the atmosphere, as described in \cite{exercise}.
     \autoref{prob3 conv} shows the convergence of the simulation, confirming the simulation still converges quadratically.
-    The results in this section is obtained using $N_t = N_z = 10 001$, giving a step length of $\Delta z = L / 10 000 = 10^{-4} L $, and $\Delta t = 10 \cdot 365 \, \mathrm{days} / 10 000 \approx 4 \cdot 10^{-1} \, \mathrm{days}$.
+    The results in this section is obtained using $N_t = N_z = 10\,001$, giving a step length of $\Delta z = L / 10\,000 = 10^{-4} L $, and $\Delta t = 10 \cdot 365 \, \mathrm{days} / 10\,000 \approx 4 \cdot 10^{-1} \, \mathrm{days}$.
     The convergence test suggests this should give high enough precision, considering the crudeness of the model, and running time is around 3 seconds.
 
     \autoref{prob3} shows the concentration of \ce{CO2} as a function of time, as given by the simulation.

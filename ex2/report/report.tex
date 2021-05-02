@@ -36,14 +36,15 @@
     The Hamiltonian and the equations of motion as given in \cite{exercise} gives natural units for this problem,
     \begin{itemize}
         \item Energy: $[\mathcal H] = [J]$
-        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\vec S /\mu ]$
+        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\vec S J/\mu ]$
         \item Anisotropy: $[d_z] = [J]$
         \item Time : $[t] = [\mu/\gamma J]$
     \end{itemize}
     The dynamical variables of the problem, $ \vec S $, are assumed to be dimensionless, and normalized to $|\vec S|\in[0, 1]$.
      The defining dimensionful constants of the system are thus the coupling $J$, the magnetic moment $\mu$ and the gyromagnetic ratio $\gamma$.
      These units are used throughout the exercise, including in all figures.
-     Physical values for a given, actual system is then dependent on its values for $J, \mu$ and $\gamma$, as well as substitution $\vec S \rightarrow S_0 \vec S$, where $S_0$ is the physical magnitude of the spins.
+     Physical values for a given, actual system is then dependent on its values for $J, \mu$ and $\gamma$.
+     As $\vec S$ is dimensionless, $J$ has units of energy and is given by $J = J' S_0^2$, where $S_0$ is the maximum value of the spins, and $J'$ is the coupling appearing together with the dimensionful spins.
      In this paper as well as in the code it documents, all equations and quantities are given in these units, including the Hamiltonian \autoref{hamiltonian}, and the equations of motion \autoref{LLG} and \autoref{effective field}.
 
 
@@ -84,11 +85,10 @@
     becomes
     \begin{center}
         \verb|np.einsum("...ac, ...c-> ...a", np.einsum("abc, ...b -> ...ac", eijk, S), H)|.
-
     \end{center}
-
+    %
     \verb|LLG| takes as arguments \verb|S| and the needed parameters.
-
+    
     Then, it first evaluates the first sum of \autoref{LLG} as shown above.
     If $\alpha \neq 0$, it then evaluates the second sum.
     \verb|LLG| calls \verb|get_H|.
@@ -98,6 +98,13 @@
     This implementation makes it easy to generalize to spins distributed in 2 or 3 dimensions, as is done in \verb|3D.py|.
     The only change needed is to extend the shape of \verb|S| to \verb|(T, N, N, N, 3)|, and change \verb|get_H| to sum over nearest neighbours in all dimensions.
 
+    The main loop is then executed by the function \verb|integrate(f, S, h, step, args)|, which fills \verb|S| by using the \verb|step| function, for example \verb|heun_step| to integrate the differential equation
+    \begin{equation*}
+        f(S; \mathrm{args}) = \dv{S}{t},
+    \end{equation*}
+    with step length \verb|h|.
+    \verb|args| is a tuple of arguments to be passed to \verb|f|.
+    This function is fully modular, and works with any array shape array \verb|S|, as long as it has a first dimension for time, and any integrator \verb|step| of function \verb|d|, as long as they accept the right arguments.
     The library \verb|mayavi| is used to make 3D visualization of the spins, as in \autoref{ground states 3D} and to make videos of the time evolution of the spins.
     \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video.
     Videos of one spin, a chain of spins and a configuration of spins in 3D is included in the folder \verb|plots|.
