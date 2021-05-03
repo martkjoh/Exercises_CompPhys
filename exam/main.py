@@ -1,11 +1,23 @@
-from plots import plotSIR
-from deterministic_SIR import get_testSIR
-from plots import plotSIR
+from deterministic_SIR import get_testSIR, flatten_the_curve, vaccination
+from plots import *
 
 
 
 def testSIR():
-    plotSIR(*get_testSIR())
+    result = get_testSIR()
+    plotSIR(*result)
+    plotI(*result)
 
-if __name__=="__main__":
-    testSIR()
+
+def flatten():
+    plot_maxI(*flatten_the_curve())
+
+
+def vax():
+    plot_vacc(*vaccination())
+
+
+
+# testSIR()
+# flatten()
+vax()
