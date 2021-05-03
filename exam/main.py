@@ -1,5 +1,6 @@
 from deterministic_SIR import get_testSIR, flatten_the_curve, vaccination
 from stochastic_SIR import get_test_stoch, prob_disappear
+from SEIIaR import get_test_SEIIAR
 from plots import *
 
 
@@ -28,8 +29,14 @@ def test_stoch():
 def disappear():
     plot_prob_dis(*prob_disappear())
 
+
+def testSEIIaR():
+    plotSEIIaRs(get_testSIR(), get_test_SEIIAR())
+
+
 # testSIR()
 # flatten()
 # vax()
 # test_stoch()
 # disappear()
+testSEIIaR()

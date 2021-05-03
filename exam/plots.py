@@ -13,6 +13,9 @@ plt.rc('lines', lw=2)
 labels = ["$S$", "$I$", "$R$"]
 colors = [cm.plasma(0.2), cm.plasma(0.5), cm.plasma(0.8)]
 
+labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
+colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
+
 
 def plotSIR(x, T, dt, args, fs=(12, 8)):
     fig, ax = plt.subplots(figsize=fs)
@@ -67,6 +70,39 @@ def plotSIRs(result0, result, fs=(12, 8)):
     )
 
     plt.show()
+
+
+
+def plotSEIIaRs(result0, result, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+
+    for x in xs:
+        N = np.sum(x[0])
+        x = x / N # Normalize
+
+        l = []
+        for i in range(x.shape[1]):
+            l.append(ax.plot(t, x[:, i], color=colors2[i], alpha=0.3))
+    
+
+    x, T, dt, args = result0
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+    N = np.sum(x[0])
+    x = x / N # Normalize
+    
+    for i in range(x.shape[1]):
+        ax.plot(t, x[:, i], "--", label=labels[i], color=colors[i])
+
+    ax.legend([*labels2, *labels])
+
+
+    plt.show()
+
 
 
 def plotIs(result, fs=(12, 8)):
