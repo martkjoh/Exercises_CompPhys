@@ -1,4 +1,11 @@
-import numpy as np
+from plots import plotSIR
+from deterministic_SIR import get_testSIR
+from plots import plotSIR
 
-x = np.linspace(0, 1, 100)
-print(x)
+
+
+def testSIR():
+    plotSIR(*get_testSIR())
+
+if __name__=="__main__":
+    testSIR()
