@@ -95,10 +95,29 @@ def plotSEIIaRs(result0, result, fs=(12, 8)):
     N = np.sum(x[0])
     x = x / N # Normalize
     
-    for i in range(x.shape[1]):
-        ax.plot(t, x[:, i], "--", label=labels[i], color=colors[i])
+    ax.legend([*labels2])
 
-    ax.legend([*labels2, *labels])
+
+    plt.show()
+
+
+def plot_towns(result, fs=(12, 8), shape=(3, 3)):
+    xs, T, dt, args = result
+    N_cities = xs.shape[1]
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+    print(xs.shape)
+    fig, ax = plt.subplots(*shape, figsize=fs)
+
+    for j in range(shape[0]):
+        for k in range(shape[1]):
+            n = j*shape[0] + k
+            x = xs[:, n]
+            N = np.sum(x[0])
+            x = x / N # Normalize
+
+            for i in range(x.shape[1]):
+                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=0.3)
 
 
     plt.show()

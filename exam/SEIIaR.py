@@ -9,13 +9,14 @@ from tqdm import trange
 def SEIIaR(x, dt, *args):
     beta, rs, ra, fs, fa, tE, tI = args
     N = np.sum(x)
+
     PSE = 1 - np.exp(-dt*beta*(rs*x[2]+ra*x[3])/N)
     PEI = fs*(1 - np.exp(-dt/tE))
     PEIa = fa*(1 - np.exp(-dt/tE))
     PIR = 1 - np.exp(-dt/tI)
+
     DSE = B(x[0], PSE)
     DEI, DEIa, DEE = M(x[1], (PEI, PEIa, 1-PEI-PEIa))
-    assert DEI + DEIa + DEE == x[1]
     DIR = B(x[2], PIR)
     DIaR = B(x[3], PIR)
     return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
@@ -61,4 +62,4 @@ def stay_home():
 
 
 if __name__=="__main__":
-    stay_home()
+    get_test_SEIIAR()
