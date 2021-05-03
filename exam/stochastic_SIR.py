@@ -11,7 +11,7 @@ def SIR_stoch(x, dt, beta, tau):
     return np.array([-a, a - b, b])
 
 
-def stoch_step(f, x, dt, args):
+def stoch_step(f, x, i, dt, args):
     return f(x, dt, *args)
 
 

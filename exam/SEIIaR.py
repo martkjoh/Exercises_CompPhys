@@ -19,10 +19,6 @@ def SEIIaR(x, dt, *args):
     DIR = B(x[2], PIR)
     DIaR = B(x[3], PIR)
     return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
-
-
-def stoch_step(f, x, dt, args):
-    return f(x, dt, *args)
     
 
 def get_test_SEIIAR():

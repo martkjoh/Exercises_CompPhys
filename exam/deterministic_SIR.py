@@ -5,7 +5,7 @@ import sys
 sys.setrecursionlimit(10_000)
 from scipy.optimize import root
 
-
+# TODO: flytt alt som brukes andre steder
 
 # x[i] = (S(t_i), I(t_i), R(t_i))
 def SIR(x, beta, tau):
@@ -14,7 +14,7 @@ def SIR(x, beta, tau):
     return np.array([-a, a - b, b])
 
 
-def RK4step(f, x, dt, args):
+def RK4step(f, x, i, dt, args):
     k1 = f(x, *args) * dt
     k2 = f(x + 1 / 2 * k1, *args) * dt
     k3 = f(x + 1 / 2 * k2, *args) * dt
@@ -45,7 +45,6 @@ def get_asymptotes(args):
 
 def get_asymptotes2(args):
     R0 = args[0] * args[1]
-    # assert np.abs(R0-1)<1e-3 # wont converge
     fS = lambda S: np.exp(-R0*(1 - S)) - S
     fR = lambda R: 1 - np.exp(-R0*R) - R
     return root(fS, 0.5)["x"], root(fR, 0.5)["x"]
@@ -59,7 +58,7 @@ def integrate(f, x0, T, dt, args, step=RK4step, inf=True):
     if inf: r = trange(Nt-1)
     else: r = range(Nt-1)
     for i in r:
-        x[i+1] = x[i] + step(f, x[i], dt, args)
+        x[i+1] = x[i] + step(f, x[i], i, dt, args)
     return x
 
 
@@ -68,7 +67,7 @@ def integrate_untill(f, x, T, dt, args, cond, step=RK4step, inf=False):
     if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
     i = 0
     while i<Nt and not cond(x):
-        x += step(f, x, dt, args)
+        x += step(f, x, i, dt, args)
         i+=1
     return x, i, cond(x)
 
