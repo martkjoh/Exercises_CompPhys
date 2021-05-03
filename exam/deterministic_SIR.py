@@ -14,12 +14,12 @@ def SIR(x, beta, tau):
     return np.array([-a, a - b, b])
 
 
-def RK4step(f, x, i, dt, args):
-    k1 = f(x[i], *args) * dt
-    k2 = f(x[i] + 1 / 2 * k1, *args) * dt
-    k3 = f(x[i] + 1 / 2 * k2, *args) * dt
-    k4 = f(x[i] + k3, *args)  * dt
-    x[i + 1] = x[i] + 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+def RK4step(f, x, dt, args):
+    k1 = f(x, *args) * dt
+    k2 = f(x + 1 / 2 * k1, *args) * dt
+    k3 = f(x + 1 / 2 * k2, *args) * dt
+    k4 = f(x + k3, *args)  * dt
+    return 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
 
 
 def get_Nt(T, dt):
@@ -42,6 +42,7 @@ def get_asymptotes(args):
     fR = lambda R: 1 - np.exp(-R0*R)
     return fpi(0.5, fS), fpi(0.5, fR)
 
+
 def get_asymptotes2(args):
     R0 = args[0] * args[1]
     # assert np.abs(R0-1)<1e-3 # wont converge
@@ -50,16 +51,26 @@ def get_asymptotes2(args):
     return root(fS, 0.5)["x"], root(fR, 0.5)["x"]
 
 
-def integrate(f, x0, T, dt, args, step=RK4step, progress=True):
+def integrate(f, x0, T, dt, args, step=RK4step, inf=True):
     Nt = get_Nt(T, dt)
-    print("Integrates {} steps until time {}".format(Nt-1, T))
+    if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
     x = np.empty((Nt, *x0.shape), dtype=type(x0))
     x[0] = x0
-    if progress: r = trange(Nt-1)
+    if inf: r = trange(Nt-1)
     else: r = range(Nt-1)
     for i in r:
-        step(f, x, i, dt, args)
+        x[i+1] = x[i] + step(f, x[i], dt, args)
     return x
+
+
+def integrate_untill(f, x, T, dt, args, cond, step=RK4step, inf=False):
+    Nt = get_Nt(T, dt) # maximum amount of steps
+    if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
+    i = 0
+    while i<Nt and not cond(x):
+        x += step(f, x, dt, args)
+        i+=1
+    return x, i, cond(x)
 
 
 def get_testSIR():
@@ -102,7 +113,7 @@ def vaccination():
     xs = []
     for v in vacc:
         x0 = np.array([1-eps-v, eps, v])
-        xs.append(integrate(SIR, x0, T, dt, args, progress=False))
+        xs.append(integrate(SIR, x0, T, dt, args, inf=False))
 
     growth_rate = [np.log(x[1, 1]/x[0, 1]) for x in xs]
     # The index of the highest v with positive growth rate

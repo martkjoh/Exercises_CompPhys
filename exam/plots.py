@@ -108,7 +108,7 @@ def plotI(x, T, dt, args, fs=(12, 8)):
 
     ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1])
     a = args[0] - 1 / args[1]
-    # ax.semilogy(t, x[0, 1]*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
+    ax.semilogy(t, x[0, 1]*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
     ax.legend()
     ax.set_title(
         "$\Delta t = {:.3e}$".format(dt)
@@ -134,4 +134,10 @@ def plot_vacc(growth_rate, vacc, high_i, fs=(12, 8)):
     ax.plot(vacc[high_i], growth_rate[high_i], "rx")
     ax.plot(vacc, 0*np.ones_like(vacc))
     
+    plt.show()
+
+
+def plot_prob_dis(terms, Is, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+    ax.bar(Is, terms)
     plt.show()

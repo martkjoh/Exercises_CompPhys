@@ -1,5 +1,5 @@
 from deterministic_SIR import get_testSIR, flatten_the_curve, vaccination
-from stochastic_SIR import get_test_stoch
+from stochastic_SIR import get_test_stoch, prob_disappear
 from plots import *
 
 
@@ -25,8 +25,11 @@ def test_stoch():
     plotSIRs(result0, result)
     plotIs( result)
 
+def disappear():
+    plot_prob_dis(*prob_disappear())
 
 # testSIR()
 # flatten()
 # vax()
-test_stoch()
+# test_stoch()
+disappear()
