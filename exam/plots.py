@@ -132,6 +132,72 @@ def plotIs(result, fs=(12, 8)):
     plt.show()
 
 
+def plotEs(result, frac=10, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    N = np.sum(xs[0][0])
+    xs = xs / N # Normalize
+    Nt = get_Nt(T, dt)
+    Nt0 = (Nt-1)//frac + 1
+    T0 = T*((Nt0-1)/(Nt-1))
+    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+    assert np.isclose(dt0, dt)
+
+    for i, x in enumerate(xs):
+        ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
+
+    plt.show()
+
+def plotEsafrs(result, frac, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args, rss, av_growth = result
+    N = np.sum(xs[0][0])
+    xs = xs / N # Normalize
+    Nt = get_Nt(T, dt)
+    Nt0 = (Nt-1)//frac + 1
+    T0 = T*((Nt0-1)/(Nt-1))
+    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+
+    assert np.isclose(dt0, dt)
+
+    for i, x in enumerate(xs):
+        ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
+
+    # The index of the highest v with positive growth rate
+    high_i = np.arange(0, len(rss))[np.greater(av_growth, 0)][-1]
+    ax.semilogy(t, xs[high_i, :Nt0, 1], "k--")
+    print("Corr growth rate: {}".format(av_growth[high_i]))
+    print("Reach at index {} of {}".format(high_i, len(rss)))
+    print("highest r_s value stillin yielding exp grwoth: {}".format(rss[high_i]))
+
+    plt.show()
+
+
+def plotEav(result, frac=10, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    N = np.sum(xs[0][0])
+    Nt = get_Nt(T, dt)
+    Nt0 = (Nt-1)//frac + 1
+    T0 = T*((Nt0-1)/(Nt-1))
+    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+    assert np.isclose(dt0, dt)
+
+    E_av = np.zeros(Nt0, dtype=type(xs[0]))
+    for x in xs:
+        x = x / N # Normalize
+        E_av += x[:Nt0, 1]
+
+    E_av *= 1/len(xs)
+    ax.semilogy(t, E_av, "k--")
+
+    plt.show()
+
+
+
 def plotI(x, T, dt, args, fs=(12, 8)):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)

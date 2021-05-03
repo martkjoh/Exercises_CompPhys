@@ -123,6 +123,8 @@ def vaccination():
     print("Reach at index {} of {}".format(high_i, len(vacc)))
     return growth_rate, vacc, high_i
 
+
+
 if __name__=="__main__":
     # flatten_the_curve()    
     vaccination()
