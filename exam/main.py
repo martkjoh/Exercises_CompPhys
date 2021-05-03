@@ -32,4 +32,4 @@ def disappear():
 # flatten()
 # vax()
 # test_stoch()
-disappear()
+# disappear()

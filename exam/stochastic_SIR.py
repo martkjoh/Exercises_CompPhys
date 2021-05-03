@@ -30,6 +30,7 @@ def get_test_stoch():
 
 
 def prob_disappear():
+    # TODO: variance? Other statistical numbers
     N = 100_000
     T = 20; dt = 0.1
     args = (0.25, 10) # beta, tau
