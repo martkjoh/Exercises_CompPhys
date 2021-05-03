@@ -18,12 +18,74 @@ def plotSIR(x, T, dt, args, fs=(12, 8)):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
+    N = np.sum(x[0])
+    x = x / N # Normalize
     
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], label=labels[i], color=colors[i])
     S_inf, R_inf = get_asymptotes2(args)
     ax.plot(t, np.ones_like(t)*S_inf, "--", label="$S(\infty)$", color=colors[0])
     ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
+    ax.legend()
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\beta={}$".format(args[0])
+        + "$,\,\\tau={}$".format(args[1])
+    )
+
+    plt.show()
+
+
+def plotSIRs(result0, result, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+
+    for x in xs:
+        N = np.sum(x[0])
+        x = x / N # Normalize
+
+        for i in range(x.shape[1]):
+            ax.plot(t, x[:, i], color=colors[i], alpha=0.3)
+
+    x0, T, dt, args = result0
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+
+    for i in range(x0.shape[1]):
+        ax.plot(t, x0[:, i], "k--")
+    S_inf, R_inf = get_asymptotes2(args)
+    ax.plot(t, np.ones_like(t)*S_inf, "--", label="$S(\infty)$", color=colors[0])
+    ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
+
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\beta={}$".format(args[0])
+        + "$,\,\\tau={}$".format(args[1])
+    )
+
+    plt.show()
+
+
+def plotIs(result, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    N = np.sum(xs[0][0])
+    for x in xs:
+        x = x / N # Normalize
+        Nt = get_Nt(T, dt)
+        Nt0 = (Nt-1)//2 + 1
+        T0 = T*((Nt0-1)/(Nt-1))
+        t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+        assert np.isclose(dt0, dt)
+
+        ax.semilogy(t, x[:Nt0, 1], color=colors[1], alpha=0.3)
+
+    a = args[0] - 1 / args[1]
+    ax.semilogy(t, xs[0][0, 1]/N*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
     ax.legend()
     ax.set_title(
         "$\Delta t = {:.3e}$".format(dt)
@@ -41,6 +103,8 @@ def plotI(x, T, dt, args, fs=(12, 8)):
     T0 = T*((Nt0-1)/(Nt-1))
     t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
     assert np.isclose(dt0, dt)
+    N = np.sum(x[0])
+    x = x / N # Normalize
 
     ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1])
     a = args[0] - 1 / args[1]

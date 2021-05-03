@@ -53,7 +53,7 @@ def get_asymptotes2(args):
 def integrate(f, x0, T, dt, args, step=RK4step, progress=True):
     Nt = get_Nt(T, dt)
     print("Integrates {} steps until time {}".format(Nt-1, T))
-    x = np.empty((Nt, *x0.shape))
+    x = np.empty((Nt, *x0.shape), dtype=type(x0))
     x[0] = x0
     if progress: r = trange(Nt-1)
     else: r = range(Nt-1)
