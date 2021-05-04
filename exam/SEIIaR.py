@@ -37,9 +37,9 @@ def get_test_SEIIAR():
 
 
 def stay_home():
-    runs = 100
+    runs = 10
     rss = np.linspace(1, 0, runs)
-    samples = 100
+    samples = 10
     N = 100_000
     E = 25
     x0 = np.array([N-E, E, 0, 0, 0], dtype=int)

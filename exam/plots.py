@@ -83,30 +83,51 @@ def plotSEIIaRs(result0, result, fs=(12, 8)):
     for x in xs:
         N = np.sum(x[0])
         x = x / N # Normalize
-
-        l = []
+        print(x.shape)
         for i in range(x.shape[1]):
-            l.append(ax.plot(t, x[:, i], color=colors2[i], alpha=0.3))
+
+            ax.plot(t, x[:, i], color=colors2[i], alpha=0.3)
     
+    ax.legend([*labels2])
 
     x, T, dt, args = result0
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
     N = np.sum(x[0])
     x = x / N # Normalize
+    for i in range(x.shape[1]):
+        ax.plot(t, x[:, i], "k--")
     
-    ax.legend([*labels2])
+    
+
+    plt.show()
+
+
+def plot_two_towns(result, fs=(12, 8)):
+    xs, T, dt, args = result
+    N_cities = xs.shape[1]
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+    fig, ax = plt.subplots(1, 2, figsize=fs)
+    print(xs.shape)
+    for n in range(2):
+        x = xs[:, :, n]
+        N = np.sum(x[0])
+        x = x / N # Normalize
+
+        for i in range(x.shape[1]):
+            ax[n].plot(t, x[:, i], color=colors2[i], alpha=1)
 
 
     plt.show()
 
 
-def plot_towns(result, fs=(12, 8), shape=(3, 3)):
+
+def plot_many_towns(result, fs=(12, 8), shape=(3, 3)):
     xs, T, dt, args = result
     N_cities = xs.shape[1]
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
-    print(xs.shape)
     fig, ax = plt.subplots(*shape, figsize=fs)
 
     for j in range(shape[0]):
@@ -167,6 +188,7 @@ def plotEs(result, frac=10, fs=(12, 8)):
         ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
 
     plt.show()
+
 
 def plotEsafrs(result, frac, fs=(12, 8)):
     fig, ax = plt.subplots(figsize=fs)

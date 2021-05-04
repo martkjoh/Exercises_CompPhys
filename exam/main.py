@@ -49,11 +49,14 @@ def testSEIIaR_commute():
     plotSEIIaRs(result0, result)
     plotEav(result)
 
+
 def two_towns():
-    plot_towns(get_two_towns())
+    plot_two_towns(get_two_towns())
 
 def nine_towns():
-    plot_towns(get_nine_towns())
+    plot_many_towns(get_nine_towns())
+
+
 
 # testSIR()
 # flatten()
@@ -63,4 +66,5 @@ def nine_towns():
 # testSEIIaR()
 # test_isolation()
 # testSEIIaR_commute()
-nine_towns()
+two_towns()
+# nine_towns()

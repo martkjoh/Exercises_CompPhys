@@ -2,9 +2,22 @@ import numpy as np
 from numpy.random import default_rng
 
 rng = default_rng()
-n = np.array([5, 6, 5, 3])
-p0 = np.array([.45, .65, .35, .55])
-p1 = np.array([0.1, 0.1, 0.1, 0.1])
-p2 = 1 - p0 - p1
+B = rng.binomial
+M = rng.multinomial
 
-print(rng.multinomial(n, (p0, p1, p2)))
+n = np.array([
+    [100, 5],
+    [100, 0],
+    [1000, 200]
+])
+
+p = np.array([.9, .2])
+
+# print(B(n, p))
+print(B(n, p[0]))
+print(np.moveaxis(M(n, (p[0], 1-p[0])), -1, 0)[0, :, :])
+
+
+# x = n[:, np.newaxis]
+# print((x).dtype)
+# print(x)

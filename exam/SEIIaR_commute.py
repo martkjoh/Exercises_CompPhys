@@ -8,58 +8,32 @@ B = rng.binomial
 M = rng.multinomial
 
 
-def set_SEIIaR_delta(x, x0, dt, N, day, args, deltas):
+def SEIIaR_commute2(x, dt, day, *args):
     beta, rs, ra, fs, fa, tE, tI = args
-    DSE, DEI, DEIa, DIR, DIaR = deltas
-    if day:
-        indx = lambda i: (slice(None), i)
+    if not day:
+        x0 = np.sum(x, axis=1)
+        N = np.sum(x0, axis=0)
+        x0 = np.ones_like(x) * x0[:, np.newaxis, :]
+        N = np.ones_like(x[0]) * N[np.newaxis, :]
+
     else:
-        indx = lambda i: (i, slice(None))
+        x0 = np.sum(x, axis=2)
+        N = np.sum(x0, axis=0)
+        x0 = np.ones_like(x) * x0[:, :, np.newaxis]
+        N = np.ones_like(x[0]) * N[:, np.newaxis]
 
-    # For each city
-    for i, xi in enumerate(x0):
-        v = np.array(-dt*beta*(rs*xi[2]+ra*xi[3])/N)
-        PSE = 1 - np.exp(v)
-        PEI = fs*(1 - np.exp(-dt/tE))
-        PEIa = fa*(1 - np.exp(-dt/tE))
-        PIR = 1 - np.exp(-dt/tI)
+    v = -dt*beta*(rs*x0[2]+ra*x0[3])/N
+    PSE = 1 - np.exp(v)
+    PEI = fs*(1 - np.exp(-dt/tE))
+    PEIa = fa*(1 - np.exp(-dt/tE))
+    PIR = 1 - np.exp(-dt/tI)
 
-        # Please, do not ask why. I don't know
-        S = x[(*indx(i), 0)].astype(int)
-        E = x[(*indx(i), 1)].astype(int)
-        I = x[(*indx(i), 2)].astype(int)
-        Ia = x[(*indx(i), 3)].astype(int)
-        DSE[indx(i)] = B(S, PSE)
-        DEI[indx(i)], DEIa[indx(i)], _ = M(E, (PEI, PEIa, 1-PEI-PEIa)).T #Why?
-        DIR[indx(i)] = B(I, PIR)
-        DIaR[indx(i)] = B(Ia, PIR)
+    DSE = B(x[0], PSE)
+    DEI, DEIa, _ = np.moveaxis(M(x[1], (PEI, PEIa, 1-PEI-PEIa)), -1, 0)
+    DIR = B(x[2], PIR)
+    DIaR = B(x[3], PIR)
 
-
-
-# x = (S, E, I, I_a, R)
-def SEIIaR_commute(x, dt, day, *args):
-
-    # The total number in each city is determined by a sum of everyone in the city
-    # Day or night determins which axis to sum over (commuter, lives there)
-    axis = 0 if day else 1
-    
-    N_cities = len(x[0])
-
-    # Sum up all people in each city
-    x0 = np.sum(x, axis=axis, dtype=np.float64)
-    N = np.sum(x0)
-    DSE = np.empty((N_cities, N_cities))
-    DEI = np.empty((N_cities, N_cities))
-    DEIa = np.empty((N_cities, N_cities))
-    DIR = np.empty((N_cities, N_cities))
-    DIaR = np.empty((N_cities, N_cities))
-    deltas = [DSE, DEI, DEIa, DIR, DIaR]
-
-    set_SEIIaR_delta(x, x0, dt, N, day, args, deltas)
-
-    dx = np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
-    return np.moveaxis(dx, 0, 2)
-
+    return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
 
 
 def stoch_commute_step(f, x, i, dt, args):
@@ -74,7 +48,7 @@ def get_test_SEIIaR_commute():
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = np.array([
         [100_000, 0],
-        [0, 0]
+        [0, 1]
     ], dtype=int)
     E = np.array([
         [25, 0],
@@ -82,14 +56,12 @@ def get_test_SEIIaR_commute():
     ], dtype=int)
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    x0 = np.moveaxis(x0, 0, 2) # move index with SEIIaR to the back
     T = 180; dt = 0.1
     xs = []
     for i in range(10):
         xs.append(integrate(
-            SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step)[:, 0, 0]
+            SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)[:, :, 0, 0]
             )
-    print(np.sum(xs[0], axis=1))
     return xs, T, dt, args
 
 
@@ -100,15 +72,14 @@ def get_two_towns():
         [200, 99800]
     ], dtype=int)
     E = np.array([
-        [0, 0],
-        [0, 25]
+        [25, 0],
+        [0, 0]
     ], dtype=int)
     Oh = np.zeros_like(N)
+    # x[time, var, city_i, city_j]
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    x0 = np.moveaxis(x0, 0, 2) # move index with SEIIaR to the back
     T = 180; dt = 0.1
-    x = integrate(SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step)
-    print(x.shape)
+    x = integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
     xs = np.sum(x, axis=2)
     return xs, T, dt, args
 
@@ -131,14 +102,13 @@ def get_nine_towns():
     E[5, 5] = 25
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    x0 = np.moveaxis(x0, 0, 2) # move index with SEIIaR to the back
+    # x0 = np.moveaxis(x0, 0, 2) # move index with SEIIaR to the back
     T = 500; dt = 0.1
-    x = integrate(SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step)
-    print(x.shape)
+    x = integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
     xs = np.sum(x, axis=2)
     return xs, T, dt, args
 
 
 if __name__=="__main__":
-    # get_test_SEIIaR_commute()
-    get_two_towns()
+    get_test_SEIIaR_commute()
+    # get_two_towns()
