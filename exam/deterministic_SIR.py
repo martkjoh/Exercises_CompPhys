@@ -1,81 +1,8 @@
 import numpy as np
-from time import time
 from tqdm import trange
-import sys
-sys.setrecursionlimit(10_000)
-from scipy.optimize import root
 
+from utillities import integrate, SIR
 # TODO: flytt alt som brukes andre steder
-
-# x[i] = (S(t_i), I(t_i), R(t_i))
-def SIR(x, beta, tau):
-    a = beta * x[1] * x[0]
-    b = x[1]/tau
-    return np.array([-a, a - b, b])
-
-
-def RK4step(f, x, i, dt, args):
-    k1 = f(x, *args) * dt
-    k2 = f(x + 1 / 2 * k1, *args) * dt
-    k3 = f(x + 1 / 2 * k2, *args) * dt
-    k4 = f(x + k3, *args)  * dt
-    return 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-
-
-def get_Nt(T, dt):
-    assert np.isclose(int(T/dt)*dt, T)
-    return int(T/dt)+1
-
-
-def fpi(x0, f, tol=1e-8):
-    x1 = f(x0)
-    if np.abs(x0-x1)<tol:
-        return x1
-    else:
-        return fpi(x1, f)
-
-
-def get_asymptotes(args):
-    R0 = args[0] * args[1]
-    # assert np.abs(R0-1)<1e-3 # wont converge
-    fS = lambda S: np.exp(-R0*(1 - S))
-    fR = lambda R: 1 - np.exp(-R0*R)
-    return fpi(0.5, fS), fpi(0.5, fR)
-
-
-def get_asymptotes2(args):
-    R0 = args[0] * args[1]
-    fS = lambda S: np.exp(-R0*(1 - S)) - S
-    fR = lambda R: 1 - np.exp(-R0*R) - R
-    return root(fS, 0.5)["x"], root(fR, 0.5)["x"]
-
-
-def integrate(f, x0, T, dt, args, save=None, step=RK4step, inf=True):
-    Nt = get_Nt(T, dt)
-    if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
-    if save is None: save = Nt
-    x = np.empty((save, *x0.shape), dtype=x0.dtype)
-    x[0] = x0
-    assert (Nt-1)%(save-1)==0
-    skip = (Nt-1)//(save-1)
-    if inf: r = trange(save-1)
-    else: r = range(save-1)
-    for i in r:
-        xi = x[i]
-        for j in range(skip):
-            xi += step(f, xi, i, dt, args)
-        x[i+1] = xi
-    return x
-
-
-def integrate_untill(f, x, T, dt, args, cond, step=RK4step, inf=False):
-    Nt = get_Nt(T, dt) # maximum amount of steps
-    if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
-    i = 0
-    while i<Nt and not cond(x):
-        x += step(f, x, i, dt, args)
-        i+=1
-    return x, i, cond(x)
 
 
 def get_testSIR():

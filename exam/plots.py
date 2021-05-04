@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from deterministic_SIR import get_Nt, get_asymptotes2
+from utillities import get_Nt, get_asymptotes
 from matplotlib.colors import LogNorm
 from os import path, mkdir
 
@@ -50,7 +50,7 @@ def plotSIR(x, T, dt, args, fs=(12, 8), name="", subdir=""):
     
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], label=labels[i], color=colors[i])
-    S_inf, R_inf = get_asymptotes2(args)
+    S_inf, R_inf = get_asymptotes(args)
     ax.plot(t, np.ones_like(t)*S_inf, "--", label="$S(\infty)$", color=colors[0])
     ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
     ax.legend()
@@ -84,7 +84,7 @@ def plotSIRs(result0, result, fs=(12, 8), name="", subdir=""):
 
     for i in range(x0.shape[1]):
         ax.plot(t, x0[:, i], "k--")
-    S_inf, R_inf = get_asymptotes2(args)
+    S_inf, R_inf = get_asymptotes(args)
     ax.plot(t, np.ones_like(t)*S_inf, "--", label="$S(\infty)$", color=colors[0])
     ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
 

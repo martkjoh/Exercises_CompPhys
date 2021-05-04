@@ -1,18 +1,6 @@
 import numpy as np
-from numpy.random import binomial as B
 from tqdm import trange
-from deterministic_SIR import integrate, integrate_untill
-
-def SIR_stoch(x, dt, beta, tau):
-    N = np.sum(x)
-    PSI = 1 - np.exp(-dt*beta*x[1]/N)
-    PIR = 1 - np.exp(-dt/tau)
-    a, b = B(x[0], PSI), B(x[1], PIR)
-    return np.array([-a, a - b, b])
-
-
-def stoch_step(f, x, i, dt, args):
-    return f(x, dt, *args)
+from utillities import integrate, integrate_untill, SIR_stoch, stoch_step
 
 
 def get_test_stoch():

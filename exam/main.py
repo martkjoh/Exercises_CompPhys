@@ -1,7 +1,7 @@
-from deterministic_SIR import get_testSIR, flatten_the_curve, vaccination
-from stochastic_SIR import get_test_stoch, prob_disappear
-from SEIIaR import get_test_SEIIAR, stay_home
-from SEIIaR_commute import get_Norway, get_Norway_lockdown, get_pop_structure_lochkdown, get_test_SEIIaR_commute, get_two_towns, get_nine_towns, get_pop_structure
+from deterministic_SIR import *
+from stochastic_SIR import *
+from SEIIaR import *
+from SEIIaR_commute import *
 from plots import *
 
 
@@ -60,7 +60,7 @@ def pop_struct():
     plot_pop_struct(get_pop_structure(), name="pop_struct", subdir="2D/")
 
 def pop_struct_lockdown():
-    plot_pop_struct(get_pop_structure_lochkdown(), name="pop_struct_lockdown", subdir="2D/")
+    plot_pop_struct(get_pop_structure(lockdown=True), name="pop_struct_lockdown", subdir="2D/")
 
 def num_infected():
     result = get_Norway()
@@ -73,17 +73,17 @@ def num_infected_lockdown():
     plot_sum_inf(result, name="num_infected_lockdown", subdir="2D/")
 
 
-# testSIR()
-# flatten()
-# vax()
-# test_stoch()
-# disappear()
-# testSEIIaR()
-# test_isolation()
-# testSEIIaR_commute()
-# two_towns()
-# nine_towns()
-# pop_struct()
-# pop_struct_lockdown()
+testSIR()
+flatten()
+vax()
+test_stoch()
+disappear()
+testSEIIaR()
+test_isolation()
+testSEIIaR_commute()
+two_towns()
+nine_towns()
+pop_struct()
+pop_struct_lockdown()
 num_infected()
-# num_infected_lockdown()
+num_infected_lockdown()
