@@ -50,13 +50,32 @@
     The first model is the deterministic SIR model, given by a set of coupled ODEs \cite{exam}. 
     In this text, the Runge-Kutta (4, 5) scheme was used, as it is both a simple yet precise scheme.
     \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning. 
+    Adjusting the $\beta$-parameter will affect how fast the virus spreads, thus ``flattening the curve'', as illustrated in \autoref{flattening}.
+    This shows how far $\beta$ must be reduced to ensure that the fraction infected stays below $0.2$. 
+    \autoref{vax} shows the fraction of the population must be vaccinated \emph{before} the outbreak to stop exponential growth. At the start of the simulation, the number of infected grows exponentially, i.e. $I \propto \exp(\alpha t)$ for some $\alpha$. A partially vaccinated population can be modeled by setting $R(0)$ equal the proportion of the population that is vaccinated. The result shows that $60\%$ or more must be vaccinated to avoid exponential growth, i.e. $\alpha\leq 0$ 
 
     \begin{figure}
         \centering
-        \includegraphics[width=.4\textwidth]{../plots/2A/TestSIR}
-        \includegraphics[width=.4\textwidth]{../plots/2A/TestI}
+        \includegraphics[width=.49\textwidth]{../plots/2A/TestSIR}
+        \includegraphics[width=.49\textwidth]{../plots/2A/TestI}
         \caption{On the left, the fraction of the population that is in each group, over time. The plot on the right shows how the infection spreads exponentially in the begining}
         \label{SIR}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/2A/flatten.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2A/flattenIs.pdf}
+        \caption{The figure on th eright shows the maximum fraction of infected, as a function of $\beta$. The largest value of $\beta$ such that the maximum is beneth $0.2$ is indicated. On the right, the corresponding infection curves.}
+        \label{flattening}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/2A/vax.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2A/vax_R.pdf}
+        \caption{The plot on the left shows the maximu $R(0)$, i.e. fraction of vaccinated, that still gives exponential growth. The right shows a log-plot of the growht of infected at the very begining.}
+        \label{vax}
     \end{figure}
 
     \printbibliography

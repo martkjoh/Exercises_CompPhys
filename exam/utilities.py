@@ -114,7 +114,7 @@ def integrate(f, x0, T, dt, args, save=None, step=RK4step, inf=True):
     if inf: r = trange(save-1)
     else: r = range(save-1)
     for i in r:
-        xi = x[i]
+        xi = np.copy(x[i]) # This was a pain to find...
         for j in range(skip):
             xi += step(f, xi, i, dt, args)
         x[i+1] = xi

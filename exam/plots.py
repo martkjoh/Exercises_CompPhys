@@ -40,6 +40,10 @@ colors = [cm.plasma(0.2), cm.plasma(0.5), cm.plasma(0.8)]
 labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
 colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
 
+"""
+Determenistic SIR
+"""
+
 
 def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
@@ -61,6 +65,109 @@ def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     )
     ax.set_xlabel("$t/[\mathrm{ days }]$")
 
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plotI(x, T, dt, args, fs=(8, 6), name="", subdir=""):
+    fig, ax = plt.subplots(figsize=fs)
+    Nt = get_Nt(T, dt)
+    Nt0 = (Nt-1)//10 + 1
+    T0 = T*((Nt0-1)/(Nt-1))
+    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+    assert np.isclose(dt0, dt)
+    N = np.sum(x[0])
+    x = x / N # Normalize
+
+    ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1])
+    a = args[0] - 1 / args[1]
+    ax.semilogy(t, x[0, 1]*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
+    ax.legend()
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\beta={}$".format(args[0])
+        + "$,\,\\tau={}$".format(args[1])
+    )
+
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_flattening(results, fs=(8, 6), name="", subdir=""):
+    xs, betas, high_i, max_I, max_day, T, dt, args = results
+    fig, ax = plt.subplots(figsize=fs)
+    Nt = get_Nt(T, dt)
+    t = np.linspace(0, T, Nt)
+    for i in range(len(xs)):
+        x = xs[i]
+        N = np.sum(x[0])
+        x = x / N # Normalize    
+        ax.plot(t, x[:, 1], color=colors[1], alpha=0.3)
+
+    ax.plot(t, xs[high_i][:, 1], "k--", label="$\\beta = {:.3f}$".format(betas[high_i]))
+    ax.plot(t, 0.2*np.ones_like(t), "k", ls="dashdot", label="$0.2$".format(betas[high_i]))
+    ax.legend()
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\tau={}$".format(args[1])
+    )
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_maxI(results, fs=(8, 6), name="", subdir=""):
+    xs, betas, high_i, max_I, max_day, T, dt, args = results
+    fig, ax = plt.subplots(figsize=fs)
+    ax.plot(betas, max_I, "k.-")
+    ax.plot(betas, 0.2*np.ones_like(betas), label="$0.2$")
+    ax.plot(betas[high_i], max_I[high_i], "ro", label="$\\beta = {:.3f}$".format(betas[high_i]), markersize=10)
+    ax.legend()
+    ax.set_xlabel("$\\beta$")
+    ax.set_ylabel("$\mathrm{ max }(I)$")
+    
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_vacc(results, fs=(8, 6), name="", subdir=""):
+    xs, growth_rate, vacc, high_i, dt, T, args = results
+    fig, ax = plt.subplots(figsize=fs)
+    Nt = get_Nt(T, dt)
+
+    t = np.linspace(0, T, Nt)
+    for i in range(len(xs)):
+        x = xs[i]
+        N = np.sum(x[0])
+        x = x / N # Normalize
+        ax.semilogy(t, x[:, 1], color=colors[1], lw=1)
+
+
+    ax.plot(t, xs[high_i][:, 1], "k--", label="$R(0) = {:.3f}$".format(vacc[high_i]), lw=1)
+    t2 = np.linspace(t[0], t[-1], 100)
+    ax.plot(t2, xs[0][0, 1]*np.ones_like(t2), "k", ls="dashdot", label="const", lw=1)
+    ax.legend()
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\tau={}$".format(args[1])
+    )
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_growth(results, fs=(8, 6), name="", subdir=""):
+    xs, growth_rate, vacc, high_i, dt, T, args = results
+    fig, ax = plt.subplots(figsize=fs)
+    ax.plot(vacc, 0*np.ones_like(vacc), label="$\\alpha=0$")
+    ax.plot(vacc, growth_rate, "k.-", label="$\\alpha$")
+    ax.plot(
+        vacc[high_i], growth_rate[high_i], "ro", ms=10,
+        label="$R(0) = {:.3f}$".format(vacc[high_i])
+        )
+    ax.legend()
+    ax.set_xlabel("$R(0)$")
+    ax.set_ylabel("$\\alpha$")
+    
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -296,49 +403,6 @@ def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
-
-
-def plotI(x, T, dt, args, fs=(8, 6), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-    Nt = get_Nt(T, dt)
-    Nt0 = (Nt-1)//10 + 1
-    T0 = T*((Nt0-1)/(Nt-1))
-    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
-    assert np.isclose(dt0, dt)
-    N = np.sum(x[0])
-    x = x / N # Normalize
-
-    ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1])
-    a = args[0] - 1 / args[1]
-    ax.semilogy(t, x[0, 1]*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
-    ax.legend()
-    ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
-        + "$,\,\\beta={}$".format(args[0])
-        + "$,\,\\tau={}$".format(args[1])
-    )
-
-    ax.set_xlabel("$t/[\mathrm{ days }]$")
-
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
-def plot_maxI(max_I, betas, high_i, fs=(12, 8), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-    ax.plot(betas, max_I, "k.-")
-    ax.plot(betas[high_i], max_I[high_i], "rx")
-    ax.plot(betas, 0.2*np.ones_like(betas))
-    
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
-def plot_vacc(growth_rate, vacc, high_i, fs=(12, 8), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-    ax.plot(vacc, growth_rate, "k.-")
-    ax.plot(vacc[high_i], growth_rate[high_i], "rx")
-    ax.plot(vacc, 0*np.ones_like(vacc))    
-    
-    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 def plot_prob_dis(terms, Is, fs=(12, 8), name="", subdir=""):

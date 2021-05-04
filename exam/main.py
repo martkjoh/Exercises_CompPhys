@@ -13,11 +13,15 @@ def testSIR():
 
 
 def flatten():
-    plot_maxI(*flatten_the_curve(), name="flatten", subdir="2A/")
+    results = flatten_the_curve()
+    plot_maxI(results, name="flatten", subdir="2A/")
+    plot_flattening(results, name="flattenIs", subdir="2A/")
 
 
 def vax():
-    plot_vacc(*vaccination(), name="vax", subdir="2A/")
+    result = vaccination()
+    plot_vacc(result, name="vax_R", subdir="2A/")
+    plot_growth(result, name="vax", subdir="2A/")
 
 
 def test_stoch():
@@ -73,9 +77,9 @@ def num_infected_lockdown():
     plot_sum_inf(result, name="num_infected_lockdown", subdir="2D/")
 
 
-testSIR()
-# flatten()
-# vax()
+# testSIR()
+flatten()
+vax()
 # test_stoch()
 # disappear()
 # testSEIIaR()
