@@ -78,5 +78,24 @@
         \label{vax}
     \end{figure}
 
+    \subsection*{Stochastic SIR model}
+    % TODO: Sjekke feil pga skrittlengde, differanse i siste punkt til analytisk løsning/asymptote s.f.a skrittlengde
+    Next, the stochastic version of SIR model is used. \autoref{stochastic SIR} shows the result of 100 runs, which all give result close to that of the deterministic one. All simulation uses a population of 100\,000, but the plots are normalized. (DISCUSS TIMESTEP) The stochastic nature of this model makes it possible for the infection to die out, even with $\mathcal{R}_0>1$, by pure chance. \autoref{Disappear} Shows the 
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/2B/TestSIR_stoch.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2B/TestI_stoch.pdf}
+        \caption{100 runs of the stochastic SIR model. All runs are close to the deterministic, showed as dashed lines}
+        \label{stochastic SIR}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=.7\textwidth]{../plots/2B/disappear.pdf}
+        \caption{The probability that the infection dies, for different starting values of $I$.}
+        \label{Disappear}
+    \end{figure}
+
     \printbibliography
 \end{document}

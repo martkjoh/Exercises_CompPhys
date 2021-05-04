@@ -78,16 +78,18 @@ def num_infected_lockdown():
 
 
 # testSIR()
-flatten()
-vax()
+# flatten()
+# vax()
+
 # test_stoch()
-# disappear()
+disappear()
+
 # testSEIIaR()
 # test_isolation()
 # testSEIIaR_commute()
 # two_towns()
 # nine_towns()
 # pop_struct()
-# pop_struct_lockdown()
+# pop_struct_lockdown()5
 # num_infected()
 # num_infected_lockdown()

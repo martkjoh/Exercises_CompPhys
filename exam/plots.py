@@ -40,10 +40,10 @@ colors = [cm.plasma(0.2), cm.plasma(0.5), cm.plasma(0.8)]
 labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
 colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
 
+
 """
 Determenistic SIR
 """
-
 
 def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
@@ -171,6 +171,10 @@ def plot_growth(results, fs=(8, 6), name="", subdir=""):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
+"""
+Stohchastic SIR
+"""
+
 def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
@@ -182,18 +186,17 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
         N = np.sum(x[0])
         x = x / N # Normalize
 
+        l = []
         for i in range(x.shape[1]):
-            ax.plot(t, x[:, i], color=colors[i], alpha=0.3)
+            l.append(ax.plot(t, x[:, i], color=colors[i], alpha=0.3))
 
+    ax.legend(labels)
     x0, T, dt, args = result0
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
 
     for i in range(x0.shape[1]):
         ax.plot(t, x0[:, i], "k--")
-    S_inf, R_inf = get_asymptotes(args)
-    ax.plot(t, np.ones_like(t)*S_inf, "--", label="$S(\infty)$", color=colors[0])
-    ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
 
     ax.set_title(
         "$\Delta t = {:.3e}$".format(dt)
@@ -202,7 +205,42 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
     )
     ax.set_xlabel("$t/[\mathrm{ days }]$")
 
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
+
+def plotIs(result, fs=(8, 6), name="", subdir=""):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    N = np.sum(xs[0][0])
+    for x in xs:
+        x = x / N # Normalize
+        Nt = get_Nt(T, dt)
+        Nt0 = (Nt-1)//2 + 1
+        T0 = T*((Nt0-1)/(Nt-1))
+        t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+        assert np.isclose(dt0, dt)
+
+        l1 = ax.semilogy(t, x[:Nt0, 1], color=colors[1], alpha=0.3)[0]
+
+    a = args[0] - 1 / args[1]
+    l2 = ax.semilogy(t, xs[0][0, 1]/N*np.exp(a*t), "--k")[0]
+    ax.legend((l1, l2), (labels[1], "$\exp([\\beta -1/\\tau]t)$"))
+    ax.set_title(
+        "$\Delta t = {:.3e}$".format(dt)
+        + "$,\,\\beta={}$".format(args[0])
+        + "$,\,\\tau={}$".format(args[1])
+    )
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+def plot_prob_dis(terms, Is, fs=(10, 6), name="", subdir=""):
+    fig, ax = plt.subplots(figsize=fs)
+    ax.bar(Is, terms)
+    ax.set_xlabel("$I(0)$")
+    ax.set_ylabel("prob.")
+
+    
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -309,31 +347,6 @@ def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
 
 
 
-def plotIs(result, fs=(8, 6), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-
-    xs, T, dt, args = result
-    N = np.sum(xs[0][0])
-    for x in xs:
-        x = x / N # Normalize
-        Nt = get_Nt(T, dt)
-        Nt0 = (Nt-1)//2 + 1
-        T0 = T*((Nt0-1)/(Nt-1))
-        t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
-        assert np.isclose(dt0, dt)
-
-        ax.semilogy(t, x[:Nt0, 1], color=colors[1], alpha=0.3)
-
-    a = args[0] - 1 / args[1]
-    ax.semilogy(t, xs[0][0, 1]/N*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
-    ax.legend()
-    ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
-        + "$,\,\\beta={}$".format(args[0])
-        + "$,\,\\tau={}$".format(args[1])
-    )
-    ax.set_xlabel("$t/[\mathrm{ days }]$")
-    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 def plotEs(result, frac=10, fs=(12, 8), name="", subdir=""):
@@ -403,13 +416,6 @@ def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
-
-
-def plot_prob_dis(terms, Is, fs=(12, 8), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-    ax.bar(Is, terms)
-    
-    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 def plot_pop_struct(N, fs=(12, 8), name="", subdir=""):
