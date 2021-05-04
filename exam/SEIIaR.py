@@ -1,5 +1,5 @@
 import numpy as np
-from utillities import integrate, get_Nt, stoch_step, SEIIaR
+from utilities import integrate, get_Nt, stoch_step, SEIIaR
 from tqdm import trange
 
 

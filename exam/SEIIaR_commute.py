@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import trange
-from utillities import integrate, get_Nt, stoch_commute_step, SEIIaR_commute, get_pop_structure
+from utilities import integrate, get_Nt, stoch_commute_step, SEIIaR_commute, get_pop_structure
 
 
 def get_test_SEIIaR_commute():
@@ -81,12 +81,12 @@ def get_Norway():
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
     T = 180; dt = .5
-    save = 91
+    save = 121
     x = np.zeros((save, 5, *N.shape))
-    for i in trange(10):
+    for i in range(4):
         x += integrate(
             SEIIaR_commute, x0, T, dt, args, save=save, 
-            step=stoch_commute_step, inf=False
+            step=stoch_commute_step, inf=True
             )
     x = np.sum(x, axis=3)/1
     return x, T, dt, args
@@ -99,10 +99,10 @@ def get_Norway_lockdown():
     E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 180; dt = .5
-    save = 91
+    T = 180; dt = .1
+    save = 101
     x = np.zeros((save, 5, *N.shape))
-    for i in range(10):
+    for i in trange(10):
         x += integrate(
             SEIIaR_commute, x0, T, dt, args, save=save, 
             step=stoch_commute_step, inf=False

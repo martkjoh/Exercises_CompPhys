@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from utillities import get_Nt, get_asymptotes
+from utilities import get_Nt, get_asymptotes
 from matplotlib.colors import LogNorm
 from os import path, mkdir
 
@@ -41,7 +41,7 @@ labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
 colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
 
 
-def plotSIR(x, T, dt, args, fs=(12, 8), name="", subdir=""):
+def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
@@ -59,12 +59,12 @@ def plotSIR(x, T, dt, args, fs=(12, 8), name="", subdir=""):
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
-
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotSIRs(result0, result, fs=(12, 8), name="", subdir=""):
+def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -93,6 +93,8 @@ def plotSIRs(result0, result, fs=(12, 8), name="", subdir=""):
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -120,6 +122,8 @@ def plotSEIIaRs(result0, result, fs=(12, 8), name="", subdir=""):
     x = x / N # Normalize
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], "k--")
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
+
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -138,6 +142,7 @@ def plotOslo(result, fs=(12, 8), name="", subdir=""):
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], color=colors2[i])
     ax.legend([*labels2])
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     
     save_plot(fig, ax, name, DIR_PATH+subdir)
@@ -152,6 +157,7 @@ def plot_sum_inf(result, fs=(12, 8), name="", subdir=""):
     save = x.shape[0]
     t = np.linspace(0, T, save)
     ax.plot(t, infected_cities)
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -196,7 +202,7 @@ def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
 
 
 
-def plotIs(result, fs=(12, 8), name="", subdir=""):
+def plotIs(result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -219,7 +225,7 @@ def plotIs(result, fs=(12, 8), name="", subdir=""):
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
-
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -237,7 +243,7 @@ def plotEs(result, frac=10, fs=(12, 8), name="", subdir=""):
 
     for i, x in enumerate(xs):
         ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
-
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -251,6 +257,7 @@ def plotEsafrs(result, frac, fs=(12, 8), name="", subdir=""):
     Nt0 = (Nt-1)//frac + 1
     T0 = T*((Nt0-1)/(Nt-1))
     t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     assert np.isclose(dt0, dt)
 
@@ -277,6 +284,7 @@ def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
     T0 = T*((Nt0-1)/(Nt-1))
     t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
     assert np.isclose(dt0, dt)
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     E_av = np.zeros(Nt0, dtype=type(xs[0]))
     for x in xs:
@@ -290,10 +298,10 @@ def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
 
 
 
-def plotI(x, T, dt, args, fs=(12, 8), name="", subdir=""):
+def plotI(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
-    Nt0 = (Nt-1)//2 + 1
+    Nt0 = (Nt-1)//10 + 1
     T0 = T*((Nt0-1)/(Nt-1))
     t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
     assert np.isclose(dt0, dt)
@@ -309,6 +317,8 @@ def plotI(x, T, dt, args, fs=(12, 8), name="", subdir=""):
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
+
+    ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 

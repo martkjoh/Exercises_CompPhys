@@ -1,8 +1,7 @@
 import numpy as np
 from tqdm import trange
+from utilities import integrate, SIR
 
-from utillities import integrate, SIR
-# TODO: flytt alt som brukes andre steder
 
 
 def get_testSIR():

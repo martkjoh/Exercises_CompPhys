@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import trange
-from utillities import integrate, integrate_untill, SIR_stoch, stoch_step
+from utilities import integrate, integrate_untill, SIR_stoch, stoch_step
 
 
 def get_test_stoch():
