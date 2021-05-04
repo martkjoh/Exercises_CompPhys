@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from deterministic_SIR import get_Nt, get_asymptotes2
 from matplotlib.colors import LogNorm
+from os import path, mkdir
 
 
 plt.rcParams['mathtext.fontset'] = 'cm'
@@ -10,6 +11,27 @@ font = {'family' : 'serif',
         'size': 20}
 plt.rc('font', **font)
 plt.rc('lines', lw=2)
+
+DIR_PATH="plots/"
+
+
+def make_dir(dir_path):
+    """ recursively (!) creates the needed directories """
+    if not path.isdir(dir_path):
+        make_dir("/".join(dir_path.split("/")[:-2]) + "/")
+        mkdir(dir_path)
+
+
+def check_dir(dir_path):
+    if not path.isdir(dir_path):
+        make_dir(dir_path)
+
+
+def save_plot(fig, ax, fname, dir_path):
+    check_dir(dir_path)
+    plt.tight_layout()
+    plt.savefig(dir_path + fname + ".pdf")
+    plt.close(fig)
 
 
 labels = ["$S$", "$I$", "$R$"]
@@ -19,7 +41,7 @@ labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
 colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
 
 
-def plotSIR(x, T, dt, args, fs=(12, 8)):
+def plotSIR(x, T, dt, args, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
@@ -38,10 +60,11 @@ def plotSIR(x, T, dt, args, fs=(12, 8)):
         + "$,\,\\tau={}$".format(args[1])
     )
 
-    plt.show()
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotSIRs(result0, result, fs=(12, 8)):
+def plotSIRs(result0, result, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -71,16 +94,16 @@ def plotSIRs(result0, result, fs=(12, 8)):
         + "$,\,\\tau={}$".format(args[1])
     )
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 
-def plotSEIIaRs(result0, result, fs=(12, 8)):
+def plotSEIIaRs(result0, result, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
     Nt = get_Nt(T, dt)
-    save = result[0].shape[1]
+    save = result[0][0].shape[0]
     t = np.linspace(0, T, save)
 
     for x in xs:
@@ -98,10 +121,10 @@ def plotSEIIaRs(result0, result, fs=(12, 8)):
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], "k--")
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotOslo(result, fs=(12, 8)):
+def plotOslo(result, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -116,9 +139,11 @@ def plotOslo(result, fs=(12, 8)):
         ax.plot(t, x[:, i], color=colors2[i])
     ax.legend([*labels2])
 
-    plt.show()
+    
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
-def plot_sum_inf(result, fs=(12, 8)):
+
+def plot_sum_inf(result, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     x, T, dt, args = result
@@ -127,16 +152,16 @@ def plot_sum_inf(result, fs=(12, 8)):
     save = x.shape[0]
     t = np.linspace(0, T, save)
     ax.plot(t, infected_cities)
-    plt.show()
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_two_towns(result, fs=(12, 8)):
+def plot_two_towns(result, fs=(12, 8), name="", subdir=""):
     xs, T, dt, args = result
     N_cities = xs.shape[1]
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
     fig, ax = plt.subplots(1, 2, figsize=fs)
-    print(xs.shape)
     for n in range(2):
         x = xs[:, :, n]
         N = np.sum(x[0])
@@ -145,11 +170,11 @@ def plot_two_towns(result, fs=(12, 8)):
         for i in range(x.shape[1]):
             ax[n].plot(t, x[:, i], color=colors2[i], alpha=1)
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 
-def plot_many_towns(result, fs=(12, 8), shape=(2, 5)):
+def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
     xs, T, dt, args = result
     N_cities = xs.shape[1]
     Nt = get_Nt(T, dt)
@@ -167,11 +192,11 @@ def plot_many_towns(result, fs=(12, 8), shape=(2, 5)):
                 ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1)
 
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 
-def plotIs(result, fs=(12, 8)):
+def plotIs(result, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -195,10 +220,10 @@ def plotIs(result, fs=(12, 8)):
         + "$,\,\\tau={}$".format(args[1])
     )
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotEs(result, frac=10, fs=(12, 8)):
+def plotEs(result, frac=10, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -213,10 +238,10 @@ def plotEs(result, frac=10, fs=(12, 8)):
     for i, x in enumerate(xs):
         ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotEsafrs(result, frac, fs=(12, 8)):
+def plotEsafrs(result, frac, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args, rss, av_growth = result
@@ -239,10 +264,10 @@ def plotEsafrs(result, frac, fs=(12, 8)):
     print("Reach at index {} of {}".format(high_i, len(rss)))
     print("highest r_s value stillin yielding exp grwoth: {}".format(rss[high_i]))
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotEav(result, frac=10, fs=(12, 8)):
+def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -261,11 +286,11 @@ def plotEav(result, frac=10, fs=(12, 8)):
     E_av *= 1/len(xs)
     ax.semilogy(t, E_av, "k--")
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
 
-def plotI(x, T, dt, args, fs=(12, 8)):
+def plotI(x, T, dt, args, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
     Nt0 = (Nt-1)//2 + 1
@@ -285,34 +310,36 @@ def plotI(x, T, dt, args, fs=(12, 8)):
         + "$,\,\\tau={}$".format(args[1])
     )
 
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_maxI(max_I, betas, high_i, fs=(12, 8)):
+def plot_maxI(max_I, betas, high_i, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     ax.plot(betas, max_I, "k.-")
     ax.plot(betas[high_i], max_I[high_i], "rx")
     ax.plot(betas, 0.2*np.ones_like(betas))
+    
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
-    plt.show()
 
-
-def plot_vacc(growth_rate, vacc, high_i, fs=(12, 8)):
+def plot_vacc(growth_rate, vacc, high_i, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     ax.plot(vacc, growth_rate, "k.-")
     ax.plot(vacc[high_i], growth_rate[high_i], "rx")
-    ax.plot(vacc, 0*np.ones_like(vacc))
+    ax.plot(vacc, 0*np.ones_like(vacc))    
     
-    plt.show()
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_prob_dis(terms, Is, fs=(12, 8)):
+def plot_prob_dis(terms, Is, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     ax.bar(Is, terms)
-    plt.show()
+    
+    save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_pop_struct(N, fs=(12, 8)):
+def plot_pop_struct(N, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     plt.imshow(N, norm=LogNorm(1, np.max(N)))
-    plt.show()
+    
+    save_plot(fig, ax, name, DIR_PATH+subdir)

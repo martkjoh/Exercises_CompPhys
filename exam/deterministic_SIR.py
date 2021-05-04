@@ -91,12 +91,13 @@ def flatten_the_curve():
     eps = 1e-4
     x0 = np.array([1-eps, eps, 0])
     T = 180; dt = 0.01
-    betas = np.linspace(0.15, 0.25, 10)
+    betas = np.linspace(0.15, 0.25, 100)
     max_I = []
     max_day = []
-    for b in betas:
+    for i in trange(len(betas)):
+        b = betas[i]
         args = (b, 10) # beta, tau
-        x = integrate(SIR, x0, T, dt, args)
+        x = integrate(SIR, x0, T, dt, args, inf=False)
         max_I.append(np.max(x[:, 1]))
         max_day.append(np.argmax(x[:, 1]))
 
@@ -112,11 +113,12 @@ def flatten_the_curve():
 
 def vaccination():
     eps = 1e-4
-    T = 0.01; dt = 0.01
-    vacc = np.linspace(0, 1, 10)
+    T = 1; dt = 0.1
+    vacc = np.linspace(0, 1, 100)
     args = (0.25, 10) # beta, tau
     xs = []
-    for v in vacc:
+    for i in trange(len(vacc)):
+        v = vacc[i]
         x0 = np.array([1-eps-v, eps, v])
         xs.append(integrate(SIR, x0, T, dt, args, inf=False))
 

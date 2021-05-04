@@ -30,16 +30,16 @@ def get_test_SEIIAR():
     x0 = np.array([N-E, E, 0, 0, 0], dtype=int)
     T = 180; dt = 0.1
     xs = []
-    for i in range(10):
-        xs.append(integrate(SEIIaR, x0, T, dt, args, step=stoch_step))
+    for i in trange(10):
+        xs.append(integrate(SEIIaR, x0, T, dt, args, step=stoch_step, inf=False))
 
     return xs, T, dt, args
 
 
 def stay_home():
-    runs = 10
+    runs = 100
     rss = np.linspace(1, 0, runs)
-    samples = 10
+    samples = 100
     N = 100_000
     E = 25
     x0 = np.array([N-E, E, 0, 0, 0], dtype=int)

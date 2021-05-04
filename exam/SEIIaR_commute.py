@@ -39,13 +39,26 @@ def SEIIaR_commute2(x, dt, day, *args):
 def stoch_commute_step(f, x, i, dt, args):
     t = i*dt
     time = t - int(t)
-    day = time <= 0.5
+    day = time < 0.5
     dx = f(x, dt, day, *args)
     return dx
 
 
 def get_pop_structure():
     return np.loadtxt("population_structure.csv", delimiter=",")
+
+
+def get_pop_structure_lochkdown():
+    N = get_pop_structure()
+    N_cities = np.sum(N, axis=1)
+    off_diag = np.eye(*N.shape)==0
+    N[off_diag] = N[off_diag]//10
+    new_N_cities = np.sum(N, axis=1)
+    delta = N_cities-new_N_cities
+    N += np.diag(delta)
+    N_cities_lockdown = np.sum(N, axis=1)
+    assert np.sum(N_cities_lockdown != N_cities)==0
+    return N
 
 
 def get_test_SEIIaR_commute():
@@ -87,7 +100,7 @@ def get_two_towns():
     xs = np.zeros((Nt, 5, 2, 2))
     for i in range(10):
         xs += integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
-    xs = np.sum(xs, axis=2)/10
+    xs = np.sum(xs, axis=3)/10
     return xs, T, dt, args
 
 
@@ -114,7 +127,7 @@ def get_nine_towns():
     x = np.zeros((Nt, 5, *N.shape))
     for i in range(10):
         x += integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
-    x = np.sum(x, axis=2)/10
+    x = np.sum(x, axis=3)/10
     return x, T, dt, args
     
 
@@ -122,7 +135,22 @@ def get_Norway():
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = get_pop_structure()
     E = np.zeros_like(N)
-    E[0, 0] = 25
+    E[0, 0] = 50
+    Oh = np.zeros_like(N)
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180; dt = .5
+    save = 91
+    x = np.zeros((save, 5, *N.shape))
+    for i in range(1):
+        x += integrate(SEIIaR_commute2, x0, T, dt, args, save=save, step=stoch_commute_step)
+    x = np.sum(x, axis=3)/1
+    return x, T, dt, args
+
+def get_Norway_lockdown():
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = get_pop_structure_lochkdown()
+    E = np.zeros_like(N)
+    E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
     T = 180; dt = 0.1
@@ -130,7 +158,7 @@ def get_Norway():
     x = np.zeros((save, 5, *N.shape))
     for i in range(1):
         x += integrate(SEIIaR_commute2, x0, T, dt, args, save=save, step=stoch_commute_step)
-    x = np.sum(x, axis=2)/1
+    x = np.sum(x, axis=3)/1
     return x, T, dt, args
 
 
@@ -139,4 +167,5 @@ if __name__=="__main__":
     # get_test_SEIIaR_commute()
     # get_two_towns()
     # get_pop_structure()
-    get_Norway()
+    # get_Norway()
+    pass

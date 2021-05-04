@@ -39,13 +39,13 @@ def prob_disappear():
     # How many times did the disease disappear?
     terms = np.zeros_like(Is, dtype=float)
     runs = 1000
-    for n in range(len(Is)):
+    for n in trange(len(Is)):
         I = Is[n]
 
         print("I = ", I)
         for _ in trange(runs):
             x = np.array([N-I, I, 0], dtype=int)
-            x, _, _ = integrate_untill(SIR_stoch, x, T, dt, args, cond, step=stoch_step)
+            x, _, _ = integrate_untill(SIR_stoch, x, T, dt, args, cond, step=stoch_step, inf=False)
             terms[n] += x[1]==0
 
         terms[n] = terms[n]/runs
