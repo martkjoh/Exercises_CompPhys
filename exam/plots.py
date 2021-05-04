@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from deterministic_SIR import get_Nt, get_asymptotes2
+from matplotlib.colors import LogNorm
+
 
 plt.rcParams['mathtext.fontset'] = 'cm'
 font = {'family' : 'serif', 
@@ -78,16 +80,14 @@ def plotSEIIaRs(result0, result, fs=(12, 8)):
 
     xs, T, dt, args = result
     Nt = get_Nt(T, dt)
-    t = np.linspace(0, T, Nt)
+    save = result[0].shape[1]
+    t = np.linspace(0, T, save)
 
     for x in xs:
         N = np.sum(x[0])
         x = x / N # Normalize
-        print(x.shape)
         for i in range(x.shape[1]):
-
             ax.plot(t, x[:, i], color=colors2[i], alpha=0.3)
-    
     ax.legend([*labels2])
 
     x, T, dt, args = result0
@@ -97,9 +97,36 @@ def plotSEIIaRs(result0, result, fs=(12, 8)):
     x = x / N # Normalize
     for i in range(x.shape[1]):
         ax.plot(t, x[:, i], "k--")
-    
-    
 
+    plt.show()
+
+
+def plotOslo(result, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    xs, T, dt, args = result
+    x = xs[:, :, 0]
+    Nt = get_Nt(T, dt)
+    save = x.shape[0]
+    t = np.linspace(0, T, save)
+
+    N = np.sum(x[0])
+    x = x / N # Normalize
+    for i in range(x.shape[1]):
+        ax.plot(t, x[:, i], color=colors2[i])
+    ax.legend([*labels2])
+
+    plt.show()
+
+def plot_sum_inf(result, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+
+    x, T, dt, args = result
+    I_tot = x[:, 2] + x[:, 3]
+    infected_cities = np.sum(I_tot>10, axis=1)
+    save = x.shape[0]
+    t = np.linspace(0, T, save)
+    ax.plot(t, infected_cities)
     plt.show()
 
 
@@ -118,12 +145,11 @@ def plot_two_towns(result, fs=(12, 8)):
         for i in range(x.shape[1]):
             ax[n].plot(t, x[:, i], color=colors2[i], alpha=1)
 
-
     plt.show()
 
 
 
-def plot_many_towns(result, fs=(12, 8), shape=(3, 3)):
+def plot_many_towns(result, fs=(12, 8), shape=(2, 5)):
     xs, T, dt, args = result
     N_cities = xs.shape[1]
     Nt = get_Nt(T, dt)
@@ -132,13 +158,13 @@ def plot_many_towns(result, fs=(12, 8), shape=(3, 3)):
 
     for j in range(shape[0]):
         for k in range(shape[1]):
-            n = j*shape[0] + k
-            x = xs[:, n]
+            n = j*shape[1] + k
+            x = xs[:, :, n]
             N = np.sum(x[0])
             x = x / N # Normalize
 
             for i in range(x.shape[1]):
-                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=0.3)
+                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1)
 
 
     plt.show()
@@ -283,4 +309,10 @@ def plot_vacc(growth_rate, vacc, high_i, fs=(12, 8)):
 def plot_prob_dis(terms, Is, fs=(12, 8)):
     fig, ax = plt.subplots(figsize=fs)
     ax.bar(Is, terms)
+    plt.show()
+
+
+def plot_pop_struct(N, fs=(12, 8)):
+    fig, ax = plt.subplots(figsize=fs)
+    plt.imshow(N, norm=LogNorm(1, np.max(N)))
     plt.show()

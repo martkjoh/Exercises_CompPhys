@@ -44,6 +44,10 @@ def stoch_commute_step(f, x, i, dt, args):
     return dx
 
 
+def get_pop_structure():
+    return np.loadtxt("population_structure.csv", delimiter=",")
+
+
 def get_test_SEIIaR_commute():
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = np.array([
@@ -79,8 +83,11 @@ def get_two_towns():
     # x[time, var, city_i, city_j]
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
     T = 180; dt = 0.1
-    x = integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
-    xs = np.sum(x, axis=2)
+    Nt = get_Nt(T, dt)
+    xs = np.zeros((Nt, 5, 2, 2))
+    for i in range(10):
+        xs += integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
+    xs = np.sum(xs, axis=2)/10
     return xs, T, dt, args
 
 
@@ -99,16 +106,37 @@ def get_nine_towns():
     [0, 0, 0, 0, 0, 1000, 0, 0, 0, 19000]]
     )
     E = np.zeros_like(N)
-    E[5, 5] = 25
+    E[1, 1] = 25
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    # x0 = np.moveaxis(x0, 0, 2) # move index with SEIIaR to the back
-    T = 500; dt = 0.1
-    x = integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
-    xs = np.sum(x, axis=2)
-    return xs, T, dt, args
+    T = 180; dt = 0.1
+    Nt = get_Nt(T, dt)
+    x = np.zeros((Nt, 5, *N.shape))
+    for i in range(10):
+        x += integrate(SEIIaR_commute2, x0, T, dt, args, step=stoch_commute_step)
+    x = np.sum(x, axis=2)/10
+    return x, T, dt, args
+    
+
+def get_Norway():
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = get_pop_structure()
+    E = np.zeros_like(N)
+    E[0, 0] = 25
+    Oh = np.zeros_like(N)
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180; dt = 0.1
+    save = 101
+    x = np.zeros((save, 5, *N.shape))
+    for i in range(1):
+        x += integrate(SEIIaR_commute2, x0, T, dt, args, save=save, step=stoch_commute_step)
+    x = np.sum(x, axis=2)/1
+    return x, T, dt, args
+
 
 
 if __name__=="__main__":
-    get_test_SEIIaR_commute()
+    # get_test_SEIIaR_commute()
     # get_two_towns()
+    # get_pop_structure()
+    get_Norway()

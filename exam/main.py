@@ -1,7 +1,7 @@
 from deterministic_SIR import get_testSIR, flatten_the_curve, vaccination
 from stochastic_SIR import get_test_stoch, prob_disappear
 from SEIIaR import get_test_SEIIAR, stay_home
-from SEIIaR_commute import get_test_SEIIaR_commute, get_two_towns, get_nine_towns
+from SEIIaR_commute import get_Norway, get_test_SEIIaR_commute, get_two_towns, get_nine_towns, get_pop_structure
 from plots import *
 
 
@@ -35,8 +35,7 @@ def disappear():
 def testSEIIaR():
     result0 = get_testSIR()
     result = get_test_SEIIAR()
-    # plotSEIIaRs(result0, result)
-    plotEav(result)
+    plotSEIIaRs(result0, result)
 
 
 def test_isolation():
@@ -57,6 +56,16 @@ def nine_towns():
     plot_many_towns(get_nine_towns())
 
 
+def pop_struct():
+    plot_pop_struct(get_pop_structure())
+
+def Oslo():
+    result = get_Norway()
+    plotOslo(result)
+
+def num_infected():
+    plot_sum_inf(get_Norway())
+
 
 # testSIR()
 # flatten()
@@ -66,5 +75,8 @@ def nine_towns():
 # testSEIIaR()
 # test_isolation()
 # testSEIIaR_commute()
-two_towns()
+# two_towns()
 # nine_towns()
+# pop_struct()
+# Oslo()
+num_infected()

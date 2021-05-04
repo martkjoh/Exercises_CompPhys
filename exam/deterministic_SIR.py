@@ -50,15 +50,21 @@ def get_asymptotes2(args):
     return root(fS, 0.5)["x"], root(fR, 0.5)["x"]
 
 
-def integrate(f, x0, T, dt, args, step=RK4step, inf=True):
+def integrate(f, x0, T, dt, args, save=None, step=RK4step, inf=True):
     Nt = get_Nt(T, dt)
     if inf: print("Integrates {} steps until time {}".format(Nt-1, T))
-    x = np.empty((Nt, *x0.shape), dtype=x0.dtype)
+    if save is None: save = Nt
+    x = np.empty((save, *x0.shape), dtype=x0.dtype)
     x[0] = x0
-    if inf: r = trange(Nt-1)
-    else: r = range(Nt-1)
+    assert (Nt-1)%(save-1)==0
+    skip = (Nt-1)//(save-1)
+    if inf: r = trange(save-1)
+    else: r = range(save-1)
     for i in r:
-        x[i+1] = x[i] + step(f, x[i], i, dt, args)
+        xi = x[i]
+        for j in range(skip):
+            xi += step(f, xi, i, dt, args)
+        x[i+1] = xi
     return x
 
 

@@ -30,7 +30,7 @@ def get_test_SEIIAR():
     x0 = np.array([N-E, E, 0, 0, 0], dtype=int)
     T = 180; dt = 0.1
     xs = []
-    for i in range(100):
+    for i in range(10):
         xs.append(integrate(SEIIaR, x0, T, dt, args, step=stoch_step))
 
     return xs, T, dt, args
