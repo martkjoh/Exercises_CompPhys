@@ -43,7 +43,7 @@ def testSEIIaR():
 
 
 def test_isolation():
-    plotEsafrs(stay_home(), frac=1, name="isolation", subdir="2C/")
+    plotEsafrs(stay_home(), name="isolation", subdir="2C/")
 
 
 def testSEIIaR_commute():
@@ -56,6 +56,7 @@ def testSEIIaR_commute():
 def two_towns():
     plot_two_towns(get_two_towns(), name="two_towns", subdir="2D/")
 
+
 def nine_towns():
     plot_many_towns(get_nine_towns(), fs=(32, 12), name="nine_towns", subdir="2D/")
 
@@ -63,13 +64,19 @@ def nine_towns():
 def pop_struct():
     plot_pop_struct(get_pop_structure(), name="pop_struct", subdir="2D/")
 
+
 def pop_struct_lockdown():
-    plot_pop_struct(get_pop_structure(lockdown=True), name="pop_struct_lockdown", subdir="2D/")
+    plot_pop_struct(get_pop_structure(
+        lockdown=True), name="pop_struct_lockdown", subdir="2D/"
+        )
+
 
 def num_infected():
     result = get_Norway()
     plotOslo(result, name="Oslo", subdir="2D/")
     plot_sum_inf(result, name="num_infected", subdir="2D/")
+
+
 
 def num_infected_lockdown():
     result = get_Norway_lockdown()
@@ -82,12 +89,13 @@ def num_infected_lockdown():
 # vax()
 
 # test_stoch()
-disappear()
+# disappear()
 
 # testSEIIaR()
 # test_isolation()
+
 # testSEIIaR_commute()
-# two_towns()
+two_towns()
 # nine_towns()
 # pop_struct()
 # pop_struct_lockdown()5
