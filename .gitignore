@@ -8,3 +8,4 @@ __pycache__/
 *.png
 plots/
 ex2/spørsmål.txt
+exam/data/*

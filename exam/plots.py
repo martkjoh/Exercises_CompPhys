@@ -219,6 +219,52 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
+def plot_conv_det(xs, dts, args, T, steps, name="", subdir=""):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    N = np.sum(xs[0][0][0])
+    exps = [1, 4, 2]
+    lines = ["--", "-.", "-"]
+    names = ["Euler", "RK4", "midpoint"]
+
+    for i in range(len(steps)):
+        xs2 = xs[i] # not ideal
+        R_ref = xs2[-1][-1, 2]
+        R0 = [x[-1, 2]/N for x in xs2[:-1]]
+
+        # dts[3] = 1
+        c = np.abs(R0[3] - R_ref)/R_ref
+        c_dts_pow = [c*dt**(exps[i]) for dt in dts[:-1]]
+        ax.loglog(dts[:-1], c_dts_pow, "k", ls=lines[i], label="$\propto \Delta t^{}$".format(exps[i]))
+
+        ax.loglog(
+            dts[:-1], np.abs(R0-R_ref)/R_ref, "rx", 
+            label=names[i], color=colors[i], ms=15
+            )
+
+    ax.legend()
+    ax.set_xlabel("$\Delta t $")
+    ax.set_ylabel("$\Delta R$")
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    N = np.sum(xs[0][0])
+    S, R = get_asymptotes(args)
+    R0 = [x[-1, 2]/N for x in xs]
+
+    c = np.abs(R0[1] - R)/R
+    c_dts_pow = [c*dt**(1) for dt in dts]
+    ax.loglog(dts, c_dts_pow, "k--", label="$\propto \Delta t$")
+
+    ax.loglog(dts, np.abs(R0-R)/R, "rx", label="$\Delta R(\Delta t)$", ms=15)
+    ax.loglog(0.1, c*0.1**(1), "bo", label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1))
+    ax.legend()
+    ax.set_xlabel("$\Delta t $")
+    ax.set_ylabel("$\Delta R$")
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
 def plotIs(result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
@@ -405,29 +451,39 @@ def plot_town_i(result, i0, fs=(12, 8), name="", subdir=""):
 def plot_sum_inf(result, fs=(10, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
-    x, T, dt, args = result
-    I_tot = x[:, 2] + x[:, 3]
-    infected_cities = np.sum(I_tot>10, axis=1)
-    N_cities = len(x[0, 0])
-    max = infected_cities==N_cities
+    xs, T, dt, args = result
+    I_tot = xs[:, :, 2] + xs[:, :, 3]
+    infected_cities = np.sum(I_tot > 10, axis=2)
+    infected_cities_av = np.mean(infected_cities, axis=0)
+    std = np.std(infected_cities, axis=0)
+
+    save = xs.shape[1]
+    t = np.linspace(0, T, save)
+    
+    for i in range(len(xs)):
+        ax.plot(t, infected_cities[i], color=colors[1], alpha=0.4)
+
+    ax.plot(t, infected_cities_av, "k-", lw=3, label="$\langle I \\rangle$")
+    ax.plot(t, infected_cities_av-std, "k--", lw=1)
+    ax.plot(t, infected_cities_av+std, "k--", lw=1, label="$\pm \sigma$")
+
+    N_cities = len(xs[0, 0, 0])
+    ax.set_ylim(0, N_cities+5)
+    max = infected_cities_av>350
     max_i = None
     if np.sum(max)>0:
         max_i = np.argwhere(infected_cities==N_cities)[0, 0]
-    save = x.shape[0]
-    t = np.linspace(0, T, save)
-    ax.plot(t, infected_cities)
     
-    title = "# days all: {}".format(np.sum(max))
+    title = "# days above 350: {}".format(np.sum(max))
     if not max_i is None:
         title += ", day reached: {:.0f}".format(t[max_i])
     else:
-        title += ", max: {:.0f}".format(np.max(infected_cities))
-    
+        title += ", max: {:.0f}".format(np.max(infected_cities))    
 
-    ax.set_ylim(0, N_cities+5)
     ax.set_title(title)
     ax.set_xlabel("$t/[\mathrm{ days }]$")
     ax.set_ylabel("# towns with active infection")
+    ax.legend()
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -447,8 +503,6 @@ def plot_towns(pop, fs=(8, 6), name="", subdir=""):
     n = np.arange(1, len(pop)+1)
     c = 1/np.sum(pop)
 
-    # ax.loglog(n, c*pop_sorted, "ko", ms=2, lw=1)
-    # ax.loglog(n, c*pop_sorted[0]/n, "r--", lw=1)
     ax.bar(n, pop_sorted)
     ax.set_yscale("log")
     ax.set_xlabel("population rank")

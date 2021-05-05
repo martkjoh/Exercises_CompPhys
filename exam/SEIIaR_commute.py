@@ -77,23 +77,29 @@ def get_nine_towns():
     return x, T, dt, args
     
 
-def get_Norway(lockdown=False):
+def get_Norway(datapath, lockdown=False, run=False):
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = get_pop_structure(lockdown)
     E = np.zeros_like(N)
     E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 250; dt = .1
-    save = 101
-    x = np.zeros((save, 5, *N.shape))
-    for i in trange(10):
-        x += integrate(
-            SEIIaR_commute, x0, T, dt, args, save=save, 
-            step=stoch_commute_step, inf=False
-            )
-    x = np.sum(x, axis=3)/1
-    return x, T, dt, args
+    T = 180; dt = .5
+    save = 91
+    runs = 10
+
+    if run:
+        xs = np.empty((runs, save, 5, *N.shape))
+        for i in trange(runs):
+            xs[i] = integrate(
+                SEIIaR_commute, x0, T, dt, args, save=save, 
+                step=stoch_commute_step, inf=True
+                )
+        xs = np.sum(xs, axis=4)
+        np.save(datapath, xs)
+    else:
+        xs = np.load(datapath)
+    return xs, T, dt, args
 
 
 

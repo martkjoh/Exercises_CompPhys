@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import trange
-from utilities import integrate, integrate_untill, SIR_stoch, stoch_step
+from utilities import integrate, integrate_untill, SIR_stoch, stoch_step, get_Nt
 
 
 def get_test_stoch():
@@ -15,6 +15,27 @@ def get_test_stoch():
 
     return xs, T, dt, args
 
+
+
+def SIR_stochastic_convergence():
+    N = 100_000
+    I = 10
+    x0 = np.array([N-I, I, 0], dtype=int)
+    T = 200
+    # dts = np.array([1, 0.5,  0.1, 0.05])
+    dts = [2, 1, 1/2, 1/2**2, 1/2**3, 1/2**4]
+    runs = 100
+    args = (0.25, 10) # beta, tau
+    xs = []
+    for i in trange(len(dts)):
+        dt = dts[i]
+        Nt = get_Nt(T, dt)
+        x = np.zeros((Nt, *x0.shape))
+        for _ in range(runs):
+            x += integrate(SIR_stoch, x0, T, dt, args, step=stoch_step, inf=False)
+        xs.append(x/runs)
+
+    return xs, dts, args, T
 
 
 def prob_disappear():

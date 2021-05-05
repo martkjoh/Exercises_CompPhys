@@ -78,6 +78,15 @@ def SEIIaR_commute(x, dt, day, *args):
 Function that gives a time step, given f = dy/dt
 """
 
+def euler(f, x, i, dt, args):
+    return f(x, *args) * dt
+
+
+def midpoint(f, x, i, dt, args):
+    dx0 = f(x, *args)
+    return 1/2*(dx0 + f(x+dx0, *args))
+
+
 def RK4step(f, x, i, dt, args):
     k1 = f(x, *args) * dt
     k2 = f(x + 1 / 2 * k1, *args) * dt

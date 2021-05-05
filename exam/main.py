@@ -3,13 +3,17 @@ from stochastic_SIR import *
 from SEIIaR import *
 from SEIIaR_commute import *
 from plots import *
-
+import pickle
 
 
 def testSIR():
     result = get_testSIR()
     plotSIR(*result, name="TestSIR", subdir="2A/")
     plotI(*result, name="TestI", subdir="2A/")
+
+
+def conv_det():
+    plot_conv_det(*SIR_deterministic_convergence(), "conv", "2A/")    
 
 
 def flatten():
@@ -30,6 +34,10 @@ def test_stoch():
     assert result0[-1]==result[-1] # should compare same args
     plotSIRs(result0, result, name="TestSIR_stoch", subdir="2B/")
     plotIs( result, name="TestI_stoch", subdir="2B/")
+
+
+def conv_stoch():
+    plot_conv_stoch(*SIR_stochastic_convergence(), "conv", "2B/")    
 
 
 def disappear():
@@ -76,26 +84,31 @@ def pop_struct_lockdown():
         )
 
 
-def num_infected(lockdown=False):
-    result = get_Norway(lockdown)
+def num_infected(lockdown=False, run=False):
+    suffx = "lockdown" if lockdown else ""
+    datapath = "data/norway"+suffx+".npy"
+    result = get_Norway(datapath, lockdown, run)
+
+    plot_sum_inf(result, name="num_infected"+suffx, subdir="2D/")
+    xs = result[0]
+    x = np.mean(xs, axis=0)
+    result = (x, *result[1:])
     N = get_pop_structure()
     pop = np.sum(N, axis=1).astype(int)
     i2 = np.argmax(pop[1:]) + 1
-
-    suffx = "lockdown" if lockdown else ""
     plot_town_i(result, 0, name="Oslo"+suffx, subdir="2D/")
     plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/")
-
-    plot_sum_inf(result, name="num_infected"+suffx, subdir="2D/")
 
 
 
 # testSIR()
+# conv_det()
 # flatten()
 # vax()
 
 # test_stoch()
 # disappear()
+# conv_stoch()
 
 # testSEIIaR()
 # test_isolation()
