@@ -40,8 +40,10 @@ def get_two_towns():
     T = 180; dt = 0.1
     Nt = get_Nt(T, dt)
     xs = np.zeros((Nt, 5, 2, 2))
-    for i in range(10):
-        xs += integrate(SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step)
+    for i in trange(10):
+        xs += integrate(
+            SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step, inf=False
+            )
     xs = np.sum(xs, axis=3)/10
     return xs, T, dt, args
 
@@ -67,39 +69,22 @@ def get_nine_towns():
     T = 180; dt = 0.1
     Nt = get_Nt(T, dt)
     x = np.zeros((Nt, 5, *N.shape))
-    for i in range(10):
-        x += integrate(SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step)
+    for i in trange(10):
+        x += integrate(
+            SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step, inf=False
+            )
     x = np.sum(x, axis=3)/10
     return x, T, dt, args
     
 
-def get_Norway():
+def get_Norway(lockdown=False):
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
-    N = get_pop_structure()
+    N = get_pop_structure(lockdown)
     E = np.zeros_like(N)
     E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 180; dt = .5
-    save = 121
-    x = np.zeros((save, 5, *N.shape))
-    for i in range(4):
-        x += integrate(
-            SEIIaR_commute, x0, T, dt, args, save=save, 
-            step=stoch_commute_step, inf=True
-            )
-    x = np.sum(x, axis=3)/1
-    return x, T, dt, args
-
-
-def get_Norway_lockdown():
-    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
-    N = get_pop_structure(lockdown=True)
-    E = np.zeros_like(N)
-    E[0, 0] = 50
-    Oh = np.zeros_like(N)
-    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 180; dt = .1
+    T = 250; dt = .1
     save = 101
     x = np.zeros((save, 5, *N.shape))
     for i in trange(10):
@@ -112,9 +97,26 @@ def get_Norway_lockdown():
 
 
 
+
 if __name__=="__main__":
     # get_test_SEIIaR_commute()
     # get_two_towns()
     # get_pop_structure()
     # get_Norway()
+    
+    N = get_pop_structure()
+    Nl = get_pop_structure(lockdown=True)
+    print(N.shape)
+    pop = np.sum(N, axis=1).astype(int)
+    popl = np.sum(Nl, axis=1).astype(int)
+    print(pop-popl)
+
+
+    # print(np.sum(N[0].astype(int))) # Working populace, Oslo
+
+    i2 = np.argmax(pop[1:]) + 1
+    print(i2)
+    print(pop[i2])
+    print(N[0, i2])
+    print(N[i2, 0])
     pass

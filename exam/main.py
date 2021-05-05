@@ -50,7 +50,6 @@ def testSEIIaR_commute():
     result0 = get_testSIR()
     result = get_test_SEIIaR_commute()
     plotSEIIaRs(result0, result, name="TestSEIIaR_commute", subdir="2D/")
-    plotEav(result)
 
 
 def two_towns():
@@ -65,23 +64,30 @@ def pop_struct():
     plot_pop_struct(get_pop_structure(), name="pop_struct", subdir="2D/")
 
 
+def poplutaion():
+    N = get_pop_structure()
+    N = np.sum(N, axis=1)
+    plot_towns(N, name="pops", subdir="2D/")
+
+
 def pop_struct_lockdown():
     plot_pop_struct(get_pop_structure(
         lockdown=True), name="pop_struct_lockdown", subdir="2D/"
         )
 
 
-def num_infected():
-    result = get_Norway()
-    plotOslo(result, name="Oslo", subdir="2D/")
-    plot_sum_inf(result, name="num_infected", subdir="2D/")
+def num_infected(lockdown=False):
+    result = get_Norway(lockdown)
+    N = get_pop_structure()
+    pop = np.sum(N, axis=1).astype(int)
+    i2 = np.argmax(pop[1:]) + 1
 
+    suffx = "lockdown" if lockdown else ""
+    plot_town_i(result, 0, name="Oslo"+suffx, subdir="2D/")
+    plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/")
 
+    plot_sum_inf(result, name="num_infected"+suffx, subdir="2D/")
 
-def num_infected_lockdown():
-    result = get_Norway_lockdown()
-    plotOslo(result, name="Oslo_lockdown", subdir="2D/")
-    plot_sum_inf(result, name="num_infected_lockdown", subdir="2D/")
 
 
 # testSIR()
@@ -95,9 +101,12 @@ def num_infected_lockdown():
 # test_isolation()
 
 # testSEIIaR_commute()
-two_towns()
+# two_towns()
+## Named nine towns in honour of the fact that I can't count
 # nine_towns()
+
 # pop_struct()
-# pop_struct_lockdown()5
-# num_infected()
-# num_infected_lockdown()
+# pop_struct_lockdown()
+# poplutaion()
+num_infected()
+num_infected(lockdown=True)

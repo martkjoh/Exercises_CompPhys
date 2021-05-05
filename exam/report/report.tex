@@ -152,7 +152,13 @@
     Next, the system described by the matrix in Equation 10 in \cite{exam} is simulated.
     The result in each town is showed in \autoref{two towns}
     (ADD MORE DATA: WHEN DO THEY PEAK; WHAT ARE THE ASYMPTOTES. DISCUSS)
-
+    Next, a system with 10 towns is simulated. 
+    In this system, there are two large towns, town 1 and 5, and eight smaller towns, in groups of four which are connected to one of of the large towns.
+    \autoref{nine towns} shows the evolution of the infection.
+    The infection starts in town 2, which explains why it is the first to reach the peak of the infection, at day 57.
+    It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 103. 
+    Town 3, 4 and 4, all satellites of town 1 all hit their peak around day 120.
+    The infection then spreads to the other hub, town 6, as it is connected to town 1, which has its peak at day 145, before it at last spreads to the satellites of town 6, town 7, 8, 9 and 10, which all have their peak around day 160.
 
     \begin{figure}[H]
         \centering
@@ -168,6 +174,59 @@
         \label{two towns}
     \end{figure}
 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{../plots/2D/nine_towns.pdf}
+        \caption{cap}
+        \label{nine towns}
+    \end{figure}
+
+    The last system to be simulated is a model of Norway, with the working populace of Norway spread throughout 356 cities and towns. 
+    The system is represented in a $356 \times 356$ matrix with $356 \cdot 355 /2 = 63190$ different populations, many of which are zero.
+    The simulation will be used to investigate the effects of reducing travel.
+    This is done by cutting the off diagonal elements of the population matrix, representing those who travel to a different town for work, by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
+    \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns in question.
+    The effect to be investigated is how lockdown changes how many towns have an outbreak at once.
+    An outbreak is defined as more than a total of 10 people infected, where we count both symptomatic and and asymptomatic infections i.e. $I_\mathrm{tot}=I + I_a$.
+    The simulation is run by starting with $E=50$ in town 1, Oslo, then taking the average of 10 runs for both population matrices.
+    \autoref{towns infected} shows the evolution of the infection, in both cases. 
+    On the left is the case without any restriction, and on the right is the case where commuting is reduced by 90\%. 
+    This shows that the lockdown somewhat slows the spread.
+    In the case of no lockdown, there is a period where all towns have a active infection, while the slows the spread down, resulting in a lower peak.
+    \autoref{Oslo Bergen} compares the spread in the largest and second largest city, with and without lockdown.
+    The largest town, town 1, is more or less unaffected, as it is where the spread started.
+    The second largest town, town 237, is however affected.
+    The peak in this town is delayed by around a month due to the lockdown.
+
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.30\textwidth]{../plots/2D/pop_struct.pdf}
+        \includegraphics[width=.30\textwidth]{../plots/2D/pop_struct_lockdown.pdf}
+        \includegraphics[width=.38\textwidth]{../plots/2D/pops.pdf}
+        \caption{cap}
+        \label{pop structure}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/2D/num_infected.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2D/num_infectedlockdown.pdf}
+        \caption{cap}
+        \label{towns infected}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.49\textwidth]{../plots/2D/Oslo.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2D/Bergen.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2D/Oslolockdown.pdf}
+        \includegraphics[width=.49\textwidth]{../plots/2D/Bergenlockdown.pdf}
+        \caption{cap}
+        \label{Oslo Bergen}
+    \end{figure}
+    
+    
 
     \printbibliography
 \end{document}

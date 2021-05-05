@@ -330,45 +330,16 @@ def plot_two_towns(result, fs=(16, 6), name="", subdir=""):
         x = xs[:, :, n]
         N = np.sum(x[0])
         x = x / N # Normalize
+        I = x[:, 2] + x[:, 3]
+        peak = np.argmax(I)
 
         for i in range(x.shape[1]):
             ax[n].plot(t, x[:, i], color=colors2[i], lw=4)
-        ax[n].set_title("Town {}".format(n))
-
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
-
-def plotOslo(result, fs=(12, 8), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-
-    xs, T, dt, args = result
-    x = xs[:, :, 0]
-    Nt = get_Nt(T, dt)
-    save = x.shape[0]
-    t = np.linspace(0, T, save)
-
-    N = np.sum(x[0])
-    x = x / N # Normalize
-    for i in range(x.shape[1]):
-        ax.plot(t, x[:, i], color=colors2[i])
-    ax.legend([*labels2])
-    ax.set_xlabel("$t/[\mathrm{ days }]$")
-
-    
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
-def plot_sum_inf(result, fs=(12, 8), name="", subdir=""):
-    fig, ax = plt.subplots(figsize=fs)
-
-    x, T, dt, args = result
-    I_tot = x[:, 2] + x[:, 3]
-    infected_cities = np.sum(I_tot>10, axis=1)
-    save = x.shape[0]
-    t = np.linspace(0, T, save)
-    ax.plot(t, infected_cities)
-    ax.set_xlabel("$t/[\mathrm{ days }]$")
+        ax[n].plot([t[peak], t[peak]], [0, 1], "k--")
+        ax[n].set_title(
+            "Town {}".format(n+1) + \
+            ", Peak I: day {:.0f}".format(t[peak])
+            )
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -386,58 +357,101 @@ def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
             x = xs[:, :, n]
             N = np.sum(x[0])
             x = x / N # Normalize
-
+            I = x[:, 2] + x[:, 3]
+            peak = np.argmax(I)
+            
             for i in range(x.shape[1]):
                 ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1)
-
+            ax[j, k].plot([t[peak], t[peak]], [0, 1], "k--")
+            ax[j, k].set_title(
+                "Town {}".format(n+1) + \
+                ", Peak I: day {:.0f}".format(t[peak])
+                )
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotEs(result, frac=10, fs=(12, 8), name="", subdir=""):
+
+def plot_town_i(result, i0, fs=(12, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
-    N = np.sum(xs[0][0])
-    xs = xs / N # Normalize
+    x = xs[:, :, i0]
     Nt = get_Nt(T, dt)
-    Nt0 = (Nt-1)//frac + 1
-    T0 = T*((Nt0-1)/(Nt-1))
-    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
-    assert np.isclose(dt0, dt)
+    save = x.shape[0]
+    t = np.linspace(0, T, save)
 
-    for i, x in enumerate(xs):
-        ax.semilogy(t, x[:Nt0, 1], color=cm.viridis(i/len(xs)))
+    N = np.sum(x[0])
+    x = x / N # Normalize
+    I = x[:, 2] + x[:, 3]
+    peak = np.argmax(I)
+
+    for i in range(x.shape[1]):
+        ax.plot(t, x[:, i], color=colors2[i])
+    ax.plot([t[peak], t[peak]], [0, 1], "k--")
+    R_inf = x[-1, 4]
+    ax.set_title(
+        "Town {}".format(i0+1) + \
+        ", Peak I: day {:.0f}".format(t[peak]) +\
+        "$,\,R(\infty) = {:.3f}$".format(R_inf)
+    )
+    ax.legend([*labels2])
     ax.set_xlabel("$t/[\mathrm{ days }]$")
+
+    
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plotEav(result, frac=10, fs=(12, 8), name="", subdir=""):
+def plot_sum_inf(result, fs=(10, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
-    xs, T, dt, args = result
-    N = np.sum(xs[0][0])
-    Nt = get_Nt(T, dt)
-    Nt0 = (Nt-1)//frac + 1
-    T0 = T*((Nt0-1)/(Nt-1))
-    t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
-    assert np.isclose(dt0, dt)
+    x, T, dt, args = result
+    I_tot = x[:, 2] + x[:, 3]
+    infected_cities = np.sum(I_tot>10, axis=1)
+    N_cities = len(x[0, 0])
+    max = infected_cities==N_cities
+    max_i = None
+    if np.sum(max)>0:
+        max_i = np.argwhere(infected_cities==N_cities)[0, 0]
+    save = x.shape[0]
+    t = np.linspace(0, T, save)
+    ax.plot(t, infected_cities)
+    
+    title = "# days all: {}".format(np.sum(max))
+    if not max_i is None:
+        title += ", day reached: {:.0f}".format(t[max_i])
+    else:
+        title += ", max: {:.0f}".format(np.max(infected_cities))
+    
+
+    ax.set_ylim(0, N_cities+5)
+    ax.set_title(title)
     ax.set_xlabel("$t/[\mathrm{ days }]$")
-
-    E_av = np.zeros(Nt0, dtype=type(xs[0]))
-    for x in xs:
-        x = x / N # Normalize
-        E_av += x[:Nt0, 1]
-
-    E_av *= 1/len(xs)
-    ax.semilogy(t, E_av, "k--")
+    ax.set_ylabel("# towns with active infection")
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-
-def plot_pop_struct(N, fs=(12, 8), name="", subdir=""):
+def plot_pop_struct(N, fs=(8, 8), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     plt.imshow(N, norm=LogNorm(1, np.max(N)))
+    ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([]) 
     
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_towns(pop, fs=(8, 6), name="", subdir=""):
+    fig, ax = plt.subplots(figsize=fs)
+    pop_sorted = np.sort(pop)[::-1]
+    n = np.arange(1, len(pop)+1)
+    c = 1/np.sum(pop)
+
+    # ax.loglog(n, c*pop_sorted, "ko", ms=2, lw=1)
+    # ax.loglog(n, c*pop_sorted[0]/n, "r--", lw=1)
+    ax.bar(n, pop_sorted)
+    ax.set_yscale("log")
+    ax.set_xlabel("population rank")
+    ax.set_ylabel("population")
+
     save_plot(fig, ax, name, DIR_PATH+subdir)
