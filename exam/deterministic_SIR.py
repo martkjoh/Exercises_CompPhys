@@ -7,7 +7,7 @@ from utilities import RK4step, euler, integrate, SIR, get_Nt, midpoint
 def get_testSIR():
     eps = 1e-4
     x0 = np.array([1-eps, eps, 0])
-    T = 180; dt = 10
+    T = 180; dt = .1
     args = (0.25, 10) # beta, tau
     x = integrate(SIR, x0, T, dt, args)
     return x, T, dt, args
@@ -16,11 +16,11 @@ def get_testSIR():
 def SIR_deterministic_convergence():
     eps = 1e-4
     x0 = np.array([1-eps, eps, 0])
-    T = 200
-    dts = [2**3, 2**2, 2, 1, 1/2, 1/2**2, 0.01]
+    T = 128
+    dts = [2**4, 2**3, 2**2, 2, 1, 1/2, 1/2**2, 0.01]
     args = (0.25, 10) # beta, tau
     xs = []
-    steps = [euler, RK4step, midpoint]
+    steps = [euler, midpoint, RK4step]
     for n in range(len(steps)):
         step = steps[n]
         xs2 = []
@@ -36,7 +36,7 @@ def SIR_deterministic_convergence():
 def flatten_the_curve():
     eps = 1e-4
     x0 = np.array([1-eps, eps, 0])
-    T = 180; dt = 0.01
+    T = 180; dt = 0.1
     betas = np.linspace(0.15, 0.5, 100)
     xs = []
     for i in trange(len(betas)):

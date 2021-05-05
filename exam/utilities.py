@@ -83,8 +83,9 @@ def euler(f, x, i, dt, args):
 
 
 def midpoint(f, x, i, dt, args):
-    dx0 = f(x, *args)
-    return 1/2*(dx0 + f(x+dx0, *args))
+    k1 = f(x, *args) * dt
+    k2 = f(x + k1/2, *args) * dt
+    return k2
 
 
 def RK4step(f, x, i, dt, args):

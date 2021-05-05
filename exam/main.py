@@ -100,7 +100,6 @@ def num_infected(lockdown=False, run=False):
     plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/")
 
 
-
 # testSIR()
 # conv_det()
 # flatten()
@@ -121,5 +120,5 @@ def num_infected(lockdown=False, run=False):
 # pop_struct()
 # pop_struct_lockdown()
 # poplutaion()
-num_infected()
-num_infected(lockdown=True)
+# num_infected()
+# num_infected(lockdown=True)

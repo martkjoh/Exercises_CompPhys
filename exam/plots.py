@@ -59,7 +59,7 @@ def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     ax.plot(t, np.ones_like(t)*R_inf, "--", label="$R(\infty)$", color=colors[2])
     ax.legend()
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
@@ -78,18 +78,47 @@ def plotI(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     N = np.sum(x[0])
     x = x / N # Normalize
 
-    ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1])
+    ax.semilogy(t, x[:Nt0, 1], label=labels[1], color=colors[1], lw=6, alpha=0.6)
     a = args[0] - 1 / args[1]
     ax.semilogy(t, x[0, 1]*np.exp(a*t), "--k", label="$\exp([\\beta -1/\\tau]t)$")
     ax.legend()
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
 
     ax.set_xlabel("$t/[\mathrm{ days }]$")
 
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_conv_det(xs, dts, args, T, steps, name="", subdir=""):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    N = np.sum(xs[0][0][0])
+    exps = [1, 2, 4]
+    lines = ["--", "-.", "-"]
+    names = ["Euler", "midpoint", "RK4"]
+
+    R_ref = xs[1][-1][-1, 2]
+    for i in range(len(steps)):
+        xs2 = xs[i] # not ideal
+        R0 = [x[-1, 2]/N for x in xs2[:-1]]
+
+        c = np.abs(R0[4] - R_ref)/R_ref
+        c_dts_pow = [c*dt**(exps[i]) for dt in dts[:-1]]
+        ax.loglog(
+            dts[:-1], c_dts_pow, "k", ls=lines[i], label="$\propto \Delta t^{}$".format(exps[i])
+            )
+
+        ax.loglog(
+            dts[:-1], np.abs(R0-R_ref)/R_ref, "X", 
+            label=names[i], color=colors[i], ms=12
+            )
+
+    ax.legend()
+    ax.set_xlabel("$\Delta t $")
+    ax.set_ylabel("$\Delta R$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -108,7 +137,7 @@ def plot_flattening(results, fs=(8, 6), name="", subdir=""):
     ax.plot(t, 0.2*np.ones_like(t), "k", ls="dashdot", label="$0.2$".format(betas[high_i]))
     ax.legend()
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\tau={}$".format(args[1])
     )
     ax.set_xlabel("$t/[\mathrm{ days }]$")
@@ -154,7 +183,7 @@ def plot_vacc(results, fs=(8, 6), name="", subdir=""):
     ax.plot(t2, xs[0][0, 1]*np.ones_like(t2), "k", ls="dashdot", label="const", lw=1)
     ax.legend()
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\tau={}$".format(args[1])
     )
     ax.set_xlabel("$t/[\mathrm{ days }]$")
@@ -210,40 +239,12 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
         ax.plot(t, x0[:, i], "k--")
 
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )
     ax.set_xlabel("$t/[\mathrm{ days }]$")
 
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
-def plot_conv_det(xs, dts, args, T, steps, name="", subdir=""):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    N = np.sum(xs[0][0][0])
-    exps = [1, 4, 2]
-    lines = ["--", "-.", "-"]
-    names = ["Euler", "RK4", "midpoint"]
-
-    for i in range(len(steps)):
-        xs2 = xs[i] # not ideal
-        R_ref = xs2[-1][-1, 2]
-        R0 = [x[-1, 2]/N for x in xs2[:-1]]
-
-        # dts[3] = 1
-        c = np.abs(R0[3] - R_ref)/R_ref
-        c_dts_pow = [c*dt**(exps[i]) for dt in dts[:-1]]
-        ax.loglog(dts[:-1], c_dts_pow, "k", ls=lines[i], label="$\propto \Delta t^{}$".format(exps[i]))
-
-        ax.loglog(
-            dts[:-1], np.abs(R0-R_ref)/R_ref, "rx", 
-            label=names[i], color=colors[i], ms=15
-            )
-
-    ax.legend()
-    ax.set_xlabel("$\Delta t $")
-    ax.set_ylabel("$\Delta R$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -284,7 +285,7 @@ def plotIs(result, fs=(8, 6), name="", subdir=""):
     l2 = ax.semilogy(t, xs[0][0, 1]/N*np.exp(a*t), "--k")[0]
     ax.legend((l1, l2), (labels[1], "$\exp([\\beta -1/\\tau]t)$"))
     ax.set_title(
-        "$\Delta t = {:.3e}$".format(dt)
+        "$\Delta t = {:.2f}$".format(dt)
         + "$,\,\\beta={}$".format(args[0])
         + "$,\,\\tau={}$".format(args[1])
     )

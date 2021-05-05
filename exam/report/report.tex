@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 
-\usepackage[left=2.5cm, right=2.5cm, top=2cm, bottom=2cm]{geometry}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 \setlength{\parindent}{0em}
 \setlength{\parskip}{0.8em}
 
@@ -49,7 +49,11 @@
     \subsection*{Deterministic SIR model}
     The first model is the deterministic SIR model, given by a set of coupled ODEs \cite{exam}. 
     In this text, the Runge-Kutta (4, 5) scheme was used, as it is both a simple yet precise scheme.
-    \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning. 
+    \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning, at the rate expected.
+    \autoref{conv det} shows an error estimation of different integration schemes.
+    The error is found by comparing to a solution found by using the RK4-solver, and $\Delta t = 0.01$.
+    This illustrates why the choice of $\Delta t = 0.1$ is sufficient, as numerical errors start playing a large role for larger $\Delta t$.
+    
     Adjusting the $\beta$-parameter will affect how fast the virus spreads, thus ``flattening the curve'', as illustrated in \autoref{flattening}.
     This shows that the highest $\beta$ that still keeps the maximum fraction of population being infected at once below $20\%$ is $\beta=0.23$. 
     \autoref{vax} shows the fraction of the population must be vaccinated \emph{before} the outbreak to stop exponential growth. 
@@ -64,6 +68,13 @@
         \includegraphics[width=.49\textwidth]{../plots/2A/TestI}
         \caption{On the left, the fraction of the population that is in each group, over time. The plot on the right shows how the infection spreads exponentially in the begining}
         \label{SIR}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.6\textwidth]{../plots/2A/conv}
+        \caption{The error, after, 128 days, of different integration schemes. All are compared with RK4, with steplength $\Delta t = 0.01$.}
+        \label{conv det}
     \end{figure}
 
     \begin{figure}[H]
