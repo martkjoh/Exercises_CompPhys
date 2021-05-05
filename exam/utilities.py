@@ -151,7 +151,7 @@ def get_Nt(T, dt):
     return int(T/dt)+1
 
 
-def fpi(x0, f, tol=1e-8):
+def fpi(x0, f, tol=1e-10):
     x1 = f(x0)
     if np.abs(x0-x1)<tol:
         return x1

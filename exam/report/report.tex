@@ -105,11 +105,12 @@
     These simulation have been used with $\Delta t = 0.1$ for the stochastic model. 
     \autoref{conv} is a plots the relative error of the simulation, measured as 
     \begin{equation*}
-        \Delta R = \frac{|R(200) - R(\infty)|}{R(\infty)},
+        \Delta R_i = \frac{|R_i(t_0) - R_{\mathrm{ref}}(t_0)|}{R_{\mathrm{ref}(t_0)}},
     \end{equation*}
-    where $R(\infty)$ is the theoretical asymptotic value, as discussed earlier, and $R(200)$ is the last value of $R$ from the simulation run until $t=200\, \mathrm{days}$.
+    where $R_{\mathrm{ref}}$ is some reference value obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
+    The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
     The values are gotten by taking an average of 100 runs for each value of $\Delta t$
-    This result justifies the use of $\Delta t = 0.1$, as it leads to quick simulations, while leading to errors around $0.2\%$
+    This result justifies the use of $\Delta t = 0.1$, as it leads to quick simulations, while resulting in errors around $0.02\%$
     Furthermore, the results imply that the method converges as $\Delta t^1$, which means that large gains in precision will be costly.
     
     The stochastic nature of this model makes it possible for the infection to die out, even with $\mathcal{R}_0>1$, by pure chance. 
@@ -149,6 +150,9 @@
     The SEIIaR model incorporates the possibility of asymptomatic infection, $I_a$, as well as a incubation period, $E$, as well as a set of new parameters, described in \cite{exam}.
     \autoref{SEIIaR} shows 10 runs of the simulation, and compares it to the result from the deterministic SIR model.
     The same asymptotic values are reach for $S$ and $R$, however, due to the incubation period, the raise in infection is delayed somewhat.
+    \autoref{SEIIaR conv} show a estimation of the error, where a simulations with different time step is compared to a reference simulation, all averaged over 100 runs.
+    This shows that a timestep $\Delta = 0.1$ should still yield high precision.
+
     Infected people with symptoms, $I$, can self isolate, and thus decrease the spread of the disease.
     This is controlled by the $r_a$ parameter.
     If it is $1$, the symptomatic are as likely to infect others as $\mathcal{R}_0 = \beta \tau $ would suggest. 
@@ -161,9 +165,16 @@
     
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.7\textwidth]{../plots/2C/TestSEIIaR.pdf}
-        \caption{cap}
-        \label{SEIIaR}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2C/TestSEIIaR.pdf}
+            \caption{10 runs of the SEIIaR model.}
+            \label{SEIIaR}
+        \end{subfigure}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2C/conv.pdf}
+            \caption{Error relative a reference run of the SEIIaR model.}
+            \label{SEIIaR conv}
+        \end{subfigure}
     \end{figure}
 
     \begin{figure}[H]
@@ -179,8 +190,13 @@
     The traveling pattern of the population is encoded in a matrix, as described in \cite{exam}.
     Given a matrix without off diagonal elements, each city should have evolve exactly as they do in the non-commuter SEIIaR test.
     This is thus a good check on the implementation.
-    \autoref{test SEIIaR commute} shows the result in one of the cities of such a run in.
+    \autoref{SEIIaR commute} shows the result in one of the cities of such a run in.
     This city did not have any commuters, and the same initial conditions, and should therefore yield identical results, modulo the inherit randomness of the, which a comparison with \autoref{SEIIaR} confirms.
+    Furthermore, the error showed in \autoref{SEIIaR commute conv} behaves as the non-commuter model
+    Another test for the commuter model is to let the entire population be commuters, i.e. only off-diagonal elements are non zero, and start with infections only in one of these populations.
+    Then, the spread should be contained to this population.
+    This case is illustrated in \autoref{All commuters}, confirming that the model behaves as expected.
+
     Next, the system described by the matrix in Equation 10 in \cite{exam} is simulated.
     The result in each town is showed in \autoref{two towns}
     (ADD MORE DATA: WHEN DO THEY PEAK; WHAT ARE THE ASYMPTOTES. DISCUSS)
@@ -194,22 +210,36 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.7\textwidth]{../plots/2D/TestSEIIaR_commute.pdf}
-        \caption{cap}
-        \label{test SEIIaR commute}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2D/TestSEIIaR_commute.pdf}
+            \caption{10 runs of the SEIIaR commuter model.}
+            \label{SEIIaR commute}
+        \end{subfigure}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2D/conv.pdf}
+            \caption{Two towns, where everyone commutes, and the infection is only present in one of them at the start. }
+            \label{SEIIaR commute conv}
+        \end{subfigure}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=.7\textwidth]{../plots/2D/two_towns2.pdf}
+        \caption{Two towns, where everyone commutes, and the inital infection is only present in one of them. The plots shows that the infection is contained, as expected.}
+        \label{All commuters}
     \end{figure}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2D/two_towns.pdf}
-        \caption{cap}
+        \caption{Spread of the infections in two connected towns. The lines are averages of 10 runs.}
         \label{two towns}
     \end{figure}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{../plots/2D/nine_towns.pdf}
-        \caption{cap}
+        \caption{The evloution of the infection in 10 connected towns.}
         \label{nine towns}
     \end{figure}
 

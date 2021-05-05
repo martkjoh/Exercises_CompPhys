@@ -22,7 +22,7 @@ def SIR_stochastic_convergence():
     I = 10
     x0 = np.array([N-I, I, 0], dtype=int)
     T = 200
-    dts = [2, 1, 1/2, 1/2**2, 1/2**3, 1/2**4]
+    dts = [2, 1, 1/2, 1/2**2, 1/2**3, 1/2**4, 1/2**5]
     runs = 100
     args = (0.25, 10) # beta, tau
     xs = []
@@ -38,7 +38,6 @@ def SIR_stochastic_convergence():
 
 
 def prob_disappear(run=False):
-    # TODO: variance? Other statistical numbers
     datapath = "data/dissapear.npy"
     N = 100_000
     T = 20; dt = 0.1

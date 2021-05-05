@@ -17,7 +17,7 @@ def SIR_deterministic_convergence():
     eps = 1e-4
     x0 = np.array([1-eps, eps, 0])
     T = 128
-    dts = [2**4, 2**3, 2**2, 2, 1, 1/2, 1/2**2, 0.01]
+    dts = [2**4, 2**3, 2**2, 2, 1, 1/2, 0.01]
     args = (0.25, 10) # beta, tau
     xs = []
     steps = [euler, midpoint, RK4step]

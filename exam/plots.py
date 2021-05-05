@@ -133,8 +133,12 @@ def plot_flattening(results, fs=(8, 6), name="", subdir=""):
         x = x / N # Normalize    
         ax.plot(t, x[:, 1], color=colors[1], alpha=0.3)
 
-    ax.plot(t, xs[high_i][:, 1], "k--", label="$\\beta = {:.3f}$".format(betas[high_i]))
-    ax.plot(t, 0.2*np.ones_like(t), "k", ls="dashdot", label="$0.2$".format(betas[high_i]))
+    ax.plot(
+        t, xs[high_i][:, 1], "k--", label="$\\beta = {:.3f}$".format(betas[high_i])
+        )
+    ax.plot(
+        t, 0.2*np.ones_like(t), "k", ls="dashdot", label="$0.2$".format(betas[high_i]
+        ))
     ax.legend()
     ax.set_title(
         "$\Delta t = {:.2f}$".format(dt)
@@ -278,14 +282,13 @@ def plotIs(result, fs=(8, 6), name="", subdir=""):
 def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
     fig, ax = plt.subplots(figsize=(12, 5))
     N = np.sum(xs[0][0])
-    S, R = get_asymptotes(args)
-    R0 = [x[-1, 2]/N for x in xs]
+    R0 = [x[-1, 2]/N for x in xs[:-1]]
+    R_ref = xs[-1][-1, 2]/N
+    c = np.abs(R0[1] - R_ref)/R_ref
+    c_dts_pow = [c*dt**(1) for dt in dts[:-1]]
+    ax.loglog(dts[:-1], c_dts_pow, "k--", label="$\propto \Delta t$")
 
-    c = np.abs(R0[1] - R)/R
-    c_dts_pow = [c*dt**(1) for dt in dts]
-    ax.loglog(dts, c_dts_pow, "k--", label="$\propto \Delta t$")
-
-    ax.loglog(dts, np.abs(R0-R)/R, "X", color=colors[2], label="$\Delta R(\Delta t)$", ms=12)
+    ax.loglog(dts[:-1], np.abs(R0-R_ref)/R_ref, "X", color=colors[2], label="$\Delta R(\Delta t)$", ms=12)
     ax.loglog(0.1, c*0.1**(1), "o", color=colors[0], label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1))
     ax.legend()
     ax.set_xlabel("$\Delta t $")
@@ -341,6 +344,26 @@ def plotSEIIaRs(result0, result, fs=(12, 6), name="", subdir="", alpha=0.8):
     ax.set_xlabel("$t/[\mathrm{ days }]$")
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_conv_SEIIaR(xs, dts, args, T, name="", subdir="", ci=2):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    N = np.sum(xs[0][0])
+    R0 = [x[-1, 4]/N for x in xs[:-1]]
+    R_ref = xs[-1][-1, 4]/N
+    c = np.abs(R0[1] - R_ref)/R_ref
+    c_dts_pow = [c*dt**(1) for dt in dts[:-1]]
+    ax.loglog(dts[:-1], c_dts_pow, "k--", label="$\propto \Delta t$")
+
+    ax.loglog(
+        dts[:-1], np.abs(R0-R_ref)/R_ref, "X", color=colors2[ci], 
+        label="$\Delta R(\Delta t)$", ms=12
+        )
+    ax.legend()
+    ax.set_xlabel("$\Delta t $")
+    ax.set_ylabel("$\Delta R$")
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
 
 
 def plotEsafrs(result, fs=(12, 6), name="", subdir=""):

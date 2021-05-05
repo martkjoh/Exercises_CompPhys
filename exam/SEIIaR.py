@@ -17,6 +17,27 @@ def get_test_SEIIAR():
     return xs, T, dt, args
 
 
+def SEIIaR_convergence():
+    N = 100_000
+    E = 25
+    x0 = np.array([N-E, E, 0, 0, 0], dtype=int)
+    T = 180
+    dts = [2, 1, 1/2, 1/2**2, 1/2**3, 1/2**5]
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    runs = 100
+    xs = []
+    for i in trange(len(dts)):
+        
+        dt = dts[i]
+        Nt = get_Nt(T, dt)
+        x = np.zeros((Nt, *x0.shape))
+        for _ in range(runs):
+            x += integrate(SEIIaR, x0, T, dt, args, step=stoch_step, inf=False)
+        xs.append(x/runs)
+
+    return xs, dts, args, T
+
+
 def stay_home():
     runs = 100
     rss = np.linspace(0, 1, runs)

@@ -24,6 +24,42 @@ def get_test_SEIIaR_commute():
     return xs, T, dt, args
 
 
+def SEIIaR_commute_convergence(run=False):
+    datapath = "data/commuter_conv.npy"
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = np.array([
+        [100_000, 0],
+        [0, 1]
+    ], dtype=int)
+    E = np.array([
+        [25, 0],
+        [0, 0]
+    ], dtype=int)
+    Oh = np.zeros_like(N)
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180
+    dts = [2, 1, 1/2, 1/2**2, 1/2**3, 1/2**5]
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    runs = 100
+    xs = []
+    if run:
+        for i in trange(len(dts)):
+            dt = dts[i]
+            Nt = get_Nt(T, dt)
+            x = np.zeros((Nt, 5))
+            for _ in range(runs):
+                x += integrate(
+                    SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step, inf=False
+                    )[:, :, 0, 0]
+            xs.append(x/runs)
+
+        np.save(datapath, np.array(xs))
+    else:
+        xs = np.load(datapath, allow_pickle=True)
+
+    return xs, dts, args, T
+
+
 def get_two_towns():
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = np.array([

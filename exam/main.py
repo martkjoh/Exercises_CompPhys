@@ -47,7 +47,11 @@ def disappear(run=False):
 def testSEIIaR():
     result0 = get_testSIR()
     result = get_test_SEIIAR()
-    plotSEIIaRs(result0, result, name="TestSEIIaR", subdir="2C/")
+    plotSEIIaRs(result0, result, name="TestSEIIaR", subdir="2C/", fs=(8, 6))
+
+
+def conv_SEIIaR():
+    plot_conv_SEIIaR(*SEIIaR_convergence(), "conv", "2C/")
 
 
 def test_isolation():
@@ -57,7 +61,11 @@ def test_isolation():
 def testSEIIaR_commute():
     result0 = get_testSIR()
     result = get_test_SEIIaR_commute()
-    plotSEIIaRs(result0, result, name="TestSEIIaR_commute", subdir="2D/")
+    plotSEIIaRs(result0, result, name="TestSEIIaR_commute", subdir="2D/", fs=(8, 6))
+
+
+def conv_SEIIaR_commute(run=False):
+    plot_conv_SEIIaR(*SEIIaR_commute_convergence(run), "conv", "2D/", ci=0)
 
 
 def two_towns():
@@ -111,12 +119,14 @@ def num_infected(lockdown=False, run=False):
 
 # test_stoch()
 # conv_stoch()
-disappear()
+# disappear()
 
 # testSEIIaR()
+# conv_SEIIaR()
 # test_isolation()
 
 # testSEIIaR_commute()
+conv_SEIIaR_commute(False)
 # two_towns2()
 # two_towns()
 ## Named nine towns in honour of the fact that I can't count
