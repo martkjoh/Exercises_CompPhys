@@ -96,7 +96,8 @@
     \subsection*{Stochastic SIR model}
     Next, the stochastic version of SIR model is used. \autoref{stochastic SIR} shows the result of 100 runs, which all give result close to that of the deterministic one. 
     All simulation uses a population of 100\,000, but the plots are normalized. 
-    Due to the stochastic there is a difference in exactly when the spread takes of, but as the figure on the right show, when it does, it grows exponentially at the same rate as the deterministic model. 
+    Due to the stochastic nature of the simulation, there is a difference in exactly when the spread takes of. 
+    however, as the figure on the right shows, when it does, it grows exponentially at the same rate as the deterministic model. 
     This is also the reason for the spread of the runs around the dashed line in the figure on the right.
     The early days of the infection is susceptible to fluctuations.
     We also see the stochastic model tend to be later than the deterministic.
@@ -115,7 +116,11 @@
     \autoref{Disappear} shows a probability for the infection terminating without spreading through the population, for different number of initially infected $I(0)$.
     This data is obtained by running the simulation 1\,000 for each initial condition, and terminating when it either reach $100$ infected, or $0$.
     $100$ infected is observed to yield very high probability of the disease spreading exponentially, and is thus used as a proxy for this.
-    This assumption is backed up by the result shown in the figure, where the probability for the infection stopping early is negligible already at $I=10$.
+    This assumption is backed up by the result shown in the figure, where the probability for the infection stopping early is negligible already at $I=10$. 
+    $I=0$ means that the infection will no longer spread, and if it does so without ever hitting $I=100$, then the outbreak has disappeared.
+    By running the simulation 100 times, we can get an average of the probabilities, $P = \sum_{i=1}^{100} D(i)/100$, where $D(i)$ is $1$ if the infection died out, 0 if not.
+    Doing this 10 means we get the may get a standard deviation $\sigma$ of the collection of probabilities $\{P_j\}_{j=1}^{10}$.
+    Then, using the average of all $P_i$'s as the final probability, the error may be estimated as $\sigma/\sqrt{10}$. (IS THIS RIGHT???)
 
     \begin{figure}[H]
         \centering
@@ -136,7 +141,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2B/disappear.pdf}
-        \caption{The probability that the infection dies, for different starting values of $I$. Each probability is caculated from an average of 1\,000 runs.}
+        \caption{The probability that the infection dies, for different starting values of $I$. Each probability is caculated from an average of 1\,000 runs, while the error bar indicate one standard deviation, obtained from 10 averages of 100 runs.}
         \label{Disappear}
     \end{figure}
 

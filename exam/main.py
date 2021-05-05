@@ -40,8 +40,8 @@ def conv_stoch():
     plot_conv_stoch(*SIR_stochastic_convergence(), "conv", "2B/")    
 
 
-def disappear():
-    plot_prob_dis(*prob_disappear(), name="disappear", subdir="2B/")
+def disappear(run=False):
+    plot_prob_dis(*prob_disappear(run), name="disappear", subdir="2B/")
 
 
 def testSEIIaR():
@@ -62,6 +62,10 @@ def testSEIIaR_commute():
 
 def two_towns():
     plot_two_towns(get_two_towns(), name="two_towns", subdir="2D/")
+
+
+def two_towns2():
+    plot_two_towns(get_two_towns2(), name="two_towns2", subdir="2D/")
 
 
 def nine_towns():
@@ -106,13 +110,14 @@ def num_infected(lockdown=False, run=False):
 # vax()
 
 # test_stoch()
-# disappear()
 # conv_stoch()
+disappear()
 
 # testSEIIaR()
 # test_isolation()
 
 # testSEIIaR_commute()
+# two_towns2()
 # two_towns()
 ## Named nine towns in honour of the fact that I can't count
 # nine_towns()
@@ -120,5 +125,6 @@ def num_infected(lockdown=False, run=False):
 # pop_struct()
 # pop_struct_lockdown()
 # poplutaion()
-# num_infected()
+# num_infected(run=True)
 # num_infected(lockdown=True)
+

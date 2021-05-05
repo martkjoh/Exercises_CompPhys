@@ -71,7 +71,7 @@ def plotSIR(x, T, dt, args, fs=(8, 6), name="", subdir=""):
 def plotI(x, T, dt, args, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
     Nt = get_Nt(T, dt)
-    Nt0 = (Nt-1)//10 + 1
+    Nt0 = (Nt-1)//2 + 1
     T0 = T*((Nt0-1)/(Nt-1))
     t, dt0 = np.linspace(0, T0, Nt0, retstep=True)
     assert np.isclose(dt0, dt)
@@ -248,24 +248,6 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    N = np.sum(xs[0][0])
-    S, R = get_asymptotes(args)
-    R0 = [x[-1, 2]/N for x in xs]
-
-    c = np.abs(R0[1] - R)/R
-    c_dts_pow = [c*dt**(1) for dt in dts]
-    ax.loglog(dts, c_dts_pow, "k--", label="$\propto \Delta t$")
-
-    ax.loglog(dts, np.abs(R0-R)/R, "rx", label="$\Delta R(\Delta t)$", ms=15)
-    ax.loglog(0.1, c*0.1**(1), "bo", label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1))
-    ax.legend()
-    ax.set_xlabel("$\Delta t $")
-    ax.set_ylabel("$\Delta R$")
-    save_plot(fig, ax, name, DIR_PATH+subdir)
-
-
 def plotIs(result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
@@ -293,9 +275,36 @@ def plotIs(result, fs=(8, 6), name="", subdir=""):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_prob_dis(terms, Is, fs=(10, 6), name="", subdir=""):
+def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
+    fig, ax = plt.subplots(figsize=(12, 5))
+    N = np.sum(xs[0][0])
+    S, R = get_asymptotes(args)
+    R0 = [x[-1, 2]/N for x in xs]
+
+    c = np.abs(R0[1] - R)/R
+    c_dts_pow = [c*dt**(1) for dt in dts]
+    ax.loglog(dts, c_dts_pow, "k--", label="$\propto \Delta t$")
+
+    ax.loglog(dts, np.abs(R0-R)/R, "X", color=colors[2], label="$\Delta R(\Delta t)$", ms=12)
+    ax.loglog(0.1, c*0.1**(1), "o", color=colors[0], label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1))
+    ax.legend()
+    ax.set_xlabel("$\Delta t $")
+    ax.set_ylabel("$\Delta R$")
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
+    runs = 10
+    samples = 100
+    terminate_av = np.array([
+        np.mean(terminate[:, i*samples:(i+1)*samples], axis=1).T for i in range(runs)
+        ]).T
+    mean = np.mean(terminate_av, axis=1)
+    std = np.std(terminate_av, axis=1)/np.sqrt(runs)
+    print(std)
     fig, ax = plt.subplots(figsize=fs)
-    ax.bar(Is, terms)
+    ax.bar(Is, mean)
+    ax.errorbar(Is, mean, std, color="k", fmt=".")
     ax.set_xlabel("$I(0)$")
     ax.set_ylabel("prob.")
 

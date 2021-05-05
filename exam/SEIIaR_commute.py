@@ -48,6 +48,31 @@ def get_two_towns():
     return xs, T, dt, args
 
 
+def get_two_towns2():
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = np.array([
+        [0, 10000],
+        [10000, 0]
+    ], dtype=int)
+    E = np.array([
+        [0, 25],
+        [0, 0]
+    ], dtype=int)
+    Oh = np.zeros_like(N)
+    # x[time, var, city_i, city_j]
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180; dt = 0.1
+    Nt = get_Nt(T, dt)
+    xs = np.zeros((Nt, 5, 2, 2))
+    for i in trange(10):
+        xs += integrate(
+            SEIIaR_commute, x0, T, dt, args, step=stoch_commute_step, inf=False
+            )
+    xs = np.sum(xs, axis=3)/10
+    return xs, T, dt, args
+
+
+
 def get_nine_towns():
     args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
     N = np.array([
@@ -84,7 +109,7 @@ def get_Norway(datapath, lockdown=False, run=False):
     E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 180; dt = .5
+    T = 180; dt = .1
     save = 91
     runs = 10
 
