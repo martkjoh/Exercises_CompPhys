@@ -168,10 +168,12 @@
     \end{figure}
 
     \subsection*{Spin chain}
-    The simulation now includes several spins, in a ferromagnetic or anti-ferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectively.
-    When including damping $\alpha > 0$, both these settle into the ground state of the system, after some time.
-    This is shown in \autoref{ground states}.
-    However, the two systems have different ground states.
+    The simulation now includes several spins, in a ferromagnetic or anti-ferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectively, and a damping constant $\alpha > 0$.
+    The spins are initialized in random directions.
+    \footnote{The positions are drawn uniformly from $(\phi, \theta)\in[0, 2\pi)\times[0, \pi)$. 
+    This means that the starting positions will \emph{not} be uniformly distributed on the unit sphere, as the area of a small square $\Delta \phi \Delta \theta$ varies over the surface, however this has no effect on the conclusinos here.}
+    Both the ferromagnet and antiferromagnetic systems settle into their respective ground state of the system after some time.
+    This is shown in \autoref{ground states}, where we see that the different systems have different ground states.
     In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the anti-ferromagnetic case the spins are oppositely aligned.
     The final configurations of both systems are shown in \autoref{ground states 3D}.
 
@@ -190,23 +192,24 @@
         \label{ground states 3D}
     \end{figure}
 
-    When the coupling is turned of, $J = 0$, but $d_z>0$ and the spins are initialized randomly, they will all precess around the $x$-axis, with different frequencies, as shown in \autoref{all tilted}.
+    When the coupling is turned of, $J = 0$,$\alpha=0$ but $d_z>0$ and the spins are initialized randomly, they will all precess around the $x$-axis, with different frequencies, as shown in \autoref{all tilted}.
     This is because it is now an uncoupled system, where each spin follows 
     \begin{equation*}
         \dv{\vec S}{t} = - 2 d_z S_z \,\vec S \times \hat z, 
     \end{equation*}
     i.e.
-    circular precession around the $z$-axis.
-    Thus, spins parallel to the $z$-axis should not move, while the one tilted spin precesses.
+    circular precession around the $z$-axis with frequency proportional to the $z$-component of the spin.
     If only one spin is tilted, it will precess alone, as shown in to the left in \autoref{one tilted}.
     However, if the coupling is turned on again, as shown on the right in \autoref{one tilted}, the disturbance will ripple through the chain, in a wave.
-    This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. This implementation uses, as mentioned earlier, a periodic boundary condition. This means that the wave continues through the wall, and appears on the other side, thus approximating an infinite system. This behavior is evident in the video \verb|plots/gs_f.mp4|. 
+    This happens as the tilted spin makes it energetically advantageous for its neighbours to tilt towards it, starting a chain reaction that propagate through the chain. This implementation uses, as mentioned earlier, a periodic boundary condition. This means that the wave continues through the wall, and appears on the other side, thus approximating an infinite system.
 
     We can see that the vibrations in the chain is dominated by high frequency oscillations.
-    By turning back on the damping, as shown in \autoref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with the fundamental frequencies of the system.
-    The plot on the right illustrates the average of the $x$-components of all the spins.
+    By turning back on the damping, as shown in \autoref{one tilted dampend} on the left, the energetically costly high frequencies die out fast, and we are left with a fundamental frequencies of the system.
+    This behavior is evident in the video \verb|plots/gs_f.mp4|.
+    The plot on the right in \autoref{one tilted dampend} illustrates the average of the $x$-components of all the spins.
     This follows the long-term pattern immediately.
     The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
+    Another example of how the organized, long wavelength behavior emerges from a random initial configuration is shown in the last page of this report, in \autoref{50 spins}, where 50 spins in a ferromagnetic system is simulated.
 
     The left plot in \autoref{one tilted dampend af} shows the same situation, but with a antiferromagnetic coupling $J = -1$.
     This system starts in a much higher energy state, and thus becomes highly excited.
@@ -216,7 +219,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=0.8\textwidth]{../plots/2221a.pdf}
+        \includegraphics[width=0.7\textwidth]{../plots/2221a.pdf}
         \caption{The motion of the $x$-component of the spin of all spins in a chain, with anisotropy $d_z=0.1$. The frequency depends on $z$-component of the spin, which is why it varies.}
         \label{all tilted}
     \end{figure}
@@ -276,4 +279,13 @@
     They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state.
 
     \printbibliography
+
+
+    \begin{figure}[H]
+        \hspace{- 5 cm}
+        \includegraphics[width=1.5\textwidth]{../plots/bonus.pdf}
+        \caption{50 spins simulated over 50\,000 steps. The Chaos quickly gives away for collective behavior. The same system is also illustrated by the video plots/bonus.mp4}
+        \label{50 spins}
+    \end{figure}
+
 \end{document}

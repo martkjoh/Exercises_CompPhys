@@ -254,8 +254,21 @@ def ex22262():
     plot_mag(Mz, h, "mag2", args, gs=0)
 
 
-ex211()
-# ex212() # run again
+def bonus():
+    T, N, h = 50_000, 50, 0.01
+    S = np.empty([T, N, dim])
+    S[0] = get_S(N)
+
+    args = (1, 0, [0, 0, 0.05], 0.1) # (J, dz, 5B, a)
+
+    integrate(LLG, S, h, heun_step, args)
+    plot_coords(S, h, "bonus", args, lim=(-1, 1), alpha=0.5, fs=(18, 14), coords=(0, 2))
+    anim_spins(S, "bonus", skip=10)
+
+
+
+# ex211()
+ex212() # run again
 # ex213() # Hvorfor endres ikke frekvensen?
 # ex2211()
 # ex2212()
@@ -267,3 +280,5 @@ ex211()
 # ex22252()
 # ex22261()
 # ex22262()
+
+# bonus()

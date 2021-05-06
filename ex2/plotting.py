@@ -64,7 +64,7 @@ def plot_single(S, h, args, name):
 def plot_err_afh(Sx, hs, Ts, S0, args, pows, names, name):
     J, dz, B, a = args
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 5))
     for i, pow in enumerate(pows):
         delta = np.abs(Sx[i] - S0*np.cos((Ts[i] - 1) * hs))
         ax.loglog(
@@ -175,7 +175,7 @@ def plot_fit_to_sum(S, h, args, name, fs=(10, 6)):
     fig.suptitle("$ \\alpha = " + str(a) + ",\, d_z=" + str(dz) + ",\,J=" + str(J) +"$")
     ax.set_xlabel("$t$")
     ax.set_ylabel("$S$")
-    # ax.set_ylim(np.min(S[:, :, 0]), np.max(S[:, :, 0]))
+    ax.set_ylim(-0.05, 0.05)
 
     def f(x, a, w, t):
         return a * np.cos(w * x) * np.exp(-x/t)
