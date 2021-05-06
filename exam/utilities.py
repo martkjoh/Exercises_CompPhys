@@ -48,9 +48,6 @@ def SEIIaR(x, dt, *args):
 
 def SEIIaR_commute(x, dt, day, *args):
     beta, rs, ra, fs, fa, tE, tI = args
-    nonzero = np.sum(x, axis=0) != 0
-    # nonzero1 = np.ones(x.shape[1:]) == 1
-    # print(np.sum(nonzero), np.sum(nonzero1))
     if day:
         x0 = np.sum(x, axis=1)
         N = np.sum(x0, axis=0)
@@ -70,14 +67,47 @@ def SEIIaR_commute(x, dt, day, *args):
     PIR = 1 - np.exp(-dt/tI)
 
     DSE, DEI, DEIa, DIR, DIaR = np.zeros((5, *x[0].shape), dtype=int)
-    DSE[nonzero] = B(x[0][nonzero], PSE[nonzero])
-    DEI[nonzero], DEIa[nonzero], _ = np.moveaxis(
-        M(x[1][nonzero], (PEI, PEIa, 1-PEI-PEIa)), -1, 0
+    DSE = B(x[0], PSE)
+    DEI, DEIa, _ = np.moveaxis(
+        M(x[1], (PEI, PEIa, 1-PEI-PEIa)), -1, 0
         )
-    DIR[nonzero] = B(x[2][nonzero], PIR)
-    DIaR[nonzero] = B(x[3][nonzero], PIR)
+    DIR = B(x[2], PIR)
+    DIaR = B(x[3], PIR)
 
     return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
+
+def SEIIaR_commute2(x, dt, day, *args):
+    beta, rs, ra, fs, fa, tE, tI = args
+    nonzero = np.sum(x, axis=0) != 0
+    if day:
+        x0 = np.sum(x, axis=1)
+        N = np.sum(x0, axis=0)
+        x0 = np.ones_like(x) * x0[:, np.newaxis, :]
+        N = np.ones_like(x[0]) * N[np.newaxis, :]
+
+    else:
+        x0 = np.sum(x, axis=2)
+        N = np.sum(x0, axis=0)
+        x0 = np.ones_like(x) * x0[:, :, np.newaxis]
+        N = np.ones_like(x[0]) * N[:, np.newaxis]
+
+    v = -dt*beta*(rs*x0[2]+ra*x0[3])/N
+    PSE = np.zeros_like(x[0])
+    PSE[nonzero] = 1 - np.exp(v[nonzero])
+    PEI = fs*(1 - np.exp(-dt/tE))
+    PEIa = fa*(1 - np.exp(-dt/tE))
+    PIR = 1 - np.exp(-dt/tI)
+
+    DSE, DEI, DEIa, DIR, DIaR = np.zeros((5, *x[0].shape), dtype=int)
+    DSE[nonzero] = B(x[0, nonzero], PSE[nonzero])
+    DEI[nonzero], DEIa[nonzero], _ = np.moveaxis(
+        M(x[1, nonzero], (PEI, PEIa, 1-PEI-PEIa)), -1, 0
+        )
+    DIR[nonzero] = B(x[2, nonzero], PIR)
+    DIaR[nonzero] = B(x[3, nonzero], PIR)
+
+    return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
+
 
 
 """

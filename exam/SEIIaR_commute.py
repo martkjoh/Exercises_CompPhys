@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm import trange
-from utilities import integrate, get_Nt, stoch_commute_step, SEIIaR_commute, get_pop_structure
+from utilities import SEIIaR_commute2, integrate, get_Nt, stoch_commute_step, SEIIaR_commute, get_pop_structure
 
 
 def get_test_SEIIaR_commute():
@@ -163,6 +163,32 @@ def get_Norway(datapath, lockdown=False, run=False):
     return xs, T, dt, args
 
 
+# Functions for profiling purposes
+
+def prof1():
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = get_pop_structure()
+    E = np.zeros_like(N)
+    E[0, 0] = 50
+    Oh = np.zeros_like(N)
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180; dt = .1
+    save = 121
+    integrate(SEIIaR_commute, x0, T, dt, args, save=save, step=stoch_commute_step)
+
+def prof2():
+    args = (0.55, 1, 0.1, 0.6, 0.4, 3, 7)
+    N = get_pop_structure()
+    E = np.zeros_like(N)
+    E[0, 0] = 50
+    Oh = np.zeros_like(N)
+    x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
+    T = 180; dt = .1
+    save = 121
+    integrate(SEIIaR_commute2, x0, T, dt, args, save=save, step=stoch_commute_step)
+    
+
+
 
 
 if __name__=="__main__":
@@ -171,15 +197,16 @@ if __name__=="__main__":
     # get_pop_structure()
     # get_Norway()
     
-    N = get_pop_structure()
+    # N = ge
+    # t_pop_structure()
     # Nl = get_pop_structure(lockdown=True)
     # print(N.shape)
     # pop = np.sum(N, axis=1).astype(int)
     # popl = np.sum(Nl, axis=1).astype(int)
     # print(pop-popl)
 
-    print(N.size)
-    print(np.sum(N>0))
+    # print(N.size)
+    # print(np.sum(N>0))
 
     # print(np.sum(N[0].astype(int))) # Working populace, Oslo
 
@@ -188,4 +215,7 @@ if __name__=="__main__":
     # print(pop[i2])
     # print(N[0, i2])
     # print(N[i2, 0])
+    
+    
+    prof2()
     pass

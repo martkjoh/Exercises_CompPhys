@@ -61,7 +61,7 @@ INITIALIZATION
 def get_S(n):
     """ 
     Randomly distributed spins 
-    Not uniform, but i does not matter 
+    Not uniform, but it does not matter 
     """
     theta = np.random.random(n) * pi
     phi = np.random.random(n) * 2 * pi
@@ -268,7 +268,7 @@ def bonus():
 
 
 # ex211()
-ex212() # run again
+# ex212()
 # ex213() # Hvorfor endres ikke frekvensen?
 # ex2211()
 # ex2212()

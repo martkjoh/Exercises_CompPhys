@@ -45,6 +45,19 @@
     However, event though a timestep of $\Delta t = 0.1$ is necessary to get accurate results, it is not necessary to store all time points.
     \verb|integrate| therefore takes the argument \verb|save|, which is the number of data points to store.
     The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps storing the value.
+    
+    In the SEIIaR commuter model, each step is calculated by drawing a random number, using a binomial or multinomial distribution, from each variable in the simulation.
+    That means five random numbers for each cell in the population matrix.
+    This is done in the function \verb|SEIIaR_commute| in \verb|utilities.py|
+    This is being done using NumPy's binomial and multinomial functions, which supports bein given a array of populations to draw from.
+    \footnote{The binomial distribution also supports that the probabilities are arrays, such that each popluation has a different probability.
+    This is necessesary when calculating how many change from Susceptible to Exposed, as the probability for this depends on location.
+    The multinomial function does \emph{not} support this, but it is luckily not needed here.}
+    When drawing these random numbers, a lot of the populations that are drawn from are zero, as can be seen i \autoref{pop structure}.
+    An effor to speed was therefore made by masking the arrays, such that only non-zero populations were left.
+    This, however, did not change the running time of the simulation notacibly, as can be seen in \verb|profile.ipynb|.
+    The second to lowest and lowest cells shows a profile of the simulation without and with the masking, and both the running time and the time of each line is nearly unchaged.
+    This suggests that either the binomial/multinomial functions do not respect the masking, or that they simply are optimized for popluations of zero already.
 
 
     The equations that give the asymptotic behavior are both of the type $x = f(x)$, and can thus be approximated by recursion, given that they converge. 
