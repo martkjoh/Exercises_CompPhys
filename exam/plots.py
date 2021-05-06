@@ -374,10 +374,24 @@ def plot_conv_SEIIaR(xs, dts, args, T, name="", subdir="", ci=2):
 def plotEsafrs(result, fs=(12, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
-    xs, T, dt, args, rss, av_growth, high_i = result
+    xss, T, dt, rss = result
+    xs = np.mean(xss, axis=0)
+    xs = np.array(xs, dtype=np.float64)
+    
+    # the growth seems to start approx after 5 days
+    n = 25 # place to start measuring from
+    logE = np.log(xs[:, n:, 1])
+    av_growth = (logE[:, -1] - logE[:, 0]) / (T - dt*n)
+    # The index of the highest v with positive growth rate
+    high_i = np.arange(0, len(rss))[np.less(av_growth, 0)][-1]
+    print("Greates rs without exp growth: {}".format(rss[high_i]))
+    print("Corr growth rate: {}".format(av_growth[high_i]))
+    print("Reach at index {} of {}".format(high_i, len(rss)))
+    print("Lowest rs value yielding exp growth: {}".format(rss[high_i+1]))
+
     N = np.sum(xs[0][0])
     xs = xs / N # Normalize
-    Nt = get_Nt(T, dt)
+    Nt = xs.shape[1]
     t = np.linspace(0, T, Nt)
     for i in range(len(xs)):
         ax.semilogy(t, xs[i,:,1], color=cm.viridis(i/len(xs)), alpha=0.7)
@@ -392,12 +406,41 @@ def plotEsafrs(result, fs=(12, 6), name="", subdir=""):
         ls="dashdot", label="const"
         )
     ax.legend()
-    ax.set_title(
-        "Lowest $r_s$ yieldin $\\alpha>0$:" + \
-            "$r_s={:.3f}$".format(rss[high_i+1])
-        )
     
     save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_prob_gr(result, fs=(8, 6), name="", subdir=""):
+    fig, ax = plt.subplots(figsize=fs)
+    xs, T, dt, rss = result
+    n = 25 # place to start measuring from
+    logE = np.log(xs[:, :, n:, 1].astype(float))
+    av_growth = (logE[:, :, -1] - logE[:, :, 0]) / (T - dt*n)
+    more_than_zero = av_growth>0
+    N = more_than_zero.shape[0]
+    freq_more_than_zero = np.sum(more_than_zero, axis=0)/N
+    var = 1/(N-1)*np.sum(
+        (more_than_zero - freq_more_than_zero[np.newaxis, :])**2, axis=0
+        )
+    std_err = np.sqrt(var/N)
+    fig, ax = plt.subplots(figsize=fs)
+
+    ax.plot(rss, freq_more_than_zero, "k.")
+    ax.errorbar(
+        rss, freq_more_than_zero, yerr=std_err, color="k", fmt=".", capsize=6, 
+        lw=.8, label="$\pm \sigma$"
+        )
+
+    i = np.argwhere(freq_more_than_zero<0.5)[-1, 0]
+    x, y = rss[i], freq_more_than_zero[i]
+    ax.plot(x, y, "rX", label="$(r_s, P) = ({:.3f}, {:.3f})$".format(x, y), ms=8)
+
+    ax.set_xlabel("$r_s$")
+    ax.set_ylabel("Prob.")
+    ax.legend()
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
 
 
 """

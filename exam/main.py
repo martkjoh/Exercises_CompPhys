@@ -54,8 +54,10 @@ def conv_SEIIaR():
     plot_conv_SEIIaR(*SEIIaR_convergence(), "conv", "2C/")
 
 
-def test_isolation():
-    plotEsafrs(stay_home(), name="isolation", subdir="2C/")
+def test_isolation(run=False):
+    result = stay_home(run)
+    plotEsafrs(result, name="isolation", subdir="2C/", fs=(8, 6))
+    plot_prob_gr(result, name="isolation2_prob", subdir="2C/")
 
 
 def testSEIIaR_commute():
@@ -119,11 +121,11 @@ def num_infected(lockdown=False, run=False):
 
 # test_stoch()
 # conv_stoch()
-disappear()
+# disappear()
 
 # testSEIIaR()
 # conv_SEIIaR()
-# test_isolation()
+test_isolation()
 
 # testSEIIaR_commute()
 # conv_SEIIaR_commute(False)

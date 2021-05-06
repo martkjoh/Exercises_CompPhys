@@ -38,7 +38,11 @@
     This is accomplished using function \verb|integrate| in \verb|utilities.py|. 
     It takes as arguments the initial conditions \verb|x0|, the functions \verb|f| and \verb|step|, the list \verb|args| as well as the time step \verb|dt| and total time \verb|T| to simulate. 
     It then creates a discrete approximation of $x(t)$ by taking time steps given by the function \verb|step|. 
-    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta (4,5), while \verb|f| defines the system. 
+    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta (4,5), while \verb|f| defines the system. In the last model in this report, $356\times356\times5\times1800=1\,140\,624\,000$ floating point numbers are generated for each run of the simulation, which may result in the computer running out of RAM.
+    However, event though a timestep of $\Delta t = 0.1$ is necessary to get accurate results, it is not necessary to store all time points.
+    \verb|integrate| therefore takes the argument \verb|save|, which is the number of data points to store.
+    The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps storing the value.
+
 
 
     The equations that give the asymptotic behavior are both of the type $x = f(x)$, and can thus be approximated by recursion, given that they converge. 
@@ -161,17 +165,24 @@
     \autoref{SEIIaR} shows 10 runs of the simulation, and compares it to the result from the deterministic SIR model.
     The same asymptotic values are reach for $S$ and $R$, however, due to the incubation period, the raise in infection is delayed somewhat.
     \autoref{SEIIaR conv} show a estimation of the error, where a simulations with different time step is compared to a reference simulation, all averaged over 100 runs.
-    This shows that a timestep $\Delta = 0.1$ should still yield high precision.
+    This shows that a timestep $\Delta t = 0.1$ should still yield high precision.
 
     Infected people with symptoms, $I$, can self isolate, and thus decrease the spread of the disease.
     This is controlled by the $r_a$ parameter.
     If it is $1$, the symptomatic are as likely to infect others as $\mathcal{R}_0 = \beta \tau $ would suggest. 
     However, if it is less, for example due to isolation, then the spread will subside.
-    \autoref{isolation} shows the early evolution of the exposed population, $E$, for $r_s\in [0, 1]$.
+    \autoref{isolation} shows how $r_s$ affects how the infection spreads.
+    In \autoref{isolation1}, the figure shows the early evolution of the exposed population, $E$, for 101 values of $r_s\in [0, 1]$.
     Each line is an average of 100 runs.
-    Due to this population not being infectious, it will initially decrease.
+    Due to the exposed population not being infectious, it will initially decrease.
     The measure of the exponential increase is therefore taken as $\alpha = \ln\left(E(20)/E(5)\right)/(15 \mathrm{days})$.
-    The largest $r_s$ that do not result in exponential growth is $r_s = 0.40$
+    If $\alpha>0$, then this is counted as exponential growth, and thus a outbreak.
+    \autoref{isolation1} shows that \emph{the lowest $r_s$ that do not lead to an avereage exponential growth}, is $r_s = 0.42$.
+    \autoref{isolation2} shows a slightly different measure.
+    It shows the probability that a value for $r_s$ resulted in exponential growth, together with the estimated standard error.
+    The lowest measured value for $r_s$ that leads to a probability less than 50\% for exponential growth is $r_s = 0.43$.
+    (DISCUSS THE UNCETAINTY MORE.)
+
     
     \begin{figure}[H]
         \centering
@@ -189,7 +200,16 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.7\textwidth]{../plots/2C/isolation.pdf}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2C/isolation.pdf}
+            \caption{cap}
+            \label{isolation1}
+        \end{subfigure}
+        \begin{subfigure}{.49\textwidth}
+            \includegraphics[width=\textwidth]{../plots/2C/isolation2_prob.pdf}
+            \caption{cap}
+            \label{isolation2}
+        \end{subfigure}
         \caption{cap}
         \label{isolation}
     \end{figure}
@@ -208,8 +228,8 @@
     This case is illustrated in \autoref{All commuters}, confirming that the model behaves as expected.
 
     Next, the system described by the matrix in Equation 10 in \cite{exam} is simulated.
-    The result in each town is showed in \autoref{two towns}
-    (ADD MORE DATA: WHEN DO THEY PEAK; WHAT ARE THE ASYMPTOTES. DISCUSS)
+    The result in each town is showed in \autoref{two towns}.
+    
     Next, a system with 10 towns is simulated. 
     In this system, there are two large towns, town 1 and 5, and eight smaller towns, in groups of four which are connected to one of of the large towns.
     \autoref{nine towns} shows the evolution of the infection.
