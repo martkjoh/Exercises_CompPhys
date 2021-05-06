@@ -4,6 +4,7 @@ from matplotlib import cm
 from utilities import get_Nt, get_asymptotes
 from matplotlib.colors import LogNorm
 from os import path, mkdir
+from scipy.optimize import curve_fit
 
 
 plt.rcParams['mathtext.fontset'] = 'cm'
@@ -38,7 +39,7 @@ labels = ["$S$", "$I$", "$R$"]
 colors = [cm.plasma(0.2), cm.plasma(0.5), cm.plasma(0.8)]
 
 labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
-colors2 = [cm.viridis(i/(len(labels2)-1)) for i in range(len(labels2))]
+colors2 = [cm.viridis(f) for f in np.linspace(0, 0.98, len(labels2))]
 
 
 """
@@ -108,7 +109,8 @@ def plot_conv_det(xs, dts, args, T, steps, name="", subdir=""):
         c = np.abs(R0[4] - R_ref)/R_ref
         c_dts_pow = [c*dt**(exps[i]) for dt in dts[:-1]]
         ax.loglog(
-            dts[:-1], c_dts_pow, "k", ls=lines[i], label="$\propto \Delta t^{}$".format(exps[i])
+            dts[:-1], c_dts_pow, "k", ls=lines[i], 
+            label="$\propto \Delta t^{}$".format(exps[i])
             )
 
         ax.loglog(
@@ -307,15 +309,6 @@ def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
     ax.set_xlabel("$I(0)$")
     ax.set_ylabel("prob.")
 
-    # runs = 100
-    # samples = 10
-    # terminate_av = np.array([
-    #     np.mean(terminate[:, i*samples:(i+1)*samples], axis=1).T for i in range(runs)
-    #     ]).T
-    # std = np.std(terminate_av, axis=1)/np.sqrt(runs)
-    # print(np.sqrt(var/N))
-    # print(std)
-
     
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -394,15 +387,15 @@ def plotEsafrs(result, fs=(12, 6), name="", subdir=""):
     Nt = xs.shape[1]
     t = np.linspace(0, T, Nt)
     for i in range(len(xs)):
-        ax.semilogy(t, xs[i,:,1], color=cm.viridis(i/len(xs)), alpha=0.7)
+        ax.semilogy(t, xs[i,:,1], color=cm.viridis(i/len(xs)), alpha=0.5)
 
     ax.set_xlabel("$t/[\mathrm{ days }]$")
     ax.semilogy(
-        t, xs[high_i, : , 1], "k--", ms=7,
+        t, xs[high_i, : , 1], "k--", lw=3,
         label="$r_s={:.3f}$".format(rss[high_i])
         )
     ax.semilogy(
-        t, xs[high_i, -1, 1]*np.ones_like(t), "k", ms=7, 
+        t, xs[high_i, -1, 1]*np.ones_like(t), "k", lw=3, 
         ls="dashdot", label="const"
         )
     ax.legend()
@@ -425,15 +418,20 @@ def plot_prob_gr(result, fs=(8, 6), name="", subdir=""):
     std_err = np.sqrt(var/N)
     fig, ax = plt.subplots(figsize=fs)
 
-    ax.plot(rss, freq_more_than_zero, "k.")
     ax.errorbar(
-        rss, freq_more_than_zero, yerr=std_err, color="k", fmt=".", capsize=6, 
-        lw=.8, label="$\pm \sigma$"
+        rss, freq_more_than_zero, yerr=std_err, color=colors2[1], fmt=".", capsize=4, 
+        label="$\pm \sigma$", ms = 4, lw=.5, alpha=0.8
         )
+
+    f = lambda x, a, b: 1 / (1 + np.exp(a * (b - x)))
+    (a, b), _ = curve_fit(f, rss, freq_more_than_zero)
+    ax.plot(rss, f(rss, a, b), "k--", label="$1/(1 + \exp[a(b-x)])$")
+    ax.set_title("$a={:.3f}, \, b={:.3f}$".format(a, b))
 
     i = np.argwhere(freq_more_than_zero<0.5)[-1, 0]
     x, y = rss[i], freq_more_than_zero[i]
-    ax.plot(x, y, "rX", label="$(r_s, P) = ({:.3f}, {:.3f})$".format(x, y), ms=8)
+    
+    ax.plot(x, y, "rX", label="$(r_s, P) = ({:.3f}, {:.3f})$".format(x, y), ms=10)
 
     ax.set_xlabel("$r_s$")
     ax.set_ylabel("Prob.")
@@ -465,7 +463,8 @@ def plot_two_towns(result, fs=(16, 6), name="", subdir=""):
         ax[n].plot([t[peak], t[peak]], [0, 1], "k--")
         ax[n].set_title(
             "Town {}".format(n+1) + \
-            ", Peak I: day {:.0f}".format(t[peak])
+            ", Peak I: day {:.0f}".format(t[peak]) +\
+            ", $R(180)={:.3f}$".format(x[-1, -1])
             )
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
@@ -488,15 +487,14 @@ def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
             peak = np.argmax(I)
             
             for i in range(x.shape[1]):
-                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1)
+                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1, lw=4)
             ax[j, k].plot([t[peak], t[peak]], [0, 1], "k--")
             ax[j, k].set_title(
                 "Town {}".format(n+1) + \
-                ", Peak I: day {:.0f}".format(t[peak])
+                ", Peak I: day {:.0f}".format(t[peak]), fontsize=30
                 )
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
-
 
 
 def plot_town_i(result, i0, fs=(12, 8), name="", subdir=""):
@@ -529,7 +527,7 @@ def plot_town_i(result, i0, fs=(12, 8), name="", subdir=""):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_sum_inf(result, fs=(10, 8), name="", subdir=""):
+def plot_sum_inf(result, fs=(8, 5), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -540,28 +538,23 @@ def plot_sum_inf(result, fs=(10, 8), name="", subdir=""):
 
     save = xs.shape[1]
     t = np.linspace(0, T, save)
-    
-    for i in range(len(xs)):
-        ax.plot(t, infected_cities[i], color=colors[1], alpha=0.4)
 
-    ax.plot(t, infected_cities_av, "k-", lw=3, label="$\langle I \\rangle$")
-    ax.plot(t, infected_cities_av-std, "k--", lw=1)
-    ax.plot(t, infected_cities_av+std, "k--", lw=1, label="$\pm \sigma$")
+    for i in range(len(xs)):
+        ax.plot(t, infected_cities[i], color=colors2[2], alpha=0.4)
+
+    ax.plot(t, infected_cities_av, "k--", lw=2, label="$\langle I \\rangle$")
 
     N_cities = len(xs[0, 0, 0])
     ax.set_ylim(0, N_cities+5)
     max = infected_cities_av>350
-    max_i = None
-    if np.sum(max)>0:
-        max_i = np.argwhere(infected_cities==N_cities)[0, 0]
-    
-    title = "# days above 350: {}".format(np.sum(max))
-    if not max_i is None:
-        title += ", day reached: {:.0f}".format(t[max_i])
-    else:
-        title += ", max: {:.0f}".format(np.max(infected_cities))    
 
-    ax.set_title(title)
+    max_i = np.argmax(infected_cities_av)
+    
+    title = "# days $I>350$: {}".format(np.sum(max))
+    title += "; max: {:.0f}".format(np.max(infected_cities))    
+    title += "; at day: {:.0f}".format(t[max_i])
+
+    ax.set_title(title, fontsize=22)
     ax.set_xlabel("$t/[\mathrm{ days }]$")
     ax.set_ylabel("# towns with active infection")
     ax.legend()

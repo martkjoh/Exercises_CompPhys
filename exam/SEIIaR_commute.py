@@ -172,18 +172,20 @@ if __name__=="__main__":
     # get_Norway()
     
     N = get_pop_structure()
-    Nl = get_pop_structure(lockdown=True)
-    print(N.shape)
-    pop = np.sum(N, axis=1).astype(int)
-    popl = np.sum(Nl, axis=1).astype(int)
-    print(pop-popl)
+    # Nl = get_pop_structure(lockdown=True)
+    # print(N.shape)
+    # pop = np.sum(N, axis=1).astype(int)
+    # popl = np.sum(Nl, axis=1).astype(int)
+    # print(pop-popl)
 
+    print(N.size)
+    print(np.sum(N>0))
 
     # print(np.sum(N[0].astype(int))) # Working populace, Oslo
 
-    i2 = np.argmax(pop[1:]) + 1
-    print(i2)
-    print(pop[i2])
-    print(N[0, i2])
-    print(N[i2, 0])
+    # i2 = np.argmax(pop[1:]) + 1
+    # print(i2)
+    # print(pop[i2])
+    # print(N[0, i2])
+    # print(N[i2, 0])
     pass

@@ -110,8 +110,8 @@ def num_infected(lockdown=False, run=False):
     N = get_pop_structure()
     pop = np.sum(N, axis=1).astype(int)
     i2 = np.argmax(pop[1:]) + 1
-    plot_town_i(result, 0, name="Oslo"+suffx, subdir="2D/")
-    plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/")
+    plot_town_i(result, 0, name="Oslo"+suffx, subdir="2D/", fs=(8, 5))
+    plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/", fs=(8, 5))
 
 
 # testSIR()
@@ -139,4 +139,3 @@ test_isolation()
 # poplutaion()
 # num_infected()
 # num_infected(lockdown=True)
-

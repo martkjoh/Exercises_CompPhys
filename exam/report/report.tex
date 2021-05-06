@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 
-\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[left=2.5cm, right=2.5cm, top=2cm, bottom=2cm]{geometry}
 \setlength{\parindent}{0em}
 \setlength{\parskip}{0.8em}
 
@@ -25,10 +25,13 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    SIR, and the more advanced SEIIaR, are mathematical models that aim to capture how pandemics spread throughout a simulation.
+    The COVID-19 pandemic have showed how important it is to be able to simulate the spread of an infection throughout a population, and how much our behavior and travel patterns might change how this happens.
+    SIR (Susceptible, Infected and Recovered), and the more advanced SEIIaR (Exposed, Infected asymptomatic), are mathematical models that aim to capture how pandemics spread throughout a simulation.
+    They are vastly simplified and leave out a lot of the complications of a real world pandemic, but they still might give some lessons for what happens in the real world.
     This paper documents the implementation and results of the simulation of these models in Python, as described in \cite{exam}.
+    It presents the result from different models, investigates how they respond to changing parameters and what the error due to numerical approximations or randomness inherit in the model.
 
-    \section*{Implementation}
+    \section*{Implementation and Theory}
     All the different models used in this text follow the same basic form. 
     The goal is to find $x(t)$, given initial conditions $x(t_0)$, and a equation of the form
     \begin{equation*}
@@ -44,10 +47,18 @@
     The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps storing the value.
 
 
-
     The equations that give the asymptotic behavior are both of the type $x = f(x)$, and can thus be approximated by recursion, given that they converge. 
     For $\mathcal{R}_0$ close to one, they converge increasingly slowly, and the program may reach maximum recursion depth. 
-    For the parameters in this exercise, however, this was not a problem
+    For the parameters in this exercise, however, this was not a problem.
+
+    When evaluating the precision of the different simulation schemes, a measure of error is needed.
+    In this text, the measure of error for a simulation with time step $\Delta t_i$ is
+    \begin{equation*}
+        \Delta R_i = \frac{|R_i(t_0) - R_{\mathrm{ref}}(t_0)|}{R_{\mathrm{ref}(t_0)}},
+    \end{equation*}
+    where $R_{\mathrm{ref}}$ is some reference value of $R$ (Recovered) obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
+    The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
+    This is done such that several time steps may be compared with the same reference.
 
     \section*{Results}
     \subsection*{Deterministic SIR model}
@@ -105,14 +116,8 @@
     This is also the reason for the spread of the runs around the dashed line in the figure on the right.
     The early days of the infection is susceptible to fluctuations.
     We also see the stochastic model tend to be later than the deterministic.
-    (THIS MIGHT HAVE SOMETHING TO DO WITH THE INITIAL CONDITIONS).
     These simulation have been used with $\Delta t = 0.1$ for the stochastic model. 
-    \autoref{conv} is a plots the relative error of the simulation, measured as 
-    \begin{equation*}
-        \Delta R_i = \frac{|R_i(t_0) - R_{\mathrm{ref}}(t_0)|}{R_{\mathrm{ref}(t_0)}},
-    \end{equation*}
-    where $R_{\mathrm{ref}}$ is some reference value obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
-    The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
+    \autoref{conv} is a plots the relative error of the simulation, measured as $\Delta R$.
     The values are gotten by taking an average of 100 runs for each value of $\Delta t$
     This result justifies the use of $\Delta t = 0.1$, as it leads to quick simulations, while resulting in errors around $0.02\%$
     Furthermore, the results imply that the method converges as $\Delta t^1$, which means that large gains in precision will be costly.
@@ -131,10 +136,10 @@
     \end{equation*}
     The unbiased estimator of the variance of the Bernoulli distribution is
     \begin{equation*}
-        s^2 = \frac{1}{n} \sum_{i=1}^n (p - x_i)^2.
+        s^2 = \frac{1}{n-1} \sum_{i=1}^n (p - x_i)^2.
     \end{equation*}
     This is not a measure of the error in it self, but rather a estimation of a parameter of the underlying distribution. 
-    The standard error, $\sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error. \footnote{\url{https://en.wikipedia.org/wiki/Standard_error}}
+    The standard error, $\sigma = \sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error.\footnote{\url{https://en.wikipedia.org/wiki/Standard_error}} 
     \autoref{Disappear} shows the estimation of the probability of the outbreak dying out, together with the uncertainties, from 1000 runs of the simulation for initial value of infected.
 
     \begin{figure}[H]
@@ -156,7 +161,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2B/disappear.pdf}
-        \caption{The probability that the infection dies, for different starting values of $I$. Each probability is caculated from an average of 1\,000 runs, while the error bar indicate one standard deviation, obtained from 10 averages of 100 runs.}
+        \caption{The probability that the infection dies, for different starting values of $I$. Each probability is caculated from an average of 1\,000 runs, while the error bar indicate the standard error as described in the text.}
         \label{Disappear}
     \end{figure}
 
@@ -181,6 +186,7 @@
     \autoref{isolation2} shows a slightly different measure.
     It shows the probability that a value for $r_s$ resulted in exponential growth, together with the estimated standard error.
     The lowest measured value for $r_s$ that leads to a probability less than 50\% for exponential growth is $r_s = 0.43$.
+    It also shows the best fit to a Sigmoid curve.
     (DISCUSS THE UNCETAINTY MORE.)
 
     
@@ -197,20 +203,19 @@
             \label{SEIIaR conv}
         \end{subfigure}
     \end{figure}
-
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2C/isolation.pdf}
-            \caption{cap}
+            \caption{The eraly evolution of the exposed (E) in the pandemic, for values of $r_s$ between 1 (top) an 0 (bottom). Each line is an average of 100 simulation runs.}
             \label{isolation1}
         \end{subfigure}
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2C/isolation2_prob.pdf}
-            \caption{cap}
+            \caption{The probability of exponential growth as a function of $r_s$, with the standard error indicated by errorbars. The cross indicates the higgest value of $r_s$, below 50\%.}
             \label{isolation2}
         \end{subfigure}
-        \caption{cap}
+        \caption{Two different ways of measuring which value of $r_s$ gives exponential growth.}
         \label{isolation}
     \end{figure}
 
@@ -218,36 +223,37 @@
     \subsection*{SEIIaR commuter model}
     The last complication of the model is to include the fact that people live and work at different places, and might bring with them the infection when commuting. 
     The traveling pattern of the population is encoded in a matrix, as described in \cite{exam}.
-    Given a matrix without off diagonal elements, each city should have evolve exactly as they do in the non-commuter SEIIaR test.
+    Given a matrix without off diagonal elements, each city should evolve exactly as they do in the non-commuter SEIIaR model.
     This is thus a good check on the implementation.
-    \autoref{SEIIaR commute} shows the result in one of the cities of such a run in.
-    This city did not have any commuters, and the same initial conditions, and should therefore yield identical results, modulo the inherit randomness of the, which a comparison with \autoref{SEIIaR} confirms.
-    Furthermore, the error showed in \autoref{SEIIaR commute conv} behaves as the non-commuter model
+    \autoref{SEIIaR commute} shows the result in one of the cities of such a run.
+    This is one of two towns, in a model without commuters, and a comparison with \autoref{SEIIaR} confirms that the results are the same.
+    Furthermore, the error showed in \autoref{SEIIaR commute conv} behaves as the non-commuter model.
     Another test for the commuter model is to let the entire population be commuters, i.e. only off-diagonal elements are non zero, and start with infections only in one of these populations.
     Then, the spread should be contained to this population.
     This case is illustrated in \autoref{All commuters}, confirming that the model behaves as expected.
 
-    Next, the system described by the matrix in Equation 10 in \cite{exam} is simulated.
-    The result in each town is showed in \autoref{two towns}.
-    
+    This method is then used to simulate the system with 10 towns, described by the matrix in Equation 10 in \cite{exam}.
+    The result from an average of then runs is showed in \autoref{two towns}, where each variable is plotted for each town
+    The peak of the infection is reached day 57 in town 1, while it is not before day 90 in Town 2.
+    The total fraction of both towns that eventually gets the infection, however, is almost exactly the same, as the parameters are the same.
     Next, a system with 10 towns is simulated. 
     In this system, there are two large towns, town 1 and 5, and eight smaller towns, in groups of four which are connected to one of of the large towns.
     \autoref{nine towns} shows the evolution of the infection.
     The infection starts in town 2, which explains why it is the first to reach the peak of the infection, at day 57.
-    It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 103. 
+    It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 100. 
     Town 3, 4 and 4, all satellites of town 1 all hit their peak around day 120.
-    The infection then spreads to the other hub, town 6, as it is connected to town 1, which has its peak at day 145, before it at last spreads to the satellites of town 6, town 7, 8, 9 and 10, which all have their peak around day 160.
+    The infection then spreads to the other hub, town 6, as it is connected to town 1, which has its peak at day 141, before it at last spreads to the satellites of town 6, town 7, 8, 9 and 10, which all have their peak around day 160.
 
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2D/TestSEIIaR_commute.pdf}
-            \caption{10 runs of the SEIIaR commuter model.}
+            \caption{results in town 1 of 10 runs of the SEIIaR commuter model, where all off diagonal elements are zero.}
             \label{SEIIaR commute}
         \end{subfigure}
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2D/conv.pdf}
-            \caption{Two towns, where everyone commutes, and the infection is only present in one of them at the start. }
+            \caption{The error as a function of steplength in the same system as (a).}
             \label{SEIIaR commute conv}
         \end{subfigure}
     \end{figure}
@@ -255,7 +261,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2D/two_towns2.pdf}
-        \caption{Two towns, where everyone commutes, and the inital infection is only present in one of them. The plots shows that the infection is contained, as expected.}
+        \caption{Two towns, where everyone commutes, and the inital infection is only present in one of them. The plots shows that the infection is contained, as expected. Values are an average of 10 runs.}
         \label{All commuters}
     \end{figure}
 
@@ -269,15 +275,15 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{../plots/2D/nine_towns.pdf}
-        \caption{The evloution of the infection in 10 connected towns.}
+        \caption{The evloution of the infection in 10 connected towns. Lines are an average of 10 runs}
         \label{nine towns}
     \end{figure}
 
     The last system to be simulated is a model of Norway, with the working populace of Norway spread throughout 356 cities and towns. 
-    The system is represented in a $356 \times 356$ matrix with $356 \cdot 355 /2 = 63190$ different populations, many of which are zero.
+    The system is represented in a $356 \times 356$ matrix with $356 \cdot 356 = 126736$ different populations, most of which are zero.
     The simulation will be used to investigate the effects of reducing travel.
-    This is done by cutting the off diagonal elements of the population matrix, representing those who travel to a different town for work, by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
-    \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns in question.
+    This is done by cutting the off diagonal elements of the population matrix---representing those who travel to a different town for work---by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
+    \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns and cities in question.
     The effect to be investigated is how lockdown changes how many towns have an outbreak at once.
     An outbreak is defined as more than a total of 10 people infected, where we count both symptomatic and and asymptomatic infections i.e. $I_\mathrm{tot}=I + I_a$.
     The simulation is run by starting with $E=50$ in town 1, Oslo, then taking the average of 10 runs for both population matrices.
@@ -290,35 +296,46 @@
     The second largest town, town 237, is however affected.
     The peak in this town is delayed by around a month due to the lockdown.
 
-
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.30\textwidth]{../plots/2D/pop_struct.pdf}
-        \includegraphics[width=.30\textwidth]{../plots/2D/pop_struct_lockdown.pdf}
-        \includegraphics[width=.38\textwidth]{../plots/2D/pops.pdf}
-        \caption{cap}
+        \includegraphics[width=.23\textwidth]{../plots/2D/pop_struct.pdf}
+        \includegraphics[width=.23\textwidth]{../plots/2D/pop_struct_lockdown.pdf}
+        \includegraphics[width=.32\textwidth]{../plots/2D/pops.pdf}
+        \caption{On the left, the Matrixed representing the popluation distribution in Norway, befor and after lockdown. On the right, sizes of the towns as afunction of the rank.}
         \label{pop structure}
     \end{figure}
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/2D/num_infected.pdf}
-        \includegraphics[width=.49\textwidth]{../plots/2D/num_infectedlockdown.pdf}
-        \caption{cap}
+        \includegraphics[width=.45\textwidth]{../plots/2D/num_infected.pdf}
+        \includegraphics[width=.45\textwidth]{../plots/2D/num_infectedlockdown.pdf}
+        \caption{The total number of towns with more than 10 infected. 
+        The green, faded lines are a single simulation, while the dashed line is the average. 
+        The plot to the right is the original populations, the plot on the right is after lockdown.}
         \label{towns infected}
     \end{figure}
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=.49\textwidth]{../plots/2D/Oslo.pdf}
-        \includegraphics[width=.49\textwidth]{../plots/2D/Bergen.pdf}
-        \includegraphics[width=.49\textwidth]{../plots/2D/Oslolockdown.pdf}
-        \includegraphics[width=.49\textwidth]{../plots/2D/Bergenlockdown.pdf}
-        \caption{cap}
+        \includegraphics[width=.4\textwidth]{../plots/2D/Oslo.pdf}
+        \includegraphics[width=.4\textwidth]{../plots/2D/Bergen.pdf}
+        \includegraphics[width=.4\textwidth]{../plots/2D/Oslolockdown.pdf}
+        \includegraphics[width=.4\textwidth]{../plots/2D/Bergenlockdown.pdf}
+        \caption{The infection in the two largest cities befor (top) and after (bottom) the lockdown.}
         \label{Oslo Bergen}
     \end{figure}
     
-    
+    \subsection*{Conclusion}
+    This paper has documented the implementation, testing and result of several theoretical models of the spread of infections.
+    The deterministic and stochastic SIR model, as well as the SEIIaR model with and without commuting have been investigated.
+    Each model have been tested and are shown to give reliable results.
+    The deterministic SIR model showed that $\beta \leq 0.228$ ensures that the total fraction of infected stays below 20\%, while a 60\% or more vaccinated populace ensures that the infection never enters exponential growth.
+    The stochastic SIR model showed the probability for a infection to die out, while the SEIIaR was used to investigate the effects of isolating when getting symptoms.
+    The simulation showed that the highest value of $r_s$ that stops exponential growth on average was $r_s=0.42$, while the lowest value that ensures the probability of exponential growth is less than 50\% is $r_s=0.43$. 
+    The uncertainties in these results were discussed.
 
+    Lastly, the SEIIaR commuter model was used to investigate how the movement of people affect the model.
+    It showed how an infection travel from town to town, with a delay, and that a sharp reduction in travel will delay the spread. 
+    The model of Norway with a 90\% reduction in commuting, the peak of the infection was hit 52 days later, and was lower and shorter than the model without reduction in travel.
     \printbibliography
 \end{document}
