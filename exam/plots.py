@@ -297,19 +297,24 @@ def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
 
 
 def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
-    runs = 10
-    samples = 100
-    terminate_av = np.array([
-        np.mean(terminate[:, i*samples:(i+1)*samples], axis=1).T for i in range(runs)
-        ]).T
-    mean = np.mean(terminate_av, axis=1)
-    std = np.std(terminate_av, axis=1)/np.sqrt(runs)
-    print(std)
+    N = terminate.shape[1]
+    mean = np.mean(terminate, axis=1)
+    var = 1/(N-1)*np.sum((terminate - mean[:, np.newaxis])**2, axis=1)
     fig, ax = plt.subplots(figsize=fs)
-    ax.bar(Is, mean)
-    ax.errorbar(Is, mean, std, color="k", fmt=".")
+    print(Is.shape, mean.shape, var.shape)
+    ax.bar(Is, mean, color=colors2[2])
+    ax.errorbar(Is, mean, np.sqrt(var/N), color="k", fmt=".", capsize=6)
     ax.set_xlabel("$I(0)$")
     ax.set_ylabel("prob.")
+
+    # runs = 100
+    # samples = 10
+    # terminate_av = np.array([
+    #     np.mean(terminate[:, i*samples:(i+1)*samples], axis=1).T for i in range(runs)
+    #     ]).T
+    # std = np.std(terminate_av, axis=1)/np.sqrt(runs)
+    # print(np.sqrt(var/N))
+    # print(std)
 
     
     save_plot(fig, ax, name, DIR_PATH+subdir)

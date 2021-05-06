@@ -48,6 +48,9 @@ def SEIIaR(x, dt, *args):
 
 def SEIIaR_commute(x, dt, day, *args):
     beta, rs, ra, fs, fa, tE, tI = args
+    nonzero = np.sum(x, axis=0) != 0
+    # nonzero1 = np.ones(x.shape[1:]) == 1
+    # print(np.sum(nonzero), np.sum(nonzero1))
     if day:
         x0 = np.sum(x, axis=1)
         N = np.sum(x0, axis=0)
@@ -66,10 +69,13 @@ def SEIIaR_commute(x, dt, day, *args):
     PEIa = fa*(1 - np.exp(-dt/tE))
     PIR = 1 - np.exp(-dt/tI)
 
-    DSE = B(x[0], PSE)
-    DEI, DEIa, _ = np.moveaxis(M(x[1], (PEI, PEIa, 1-PEI-PEIa)), -1, 0)
-    DIR = B(x[2], PIR)
-    DIaR = B(x[3], PIR)
+    DSE, DEI, DEIa, DIR, DIaR = np.zeros((5, *x[0].shape), dtype=int)
+    DSE[nonzero] = B(x[0][nonzero], PSE[nonzero])
+    DEI[nonzero], DEIa[nonzero], _ = np.moveaxis(
+        M(x[1][nonzero], (PEI, PEIa, 1-PEI-PEIa)), -1, 0
+        )
+    DIR[nonzero] = B(x[2][nonzero], PIR)
+    DIaR[nonzero] = B(x[3][nonzero], PIR)
 
     return np.array([-DSE, DSE - DEI - DEIa, DEI - DIR, DEIa - DIaR, DIR + DIaR])
 

@@ -119,14 +119,14 @@ def num_infected(lockdown=False, run=False):
 
 # test_stoch()
 # conv_stoch()
-# disappear()
+disappear()
 
 # testSEIIaR()
 # conv_SEIIaR()
 # test_isolation()
 
 # testSEIIaR_commute()
-conv_SEIIaR_commute(False)
+# conv_SEIIaR_commute(False)
 # two_towns2()
 # two_towns()
 ## Named nine towns in honour of the fact that I can't count
@@ -135,6 +135,6 @@ conv_SEIIaR_commute(False)
 # pop_struct()
 # pop_struct_lockdown()
 # poplutaion()
-# num_infected(run=True)
+# num_infected()
 # num_infected(lockdown=True)
 

@@ -119,9 +119,19 @@
     $100$ infected is observed to yield very high probability of the disease spreading exponentially, and is thus used as a proxy for this.
     This assumption is backed up by the result shown in the figure, where the probability for the infection stopping early is negligible already at $I=10$. 
     $I=0$ means that the infection will no longer spread, and if it does so without ever hitting $I=100$, then the outbreak has disappeared.
-    By running the simulation 100 times, we can get an average of the probabilities, $P = \sum_{i=1}^{100} D(i)/100$, where $D(i)$ is $1$ if the infection died out, 0 if not.
-    Doing this 10 means we get the may get a standard deviation $\sigma$ of the collection of probabilities $\{P_j\}_{j=1}^{10}$.
-    Then, using the average of all $P_i$'s as the final probability, the error may be estimated as $\sigma/\sqrt{10}$. (IS THIS RIGHT???)
+    Let $x_i\in\{0, 1\}_{i=1}^n$ be the outcomes of n of the trials, 0 if the outbreaks dies out, 1 if it does not.
+    The outcome dying out is then a Bernoulli process, with a probability $p$, which depends on how many are initially exposed.
+    The estimator of the probability is then
+    \begin{equation*}
+        p = \frac{1}{n}\sum_{i=1}^n x_i.
+    \end{equation*}
+    The unbiased estimator of the variance of the Bernoulli distribution is
+    \begin{equation*}
+        s^2 = \frac{1}{n} \sum_{i=1}^n (p - x_i)^2.
+    \end{equation*}
+    This is not a measure of the error in it self, but rather a estimation of a parameter of the underlying distribution. 
+    The standard error, $\sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error. \footnote{\url{https://en.wikipedia.org/wiki/Standard_error}}
+    \autoref{Disappear} shows the estimation of the probability of the outbreak dying out, together with the uncertainties, from 1000 runs of the simulation for initial value of infected.
 
     \begin{figure}[H]
         \centering

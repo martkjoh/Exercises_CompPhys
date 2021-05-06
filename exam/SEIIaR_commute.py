@@ -145,9 +145,9 @@ def get_Norway(datapath, lockdown=False, run=False):
     E[0, 0] = 50
     Oh = np.zeros_like(N)
     x0 = np.array([N-E, E, Oh, Oh, Oh], dtype=int)
-    T = 180; dt = .1
-    save = 91
-    runs = 10
+    T = 180; dt = .5
+    save = 121
+    runs = 2
 
     if run:
         xs = np.empty((runs, save, 5, *N.shape))
