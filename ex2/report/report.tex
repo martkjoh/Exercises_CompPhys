@@ -17,7 +17,7 @@
 \addbibresource{report.bib}
 
 \title{Exercise 2, TFY4235 Computational physics}
-\author{Martin Johnsrud}
+\author{Number}
 \vspace{-8ex}
 \date{}
 
@@ -25,10 +25,10 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    This report documents the simulation of magnons, as described in \cite{exercise}.
+    This report documents the simulation of magnons, as described in the exercise text \cite{exercise}.
     Using Heun's method, the Landau-Lifshitz-Gilbert equations for a classical, interacting ensemble of spins are integrated in time.
     The algorithm is first used to simulate one spin, for which the exact solution is known.
-    Then, the formation of collective modes, magnons, are simulated, and difference between ferromagnetic and anti-ferromagnetic materials and magnetization is investigated.
+    Then, the formation of collective modes, magnons, are simulated, and difference between ferromagnetic and antiferromagnetic materials and magnetization is investigated.
 
     \section*{Theory}
     \subsection*{Units}
@@ -36,7 +36,7 @@
     The Hamiltonian and the equations of motion as given in \cite{exercise} gives natural units for this problem,
     \begin{itemize}
         \item Energy: $[\mathcal H] = [J]$
-        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [\vec S J/\mu ]$
+        \item Magnetic field and magnetization: $[\vec B] = [\vec M] = [J/\mu ]$
         \item Anisotropy: $[d_z] = [J]$
         \item Time : $[t] = [\mu/\gamma J]$
     \end{itemize}
@@ -45,7 +45,7 @@
      These units are used throughout the exercise, including in all figures.
      Physical values for a given, actual system is then dependent on its values for $J, \mu$ and $\gamma$.
      As $\vec S$ is dimensionless, $J$ has units of energy and is given by $J = J' S_0^2$, where $S_0$ is the maximum value of the spins, and $J'$ is the coupling appearing together with the dimensionful spins.
-     In this paper as well as in the code it documents, all equations and quantities are given in these units, including the Hamiltonian \autoref{hamiltonian}, and the equations of motion \autoref{LLG} and \autoref{effective field}.
+     In this paper as well as in the code it documents, all equations and quantities are given in these units, including the Hamiltonian (\autoref{hamiltonian}) and the equations of motion (\autoref{LLG} and \autoref{effective field}).
 
 
     \subsection*{Indices}
@@ -75,7 +75,7 @@
     
     \section*{Implementation}
     The main object of the simulation is a NumPy-array \verb|S| of shape \verb|(T, N, 3)|.
-    This contains the components of each of the $N$ spins at each time step.
+    This contains the components of each of the $N$ spins at ecach of the $T$ time steps.
     The function \verb|integrate| then runs a loop, calling the implementation of Heun's method \verb|heun_step|.
     The index notation laid out in the Theory section allows for straight forward implementation of the LLG equation using NumPy's \verb|einsum|-function.
     For example, using a array \verb|eijk[a, b, c]| for the Levi-Civita symbol, 
@@ -104,7 +104,7 @@
     \end{equation*}
     with step length \verb|h|.
     \verb|args| is a tuple of arguments to be passed to \verb|f|.
-    This function is fully modular, and works with any array shape array \verb|S|, as long as it has a first dimension for time, and any integrator \verb|step| of function \verb|d|, as long as they accept the right arguments.
+    This function is fully modular, and works with any array shape array \verb|S|, as long as it has a first dimension for time, any integrator \verb|step| of function \verb|d|, as long as they accept the right arguments, and any functio \verb|f|.
     The library \verb|mayavi| is used to make 3D visualization of the spins, as in \autoref{ground states 3D} and to make videos of the time evolution of the spins.
     \verb|ffmpeg| is then used to use the snapshots from \verb|mayavi| to make a video.
     Videos of one spin, a chain of spins and a configuration of spins in 3D is included in the folder \verb|plots|.
@@ -117,9 +117,10 @@
     This spin is given a slight tilt, with initial conditions $(\theta, \phi) = (0.5, 0)$.
     As the torque on the spin is 
     \begin{equation*}
-        \vec \tau = \dv{\vec S}{t} = \vec{S} \times \vec{B},
+        \vec \tau = -\dv{\vec S}{t} = \vec{S} \times \vec{B},
     \end{equation*}
     the expectation is that the spin will precess in a circle around the $z$-axis, with a Larmor frequency $\omega = -B$.
+    \footnote{\url{https://en.wikipedia.org/wiki/Larmor_precession}}
     \autoref{single spin} shows the $x,y$-components of this spin as a function time, together with the expected analytical result.
     The video \verb|plots/test.mp4| shows a animation of the motion of an arrow representing the spin. On the right, the plot shows the error in each components.
     The error in the $z$ component can then be tested checking the deviation from $\vec S^2=1$, which in this case was around $10^{-7}$.
@@ -158,8 +159,7 @@
     Larger $\alpha$ should give a shorter lifetimes, and thus faster decay.
     \autoref{decay} shows this.
     Furthermore, we see that the amplitude is proportional to $\exp(-t/\tau)$.
-    We should expect this, not only is this a common form for decay, but as no time is special, the decay should be proportional to the amplitude, which gives exponential decay.
-
+    
     \begin{figure}[H]
         \centering
         \includegraphics[width=\textwidth]{../plots/decay_a.pdf}
@@ -168,31 +168,31 @@
     \end{figure}
 
     \subsection*{Spin chain}
-    The simulation now includes several spins, in a ferromagnetic or anti-ferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectively, and a damping constant $\alpha > 0$.
-    The spins are initialized in random directions.
-    \footnote{The positions are drawn uniformly from $(\phi, \theta)\in[0, 2\pi)\times[0, \pi)$. 
+    The simulation now includes several spins, in a ferromagnetic or antiferromagnetic coupling, depending on if $J = 1$ or $J = -1$, respectively, and a damping constant $\alpha > 0$.
+    The spins are initialized in random directions.\footnote{The positions are drawn uniformly from $(\phi, \theta)\in[0, 2\pi)\times[0, \pi)$. 
     This means that the starting positions will \emph{not} be uniformly distributed on the unit sphere, as the area of a small square $\Delta \phi \Delta \theta$ varies over the surface, however this has no effect on the conclusinos here.}
-    Both the ferromagnet and antiferromagnetic systems settle into their respective ground state of the system after some time.
+    Both the ferromagnet and antiferromagnetic systems settle into their respective ground states after some time.
     This is shown in \autoref{ground states}, where we see that the different systems have different ground states.
-    In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the anti-ferromagnetic case the spins are oppositely aligned.
+    In the ferromagnetic case, the lowest energy configuration is the alignment of all the spins, while in the antiferromagnetic case the spins are oppositely aligned.
     The final configurations of both systems are shown in \autoref{ground states 3D}.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_f.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_af.pdf}
-        \caption{The $z$-component of all the spins in a ferromagnetic (left) and anti-ferromagnetic(right) spin chain. As $\alpha>0$, the states settle down into theri ground state.}
+        \caption{The $z$-component of all the spins in a ferromagnetic (left) and antiferromagnetic(right) spin chain. 
+        As $\alpha>0$, the states settle down into their ground state.}
         \label{ground states}
     \end{figure}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_f3D.png}
         \includegraphics[width=0.49\textwidth]{../plots/ground_state_af3D.png}
-        \caption{The ground state of ferromagnetic (left) and anti-ferromagnetic (right) spin chains.}
+        \caption{The ground state of ferromagnetic (left) and antiferromagnetic (right) spin chains.}
         \label{ground states 3D}
     \end{figure}
 
-    When the coupling is turned of, $J = 0$,$\alpha=0$ but $d_z>0$ and the spins are initialized randomly, they will all precess around the $x$-axis, with different frequencies, as shown in \autoref{all tilted}.
+    When the coupling is turned of, $J = 0$, $\alpha=0$ but $d_z>0$ and the spins are initialized randomly, they will all precess around the $x$-axis, with different frequencies, as shown in \autoref{all tilted}.
     This is because it is now an uncoupled system, where each spin follows 
     \begin{equation*}
         \dv{\vec S}{t} = - 2 d_z S_z \,\vec S \times \hat z, 
@@ -208,19 +208,20 @@
     This behavior is evident in the video \verb|plots/gs_f.mp4|.
     The plot on the right in \autoref{one tilted dampend} illustrates the average of the $x$-components of all the spins.
     This follows the long-term pattern immediately.
-    The dotted line is curve-fitted to the function $f(t; A, \alpha, \tau) = A \cos(\omega t) e^{-t/\tau}$.
+    The dotted line is curve-fitted to the function $f(t; A, \omega, \tau) = A \cos(\omega t) e^{-t/\tau}$.
     Another example of how the organized, long wavelength behavior emerges from a random initial configuration is shown in the last page of this report, in \autoref{50 spins}, where 50 spins in a ferromagnetic system is simulated.
 
     The left plot in \autoref{one tilted dampend af} shows the same situation, but with a antiferromagnetic coupling $J = -1$.
     This system starts in a much higher energy state, and thus becomes highly excited.
     However, the excitation dies out much faster than in the ferromagnetic case.
     The right plot shows the same system, but starting in the ground state, except one tilted spin.
-    Here too, the excitation dies out much faster, without a surviving oscillation.
+    Here aswell, the excitation dies out much faster, without a surviving oscillation.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{../plots/2221a.pdf}
-        \caption{The motion of the $x$-component of the spin of all spins in a chain, with anisotropy $d_z=0.1$. The frequency depends on $z$-component of the spin, which is why it varies.}
+        \caption{The motion of the $x$-component of the spin of all spins in a chain, with anisotropy $d_z=0.1$. 
+        The frequency depends on $z$-component of the spin, which is why it varies.}
         \label{all tilted}
     \end{figure}
 
@@ -229,7 +230,7 @@
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/2221b.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/2222.pdf}
-        \caption{The motion of the different components of spin chains, with anisotropy $d_z=0.1$.}
+        \caption{The motion of the different components of each spin in a chains, with anisotropy $d_z=0.1$. On the left, $J=1$, on the right $J=1$.}
         \label{one tilted}
     \end{figure}
 
@@ -246,7 +247,7 @@
         \centering
         \includegraphics[width=0.49\textwidth]{../plots/2225.pdf}
         \includegraphics[width=0.49\textwidth]{../plots/22252.pdf}
-        \caption{The components of the spins in an anti-ferromagnetic spin chain. The left starts with all spins almost aligned, the right almost in the groundstate for the anti-ferromagnet.}
+        \caption{The components of the spins in an antiferromagnetic spin chain. The left starts with all spins almost aligned, the right almost in the groundstate for the anti-ferromagnet.}
         \label{one tilted dampend af}
     \end{figure}
 
@@ -255,7 +256,7 @@
     \begin{equation*}
         M_a = \frac{1}{N} \sum_j S_{j, a}.
     \end{equation*}
-    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the anti-ferromagnetic case $\vec M = (0, 0, 0)$.
+    Thus, the magnetization of the ground state is in ferromagnetic case $\vec M = (0, 0, 1)$, while in the antiferromagnetic case $\vec M = (0, 0, 0)$.
     This means that a disturbance in the ground state of the ferromagnet, like the sustained magnon oscillation we showed earlier, will result in a sustained loss of magnetization.
     This is due to the fact that it is the state of maximum magnetization.
     This is showed in \autoref{mag}.
@@ -272,8 +273,8 @@
     \end{figure}
 
     \section*{Conclusion}
-    This report has documented the simulation of the classical Heisenberg model. By simulating a single spin, we have demonstrated that the expected that the analytical result is recreated, and the convergence properties of Heun's method.
-    Ferromagnetic and antiferromagnetic states have different ground states, and anti-ferromagnetic reaches its ground state almost 10 times faster through dissipation than its ferromagnetic counterpart.
+    This report has documented the simulation of the classical Heisenberg model. By simulating a single spin, we have demonstrated that the expected analytical result is recreated, and the convergence properties of Heun's method.
+    Ferromagnetic and antiferromagnetic states have different ground states, and antiferromagnetic reaches its ground state much faster through dissipation than its ferromagnetic counterpart.
     Collective modes, magnons, is shown to exist in ferromagnetic materials.
     These modes are clearly visible in systems which are disturbed from the ground state, and has some dissipation.
     They affect the magnetization of the material, as they disturb it away from its highest magnetization state, the ground state.
@@ -284,7 +285,7 @@
     \begin{figure}[H]
         \hspace{- 5 cm}
         \includegraphics[width=1.5\textwidth]{../plots/bonus.pdf}
-        \caption{50 spins simulated over 50\,000 steps. The Chaos quickly gives away for collective behavior. The same system is also illustrated by the video plots/bonus.mp4}
+        \caption{50 spins simulated over 50\,000 steps. Chaos quickly gives away for collective behavior. The same system is also illustrated by the video plots/bonus.mp4}
         \label{50 spins}
     \end{figure}
 

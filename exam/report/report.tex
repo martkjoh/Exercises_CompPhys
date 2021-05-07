@@ -17,7 +17,7 @@
 \addbibresource{report.bib}
 
 \title{Exam, TFY4235 Computational physics}
-\author{Number}
+\author{Martin Johnsrud}
 \vspace{-8ex}
 \date{}
 
@@ -25,11 +25,11 @@
 \begin{document}
     \maketitle
     \section*{Introduction}
-    The COVID-19 pandemic have showed how important it is to be able to simulate the spread of an infection throughout a population, and how much our behavior and travel patterns might change how this happens.
-    SIR (Susceptible, Infected and Recovered), and the more advanced SEIIaR (Exposed, Infected asymptomatic), are mathematical models that aim to capture how pandemics spread throughout a simulation.
+    The COVID-19 pandemic has showed how important it is to be able to simulate the spread of an infection throughout a population, and how much our behavior and travel patterns might change the outcome.
+    SIR (Susceptible, Infected and Recovered), and the more advanced SEIIaR (Exposed, Infected asymptomatic), are mathematical models that aim to capture how pandemics spread throughout a population.
     They are vastly simplified and leave out a lot of the complications of a real world pandemic, but they still might give some lessons for what happens in the real world.
     This paper documents the implementation and results of the simulation of these models in Python, as described in \cite{exam}.
-    It presents the result from different models, investigates how they respond to changing parameters and what the error due to numerical approximations or randomness inherit in the model.
+    It presents the result from different models, investigates how they respond to changing parameters and what the error---due to numerical approximations or randomness inherit in the model---is.
 
     \section*{Implementation and Theory}
     All the different models used in this text follow the same basic form. 
@@ -37,25 +37,24 @@
     \begin{equation*}
         f(x(t); \mathrm{args}) = \dv{x(t)}{t}.
     \end{equation*}
-    In the first part, $x = (S, I, R)$, while later $x = (S_{ij}, E_{ij}, I_{ij}, Ia_{ij}, R_{ij})$ where $(ij)$ are different population groups. 
+    In the first part, $x = (S, I, R)$, while later $x = (S_{ij}, E_{ij}, I_{ij}, Ia_{ij}, R_{ij})$ where $(ij)$ denote different population groups. 
     This is accomplished using function \verb|integrate| in \verb|utilities.py|. 
     It takes as arguments the initial conditions \verb|x0|, the functions \verb|f| and \verb|step|, the list \verb|args| as well as the time step \verb|dt| and total time \verb|T| to simulate. 
-    It then creates a discrete approximation of $x(t)$ by taking time steps given by the function \verb|step|. 
-    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta 4, while \verb|f| defines the system. In the last model in this report, $356\times356\times5\times1800=1\,140\,624\,000$ floating point numbers are generated for each run of the simulation, which may result in the computer running out of RAM.
+    It then approximates of $x(t)$ by taking time steps given by the function \verb|step|. 
+    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta 4, while \verb|f| defines the system. In the last simulation in this report, $356\times356\times5\times1800=1\,140\,624\,000$ floating point numbers are generated for each run of the simulation, which may result in the computer running out of RAM.
     However, event though a timestep of $\Delta t = 0.1$ is necessary to get accurate results, it is not necessary to store all time points.
     \verb|integrate| therefore takes the argument \verb|save|, which is the number of data points to store.
-    The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps storing the value.
+    The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps before storing the value.
     
     In the SEIIaR commuter model, each step is calculated by drawing a random number, using a binomial or multinomial distribution, from each variable in the simulation.
     That means five random numbers for each cell in the population matrix.
     This is done in the function \verb|SEIIaR_commute| in \verb|utilities.py|
-    This is being done using NumPy's binomial and multinomial functions, which supports bein given a array of populations to draw from.
-    \footnote{The binomial distribution also supports that the probabilities are arrays, such that each popluation has a different probability.
+    This is being done using NumPy's binomial and multinomial functions, which supports that the popluations to draw from are arrays.\footnote{The binomial distribution also supports that the \emph{probabilities} are arrays, such that each popluation has a different probability.
     This is necessesary when calculating how many change from Susceptible to Exposed, as the probability for this depends on location.
     The multinomial function does \emph{not} support this, but it is luckily not needed here.}
     When drawing these random numbers, a lot of the populations that are drawn from are zero, as can be seen i \autoref{pop structure}.
     An effor to speed was therefore made by masking the arrays, such that only non-zero populations were left.
-    This, however, did not change the running time of the simulation notacibly, as can be seen in \verb|profile.ipynb|.
+    This, however, did not change the running time of the simulation noticeably, as can be seen in \verb|profile.ipynb|.
     The second to lowest and lowest cells shows a profile of the simulation without and with the masking, and both the running time and the time of each line is nearly unchaged.
     This suggests that either the binomial/multinomial functions do not respect the masking, or that they simply are optimized for popluations of zero already.
 
@@ -72,13 +71,14 @@
     where $R_{\mathrm{ref}}$ is some reference value of $R$ (Recovered) obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
     The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
     This is done such that several time steps may be compared with the same reference.
+    
     Given a set of measurments $\{x_i\}_{i=1}^n$, the estimator for the mean and variance of the underlying distribution is 
     \begin{equation*}
         \mu = \frac{1}{n}\sum_{i=1}^n x_i, \quad s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2.
     \end{equation*}
-    $s$ is then not a measure of the error of the estimate of $\mu$, but rather a estimation of a parameter of the underlying distribution.
+    $s$ is not a measure of the error of the estimate of $\mu$, but rather a estimation of a parameter of the underlying distribution.
     How far from the mean can one expect a new observation $x_{n+1}$ to be.
-    The standard error, $\sigma = \sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error in this text.\footnote{\url{https://en.wikipedia.org/wiki/Standard_error}} 
+    The standard error, $\sigma = \sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, how far from the actual value of $\mu$ one are likely to be, and is therefore used as a measure of the error in this text.\footnote{\url{https://en.wikipedia.org/wiki/Standard_error}} 
     \section*{Results}
     \subsection*{Deterministic SIR model}
     The first model is the deterministic SIR model, given by a set of coupled ODEs \cite{exam}. 
@@ -86,13 +86,13 @@
     \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning at the rate expected.
     \autoref{conv det} shows an error estimation of different integration schemes.
     The error is found by comparing to a solution found by using the RK4-solver, and $\Delta t = 0.01$.
-    This illustrates why the choice of $\Delta t = 0.1$ is sufficient, as numerical errors start playing a large role for larger $\Delta t$.
+    This illustrates why the choice of $\Delta t = 0.1$ is sufficient, as numerical errors start playing a large role for smaller $\Delta t$.
     
     Adjusting the $\beta$-parameter will affect how fast the virus spreads, thus ``flattening the curve'', as illustrated in \autoref{flattening}.
     This shows that the highest $\beta$ that ensures the maximum fraction of population   at once below $20\%$ is $\beta=0.228$. 
-    \autoref{vax} shows the fraction of the population must be vaccinated \emph{before} the outbreak to stop exponential growth. 
     At the start of the simulation, the number of infected grows exponentially, i.e. $I \propto \exp(\alpha t)$ for some $\alpha$.
     A partially vaccinated population can be modeled by setting $R(0)$ equal the proportion of the population that is vaccinated.
+    \autoref{vax} shows the fraction of the population must be vaccinated \emph{before} the outbreak to stop exponential growth. 
     The result shows that $60\%$ or more must be vaccinated to avoid exponential growth, i.e. $\alpha\leq 0$. 
     These results could be made more precise by extrapolation, more simulation or searching with the bisection method, but the crudeness of the model means higher precision is wasted.
 
@@ -127,7 +127,7 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/2A/vax.pdf}
         \includegraphics[width=.49\textwidth]{../plots/2A/vax_R.pdf}
-        \caption{The plot on the left shows minimum $R(0)$, i.e. fraction of vaccinated, that prevents exponential growth.
+        \caption{The plot on the left shows minimum $R(0)$, i.e. fraction of vaccinated that prevents exponential growth.
         On the right, a log-plot of the growht of infected at the very begining.}
         \label{vax}
     \end{figure}
@@ -167,7 +167,7 @@
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2B/conv.pdf}
-        \caption{The relative eviation of the value of $R$ at $t_0=200 \, \mathrm{ days }$, for different step lengths $\Delta t$.}
+        \caption{The relative error $\Delta R(t_0)$, $t_0=200 \, \mathrm{ days }$, for different step lengths $\Delta t$.}
         \label{conv}
     \end{figure}
 
@@ -222,6 +222,7 @@
             \caption{Error relative a reference run of the SEIIaR model.}
             \label{SEIIaR conv}
         \end{subfigure}
+        \caption{The results from the SEIIaR model}
     \end{figure}
 
     \begin{figure}[H]
@@ -235,7 +236,7 @@
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2C/isolation2_prob.pdf}
             \caption{The probability of exponential growth as a function of $r_s$, with the standard error indicated by errorbars.
-            The cross indicates the higgest value of $r_s$, below 50\%.}
+            The cross indicates the largest value of $r_s$, below 50\%.}
             \label{isolation2}
         \end{subfigure}
         \caption{Two different ways of measuring which value of $r_s$ gives exponential growth.}
@@ -262,7 +263,7 @@
     Next, a system with 10 towns is simulated. 
     In this system, there are two large towns, town 1 and 5, and eight smaller towns, in groups of four which are connected to one of of the large towns.
     \autoref{nine towns} shows the evolution of the infection.
-    The infection starts in town 2, which explains why it is the first to reach the peak of the infection, at day 57.
+    The infection starts in town 2, which explains why it is the first to reach the peak of the infection, at day 56.
     It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 103. 
     Town 3, 4 and 4, all satellites of town 1 all hit their peak around day 120.
     The infection then spreads to the other hub, town 6, as it is connected to town 1.
@@ -303,7 +304,7 @@
         \label{nine towns}
     \end{figure}
 
-    The last system to be simulated is a model of Norway, with the working populace is spread throughout 356 cities and towns. 
+    The last system to be simulated is a model of Norway, with the working populace spread throughout 356 cities and towns. 
     The simulation will be used to investigate the effects of reducing travel.
     This is done by cutting the off diagonal elements of the population matrix---representing those who travel to a different town for work---by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
     \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns and cities in question.
@@ -313,9 +314,10 @@
     \autoref{towns infected} shows the evolution of the infection, in both cases. 
     On the left is the case without any restriction, and on the right is the case where commuting is reduced by 90\%. 
     This shows that the lockdown somewhat slows the spread.
-    In the case of no lockdown, there is a period where all towns have a active infection, while the slows the spread down, resulting in a lower peak.
+    In the case of no lockdown, there is a period where all towns have a active infection.
+    With the lockdown, the spread slows down, resulting in a lower peak.
     \autoref{Oslo Bergen} compares the spread in the largest and second largest city, with and without lockdown.
-    The largest town, town 1, is more or less unaffected, as it is where the spread started.
+    The largest town, town 1, is more or less unaffected, as it is where the infection started.
     The second largest town however, town 237, is affected.
     The peak in this town is delayed by around a month due to the lockdown.
     The total number of infections does not seem to be affected.
@@ -325,7 +327,7 @@
         \includegraphics[width=.23\textwidth]{../plots/2D/pop_struct.pdf}
         \includegraphics[width=.23\textwidth]{../plots/2D/pop_struct_lockdown.pdf}
         \includegraphics[width=.32\textwidth]{../plots/2D/pops.pdf}
-        \caption{On the left, the Matrixed representing the popluation distribution in Norway, befor and after lockdown. On the right, sizes of the towns as afunction of the rank.}
+        \caption{On the left, the matrices representing the popluation distribution in Norway, befor and after lockdown. On the right, sizes of the towns as afunction of the rank.}
         \label{pop structure}
     \end{figure}
 
