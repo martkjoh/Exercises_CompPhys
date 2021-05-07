@@ -307,6 +307,7 @@ def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
 
 
 def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
+    terminate, Is = terminate[1:], Is[1:]
     N = terminate.shape[1]
     mean = np.mean(terminate, axis=1)
     var = 1/(N-1)*np.sum((terminate - mean[:, np.newaxis])**2, axis=1)

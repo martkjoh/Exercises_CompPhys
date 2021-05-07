@@ -126,7 +126,7 @@ tic = time()
 
 # test_stoch()
 # conv_stoch()
-# disappear()
+disappear()
 
 # testSEIIaR()
 # conv_SEIIaR()
@@ -142,7 +142,7 @@ tic = time()
 # pop_struct()
 # pop_struct_lockdown()
 # poplutaion()
-num_infected()
-num_infected(lockdown=True)
+# num_infected()
+# num_infected(lockdown=True)
 
 print("Total time spend running code: ", time() - tic)

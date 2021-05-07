@@ -41,7 +41,7 @@
     This is accomplished using function \verb|integrate| in \verb|utilities.py|. 
     It takes as arguments the initial conditions \verb|x0|, the functions \verb|f| and \verb|step|, the list \verb|args| as well as the time step \verb|dt| and total time \verb|T| to simulate. 
     It then creates a discrete approximation of $x(t)$ by taking time steps given by the function \verb|step|. 
-    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta (4,5), while \verb|f| defines the system. In the last model in this report, $356\times356\times5\times1800=1\,140\,624\,000$ floating point numbers are generated for each run of the simulation, which may result in the computer running out of RAM.
+    \verb|step| is the particular \emph{scheme} used, for example Runge-Kutta 4, while \verb|f| defines the system. In the last model in this report, $356\times356\times5\times1800=1\,140\,624\,000$ floating point numbers are generated for each run of the simulation, which may result in the computer running out of RAM.
     However, event though a timestep of $\Delta t = 0.1$ is necessary to get accurate results, it is not necessary to store all time points.
     \verb|integrate| therefore takes the argument \verb|save|, which is the number of data points to store.
     The loop within \verb|integrate| has a inner loop which takes \verb|skip = (Nt-1)//(save-1)| time steps storing the value.
@@ -72,18 +72,24 @@
     where $R_{\mathrm{ref}}$ is some reference value of $R$ (Recovered) obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
     The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
     This is done such that several time steps may be compared with the same reference.
-
+    Given a set of measurments $\{x_i\}_{i=1}^n$, the estimator for the mean and variance of the underlying distribution is 
+    \begin{equation*}
+        \mu = \frac{1}{n}\sum_{i=1}^n x_i, \quad s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2.
+    \end{equation*}
+    $s$ is then not a measure of the error of the estimate of $\mu$, but rather a estimation of a parameter of the underlying distribution.
+    How far from the mean can one expect a new observation $x_{n+1}$ to be.
+    The standard error, $\sigma = \sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error in this text.\footnote{\url{https://en.wikipedia.org/wiki/Standard_error}} 
     \section*{Results}
     \subsection*{Deterministic SIR model}
     The first model is the deterministic SIR model, given by a set of coupled ODEs \cite{exam}. 
-    In this text, the Runge-Kutta (4, 5) scheme was used, as it is both a simple yet precise scheme.
-    \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning, at the rate expected.
+    In this text, the Runge-Kutta 4 scheme was used, as it is both a simple yet precise scheme.
+    \autoref{SIR} demonstrates that $S$ and $R$ approaches the expected asymptotes, and that $I$ grows exponentially in the beginning at the rate expected.
     \autoref{conv det} shows an error estimation of different integration schemes.
     The error is found by comparing to a solution found by using the RK4-solver, and $\Delta t = 0.01$.
     This illustrates why the choice of $\Delta t = 0.1$ is sufficient, as numerical errors start playing a large role for larger $\Delta t$.
     
     Adjusting the $\beta$-parameter will affect how fast the virus spreads, thus ``flattening the curve'', as illustrated in \autoref{flattening}.
-    This shows that the highest $\beta$ that still keeps the maximum fraction of population being infected at once below $20\%$ is $\beta=0.23$. 
+    This shows that the highest $\beta$ that ensures the maximum fraction of population   at once below $20\%$ is $\beta=0.228$. 
     \autoref{vax} shows the fraction of the population must be vaccinated \emph{before} the outbreak to stop exponential growth. 
     At the start of the simulation, the number of infected grows exponentially, i.e. $I \propto \exp(\alpha t)$ for some $\alpha$.
     A partially vaccinated population can be modeled by setting $R(0)$ equal the proportion of the population that is vaccinated.
@@ -94,14 +100,16 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/2A/TestSIR}
         \includegraphics[width=.49\textwidth]{../plots/2A/TestI}
-        \caption{On the left, the fraction of the population that is in each group, over time. The plot on the right shows how the infection spreads exponentially in the begining}
+        \caption{On the left, the fraction of the population that is in each group, over time.
+        The plot on the right shows how the infection spreads exponentially in the begining}
         \label{SIR}
     \end{figure}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=.6\textwidth]{../plots/2A/conv}
-        \caption{The error, after, 128 days, of different integration schemes. All are compared with RK4, with steplength $\Delta t = 0.01$.}
+        \caption{The error, after, 128 days, of different integration schemes.
+        All are compared with RK4, with steplength $\Delta t = 0.01$.}
         \label{conv det}
     \end{figure}
 
@@ -109,7 +117,9 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/2A/flatten.pdf}
         \includegraphics[width=.49\textwidth]{../plots/2A/flattenIs.pdf}
-        \caption{The figure on th eright shows the maximum fraction of infected, as a function of $\beta$. The largest value of $\beta$ such that the maximum is beneth $0.2$ is indicated. On the right, the corresponding infection curves.}
+        \caption{The figure on th eright shows the maximum fraction of infected, as a function of $\beta$. 
+        The largest value of $\beta$ such that the maximum is beneath $0.2$ is indicated. 
+        On the right, the corresponding infection curves.}
         \label{flattening}
     \end{figure}
 
@@ -117,56 +127,47 @@
         \centering
         \includegraphics[width=.49\textwidth]{../plots/2A/vax.pdf}
         \includegraphics[width=.49\textwidth]{../plots/2A/vax_R.pdf}
-        \caption{The plot on the left shows the maximu $R(0)$, i.e. fraction of vaccinated, that still gives exponential growth. The right shows a log-plot of the growht of infected at the very begining.}
+        \caption{The plot on the left shows minimum $R(0)$, i.e. fraction of vaccinated, that prevents exponential growth.
+        On the right, a log-plot of the growht of infected at the very begining.}
         \label{vax}
     \end{figure}
 
     \subsection*{Stochastic SIR model}
-    Next, the stochastic version of SIR model is used. \autoref{stochastic SIR} shows the result of 100 runs, which all give result close to that of the deterministic one. 
-    All simulation uses a population of 100\,000, but the plots are normalized. 
-    Due to the stochastic nature of the simulation, there is a difference in exactly when the spread takes of. 
+    Next, the stochastic version of SIR model is simulated. \autoref{stochastic SIR} shows the result of 100 runs, which all give result close to that of the deterministic one. 
+    All simulation uses a population of 100\,000, but the plots are normalized such that all variables are proportions of the total poplation.
+    Due to the stochastic nature of the simulation, there is a difference in exactly when the exponential growth starts. 
     however, as the figure on the right shows, when it does, it grows exponentially at the same rate as the deterministic model. 
     This is also the reason for the spread of the runs around the dashed line in the figure on the right.
     The early days of the infection is susceptible to fluctuations.
     We also see the stochastic model tend to be later than the deterministic.
-    These simulation have been used with $\Delta t = 0.1$ for the stochastic model. 
-    \autoref{conv} is a plots the relative error of the simulation, measured as $\Delta R$.
-    The values are gotten by taking an average of 100 runs for each value of $\Delta t$
-    This result justifies the use of $\Delta t = 0.1$, as it leads to quick simulations, while resulting in errors around $0.02\%$
+    These used step length $\Delta t = 0.1$ for the stochastic model. 
+    \autoref{conv} is a plots the relative error of the simulation $\Delta R$, as discussed in the Theory section.
+    The values are obtained by taking an average of 100 runs for each value of $\Delta t$.
+    This result justifies the use of $\Delta t = 0.1$, as it leads to quick simulations, while resulting in errors around $0.2\%$
     Furthermore, the results imply that the method converges as $\Delta t^1$, which means that large gains in precision will be costly.
     
     The stochastic nature of this model makes it possible for the infection to die out, even with $\mathcal{R}_0>1$, by pure chance. 
     \autoref{Disappear} shows a probability for the infection terminating without spreading through the population, for different number of initially infected $I(0)$.
-    This data is obtained by running the simulation 1\,000 for each initial condition, and terminating when it either reach $100$ infected, or $0$.
-    $100$ infected is observed to yield very high probability of the disease spreading exponentially, and is thus used as a proxy for this.
+    This data is obtained by running the simulation 1\,000 times for each initial condition, and terminating when it either reach 100 or 0 infected.
+    100 infected is observed to yield very high probability of the disease spreading exponentially, and is thus used as a proxy for this.
     This assumption is backed up by the result shown in the figure, where the probability for the infection stopping early is negligible already at $I=10$. 
     $I=0$ means that the infection will no longer spread, and if it does so without ever hitting $I=100$, then the outbreak has disappeared.
-    Let $x_i\in\{0, 1\}_{i=1}^n$ be the outcomes of n of the trials, 0 if the outbreaks dies out, 1 if it does not.
-    The outcome dying out is then a Bernoulli process, with a probability $p$, which depends on how many are initially exposed.
-    The estimator of the probability is then
-    \begin{equation*}
-        p = \frac{1}{n}\sum_{i=1}^n x_i.
-    \end{equation*}
-    The unbiased estimator of the variance of the Bernoulli distribution is
-    \begin{equation*}
-        s^2 = \frac{1}{n-1} \sum_{i=1}^n (p - x_i)^2.
-    \end{equation*}
-    This is not a measure of the error in it self, but rather a estimation of a parameter of the underlying distribution. 
-    The standard error, $\sigma = \sqrt{s^2/n}$, gives a estimation of the standard deviation of the sampling distribution, and is therefore used as a measure of the error.\footnote{\url{https://en.wikipedia.org/wiki/Standard_error}} 
-    \autoref{Disappear} shows the estimation of the probability of the outbreak dying out, together with the uncertainties, from 1000 runs of the simulation for initial value of infected.
+    Let $x_i\in\{0, 1\}$ be the outcome of simulation $i$, equalling 0 if the outbreaks dies out, 1 if it does not.
+    The probability of the infection dying out is then a Bernoulli process, with a probability $p$ of dying out, which depends on how many are initially exposed.
+    \autoref{Disappear} shows the estimation of the probability of the outbreak dying out, together with the standard error as described in the Theory section, from 1000 runs of the simulation for each initial number of infected.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=.49\textwidth]{../plots/2B/TestSIR_stoch.pdf}
         \includegraphics[width=.49\textwidth]{../plots/2B/TestI_stoch.pdf}
-        \caption{100 runs of the stochastic SIR model. All runs are close to the deterministic, showed as dashed lines}
+        \caption{100 runs of the stochastic SIR model. All runs are close to the deterministic, showed as dashed lines.}
         \label{stochastic SIR}
     \end{figure}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=.7\textwidth]{../plots/2B/conv.pdf}
-        \caption{The relative eviation of the value of $R$ at $t=200$, for different step lengths $\Delta t$}
+        \caption{The relative eviation of the value of $R$ at $t_0=200 \, \mathrm{ days }$, for different step lengths $\Delta t$.}
         \label{conv}
     \end{figure}
 
@@ -179,28 +180,29 @@
     \end{figure}
 
     \subsection*{SEIIaR model}
-    The SEIIaR model incorporates the possibility of asymptomatic infection, $I_a$, a incubation period, $E$ (Exposed), as well as a set of new parameters, described in \cite{exam}.
+    The SEIIaR model incorporates the possibility of asymptomatic infection, $I_a$, and a incubation period, $E$ (Exposed), as well as a set of new parameters, described in \cite{exam}.
     From here on all parameters are as given in the exam \cite{exam}, except where otherwise is explicitly written.
     \autoref{SEIIaR} shows 10 runs of the simulation, and compares it to the result from the deterministic SIR model.
-    The same asymptotic values are reach for $S$ and $R$, however, due to the incubation period, the raise in infection is delayed somewhat.
+    The same asymptotic values are reach for $S$ and $R$, however, due to the incubation period, the raise in infection is delayed somewhat compared to both the stochastic and deterministic SIR models.
+    As in the stochastic SIR model, there is a spread in just when the exponential growth begins, however all models have the same asymptomatic behavior.
     \autoref{SEIIaR conv} show a estimation of the error, where a simulations with different time step is compared to a reference simulation, all averaged over 100 runs.
     This shows that a timestep $\Delta t = 0.1$ should still yield high precision.
 
     Infected people with symptoms, $I$, can self isolate, and thus decrease the spread of the disease.
     This is controlled by the $r_a$ parameter.
     If it is $1$, the symptomatic are as likely to infect others as $\mathcal{R}_0 = \beta \tau $ would suggest. 
-    However, if it is less due to for example isolation, then the spread will subside.
-    \autoref{isolation} shows how $r_s$ affects how the infection spreads.
+    However, if it is less due to for example isolation, then the spread might subside.
+    \autoref{isolation} shows how $r_s$ affects the spread of the infection.
     \autoref{isolation1} illustrates the early evolution of the exposed population, $E$, for 101 values of $r_s\in [0, 1]$.
     Each line is an average of 100 runs.
     Due to the exposed population not being infectious, it will initially decrease.
     The measure of the exponential increase is therefore taken as $\alpha = \ln\left(E(20)/E(5)\right)/(15 \mathrm{days})$.
     If $\alpha>0$, then this is counted as exponential growth, and thus a outbreak.
-    \autoref{isolation1} shows that \emph{the lowest $r_s$ that do not lead to an avereage exponential growth}, is $r_s = 0.42$.
-    \autoref{isolation2} shows a slightly different measure.
-    It shows the probability that a value for $r_s$ resulted in exponential growth, together with the estimated standard error.
-    The lowest measured value for $r_s$ that leads to a probability less than 50\% for exponential growth is $r_s = 0.43$.
-    It also shows the best fit to a Sigmoid curve, obtained using SciPy's \verb|optimize.curve_fit|
+    \autoref{isolation1} shows that \emph{the lowest $r_s$ that do not lead to an avereage exponential growth} is $r_s = 0.42$.
+    \autoref{isolation2} shows a slightly different measure---the probability that a value for $r_s$ results in exponential growth---together with the estimated standard error.
+    A point of comparison between the two measures is \emph{the higgest value of $r_s$ that gives a less than 50\% chance of exponential growth.}
+    The highest measured value that fullfils this criterion is $r_s = 0.43$.
+    It also shows the best fit to a Sigmoid curve, obtained using SciPy's \verb|optimize.curve_fit|.
     Altoug this function seem to describes the beahvior accuratly, there is no theoretical background for the choice.
     These two method yield slightly different results.
     \autoref{isolation1} shows how, on average, a outbreak wil evolve.
@@ -226,12 +228,14 @@
         \centering
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2C/isolation.pdf}
-            \caption{The eraly evolution of the exposed (E) in the pandemic, for values of $r_s$ between 1 (top) an 0 (bottom). Each line is an average of 100 simulation runs.}
+            \caption{The early evolution of the exposed (E) in the pandemic, for values of $r_s$ between 1 (top) an 0 (bottom).
+             Each line is an average of 100 simulation runs.}
             \label{isolation1}
         \end{subfigure}
         \begin{subfigure}{.49\textwidth}
             \includegraphics[width=\textwidth]{../plots/2C/isolation2_prob.pdf}
-            \caption{The probability of exponential growth as a function of $r_s$, with the standard error indicated by errorbars. The cross indicates the higgest value of $r_s$, below 50\%.}
+            \caption{The probability of exponential growth as a function of $r_s$, with the standard error indicated by errorbars.
+            The cross indicates the higgest value of $r_s$, below 50\%.}
             \label{isolation2}
         \end{subfigure}
         \caption{Two different ways of measuring which value of $r_s$ gives exponential growth.}
@@ -352,7 +356,6 @@
     The simulation showed that the highest value of $r_s$ that stops exponential growth on average was $r_s=0.42$, 
     while the lowest measured value that ensures the probability of exponential growth is less than 50\% is $r_s=0.43$. 
     The uncertainties in these results were discussed.
-
     Lastly, the SEIIaR commuter model was used to investigate how the movement of people affect the model.
     It showed how an infection travel from town to town, with a delay, and that a sharp reduction in travel will delay the spread. 
     The model of Norway with a 90\% reduction in commuting, the peak of the infection as defined in this papaer was hit 52 days later, and was lower than the model without reduction in travel.
