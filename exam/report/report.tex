@@ -67,7 +67,7 @@
     When evaluating the precision of the different simulation schemes, a measure of error is needed.
     In this text, the measure of error for a simulation with time step $\Delta t_i$ is
     \begin{equation*}
-        \Delta R_i = \frac{|R_i(t_0) - R_{\mathrm{ref}}(t_0)|}{R_{\mathrm{ref}(t_0)}},
+        \Delta R_i = \frac{|R_i(t_0) - R_{\mathrm{ref}}(t_0)|}{R_{\mathrm{ref}}(t_0)},
     \end{equation*}
     where $R_{\mathrm{ref}}$ is some reference value of $R$ (Recovered) obtained by a simulation with a short step length, and $R_i$ is the value from the simulation with step length $\Delta t_i$.
     The difference is taken at some time $t_0$, which is chosen so that $t_0/\Delta t_i$ is an integer for the time steps in question.
@@ -179,7 +179,8 @@
     \end{figure}
 
     \subsection*{SEIIaR model}
-    The SEIIaR model incorporates the possibility of asymptomatic infection, $I_a$, as well as a incubation period, $E$, as well as a set of new parameters, described in \cite{exam}.
+    The SEIIaR model incorporates the possibility of asymptomatic infection, $I_a$, a incubation period, $E$ (Exposed), as well as a set of new parameters, described in \cite{exam}.
+    From here on all parameters are as given in the exam \cite{exam}, except where otherwise is explicitly written.
     \autoref{SEIIaR} shows 10 runs of the simulation, and compares it to the result from the deterministic SIR model.
     The same asymptotic values are reach for $S$ and $R$, however, due to the incubation period, the raise in infection is delayed somewhat.
     \autoref{SEIIaR conv} show a estimation of the error, where a simulations with different time step is compared to a reference simulation, all averaged over 100 runs.
@@ -188,9 +189,9 @@
     Infected people with symptoms, $I$, can self isolate, and thus decrease the spread of the disease.
     This is controlled by the $r_a$ parameter.
     If it is $1$, the symptomatic are as likely to infect others as $\mathcal{R}_0 = \beta \tau $ would suggest. 
-    However, if it is less, for example due to isolation, then the spread will subside.
+    However, if it is less due to for example isolation, then the spread will subside.
     \autoref{isolation} shows how $r_s$ affects how the infection spreads.
-    In \autoref{isolation1}, the figure shows the early evolution of the exposed population, $E$, for 101 values of $r_s\in [0, 1]$.
+    \autoref{isolation1} illustrates the early evolution of the exposed population, $E$, for 101 values of $r_s\in [0, 1]$.
     Each line is an average of 100 runs.
     Due to the exposed population not being infectious, it will initially decrease.
     The measure of the exponential increase is therefore taken as $\alpha = \ln\left(E(20)/E(5)\right)/(15 \mathrm{days})$.
@@ -199,10 +200,14 @@
     \autoref{isolation2} shows a slightly different measure.
     It shows the probability that a value for $r_s$ resulted in exponential growth, together with the estimated standard error.
     The lowest measured value for $r_s$ that leads to a probability less than 50\% for exponential growth is $r_s = 0.43$.
-    It also shows the best fit to a Sigmoid curve.
-    (DISCUSS THE UNCETAINTY MORE.)
+    It also shows the best fit to a Sigmoid curve, obtained using SciPy's \verb|optimize.curve_fit|
+    Altoug this function seem to describes the beahvior accuratly, there is no theoretical background for the choice.
+    These two method yield slightly different results.
+    \autoref{isolation1} shows how, on average, a outbreak wil evolve.
+    However, due to the random nature of both the model and a real outbreak, each individual instatioation might turn out differently.
+    \autoref{isolation2}, on the other hand, gives the probability that a given outbreak with a value for $r_s$ will yield exponential growth.
+    This is therefore a better measure for evaluating single outbreaks where the parameters are known.
 
-    
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.49\textwidth}
@@ -216,6 +221,7 @@
             \label{SEIIaR conv}
         \end{subfigure}
     \end{figure}
+
     \begin{figure}[H]
         \centering
         \begin{subfigure}{.49\textwidth}
@@ -293,7 +299,6 @@
     \end{figure}
 
     The last system to be simulated is a model of Norway, with the working populace of Norway spread throughout 356 cities and towns. 
-    The system is represented in a $356 \times 356$ matrix with $356 \cdot 356 = 126736$ different populations, most of which are zero.
     The simulation will be used to investigate the effects of reducing travel.
     This is done by cutting the off diagonal elements of the population matrix---representing those who travel to a different town for work---by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
     \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns and cities in question.
@@ -306,7 +311,7 @@
     In the case of no lockdown, there is a period where all towns have a active infection, while the slows the spread down, resulting in a lower peak.
     \autoref{Oslo Bergen} compares the spread in the largest and second largest city, with and without lockdown.
     The largest town, town 1, is more or less unaffected, as it is where the spread started.
-    The second largest town, town 237, is however affected.
+    The second largest town however, town 237, is affected.
     The peak in this town is delayed by around a month due to the lockdown.
 
     \begin{figure}[H]
@@ -344,11 +349,12 @@
     Each model have been tested and are shown to give reliable results.
     The deterministic SIR model showed that $\beta \leq 0.228$ ensures that the total fraction of infected stays below 20\%, while a 60\% or more vaccinated populace ensures that the infection never enters exponential growth.
     The stochastic SIR model showed the probability for a infection to die out, while the SEIIaR was used to investigate the effects of isolating when getting symptoms.
-    The simulation showed that the highest value of $r_s$ that stops exponential growth on average was $r_s=0.42$, while the lowest value that ensures the probability of exponential growth is less than 50\% is $r_s=0.43$. 
+    The simulation showed that the highest value of $r_s$ that stops exponential growth on average was $r_s=0.42$, 
+    while the lowest measured value that ensures the probability of exponential growth is less than 50\% is $r_s=0.43$. 
     The uncertainties in these results were discussed.
 
     Lastly, the SEIIaR commuter model was used to investigate how the movement of people affect the model.
     It showed how an infection travel from town to town, with a delay, and that a sharp reduction in travel will delay the spread. 
-    The model of Norway with a 90\% reduction in commuting, the peak of the infection was hit 52 days later, and was lower and shorter than the model without reduction in travel.
+    The model of Norway with a 90\% reduction in commuting, the peak of the infection as defined in this papaer was hit 52 days later, and was lower than the model without reduction in travel.
     \printbibliography
 \end{document}

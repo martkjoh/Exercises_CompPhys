@@ -3,7 +3,7 @@ from stochastic_SIR import *
 from SEIIaR import *
 from SEIIaR_commute import *
 from plots import *
-import pickle
+from time import time
 
 
 def testSIR():
@@ -99,20 +99,25 @@ def pop_struct_lockdown():
 
 
 def num_infected(lockdown=False, run=False):
-    suffx = "lockdown" if lockdown else ""
-    datapath = "data/norway"+suffx+".npy"
+    suffix = "lockdown" if lockdown else ""
+    datapath = "data/norway"+suffix+".npy"
     result = get_Norway(datapath, lockdown, run)
 
-    plot_sum_inf(result, name="num_infected"+suffx, subdir="2D/")
+    plot_sum_inf(result, name="num_infected"+suffix, subdir="2D/")
+    plot_all_infected(result, name="I_sum"+suffix, subdir="2D/")
+
     xs = result[0]
     x = np.mean(xs, axis=0)
     result = (x, *result[1:])
     N = get_pop_structure()
     pop = np.sum(N, axis=1).astype(int)
     i2 = np.argmax(pop[1:]) + 1
-    plot_town_i(result, 0, name="Oslo"+suffx, subdir="2D/", fs=(8, 5))
-    plot_town_i(result, i2, name="Bergen"+suffx, subdir="2D/", fs=(8, 5))
+    plot_town_i(result, 0, name="Oslo"+suffix, subdir="2D/", fs=(8, 5))
+    plot_town_i(result, i2, name="Bergen"+suffix, subdir="2D/", fs=(8, 5))
 
+
+
+tic = time()
 
 # testSIR()
 # conv_det()
@@ -125,17 +130,19 @@ def num_infected(lockdown=False, run=False):
 
 # testSEIIaR()
 # conv_SEIIaR()
-test_isolation()
+# test_isolation()
 
 # testSEIIaR_commute()
-# conv_SEIIaR_commute(False)
+# conv_SEIIaR_commute()
 # two_towns2()
 # two_towns()
-## Named nine towns in honour of the fact that I can't count
+# Named nine towns in honour of the fact that I can't count
 # nine_towns()
 
 # pop_struct()
 # pop_struct_lockdown()
 # poplutaion()
-# num_infected()
-# num_infected(lockdown=True)
+num_infected()
+num_infected(lockdown=True)
+
+print("Total time spend running code: ", time() - tic)

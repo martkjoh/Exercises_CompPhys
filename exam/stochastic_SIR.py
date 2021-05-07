@@ -11,7 +11,7 @@ def get_test_stoch():
     args = (0.25, 10) # beta, tau
     xs = []
     for i in trange(100):
-        xs.append(integrate(SIR_stoch, x0, T, dt, args, step=stoch_step), inf=False)
+        xs.append(integrate(SIR_stoch, x0, T, dt, args, step=stoch_step, inf=False))
 
     return xs, T, dt, args
 

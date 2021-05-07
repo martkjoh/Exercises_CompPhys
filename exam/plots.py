@@ -36,10 +36,10 @@ def save_plot(fig, ax, fname, dir_path):
 
 
 labels = ["$S$", "$I$", "$R$"]
-colors = [cm.plasma(0.2), cm.plasma(0.5), cm.plasma(0.8)]
+colors = [cm.plasma(0.1), cm.plasma(0.5), cm.plasma(0.8)]
 
 labels2 = ["$S$", "$E$", "$I$", "$I_a$", "$R$"]
-colors2 = [cm.viridis(f) for f in np.linspace(0, 0.98, len(labels2))]
+colors2 = [cm.jet(f) for f in np.linspace(0, 1, len(labels2))]
 
 
 """
@@ -119,7 +119,7 @@ def plot_conv_det(xs, dts, args, T, steps, name="", subdir=""):
             )
 
     ax.legend()
-    ax.set_xlabel("$\Delta t $")
+    ax.set_xlabel("$\Delta t/[\mathrm{ days }] $")
     ax.set_ylabel("$\Delta R$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -232,11 +232,12 @@ def plotSIRs(result0, result, fs=(8, 6), name="", subdir=""):
         N = np.sum(x[0])
         x = x / N # Normalize
 
-        l = []
+        lines = []
         for i in range(x.shape[1]):
-            l.append(ax.plot(t, x[:, i], color=colors[i], alpha=0.3))
+            lines.append(ax.plot(t, x[:, i], color=colors[i], alpha=0.12)[0])
 
-    ax.legend(labels)
+    [l.set_alpha(1) for l in lines]
+    ax.legend(lines, labels)
     x0, T, dt, args = result0
     Nt = get_Nt(T, dt)
     t = np.linspace(0, T, Nt)
@@ -269,6 +270,7 @@ def plotIs(result, fs=(8, 6), name="", subdir=""):
 
         l1 = ax.semilogy(t, x[:Nt0, 1], color=colors[1], alpha=0.3)[0]
 
+    l1.set_alpha(1)
     a = args[0] - 1 / args[1]
     l2 = ax.semilogy(t, xs[0][0, 1]/N*np.exp(a*t), "--k")[0]
     ax.legend((l1, l2), (labels[1], "$\exp([\\beta -1/\\tau]t)$"))
@@ -290,10 +292,16 @@ def plot_conv_stoch(xs, dts, args, T, name="", subdir=""):
     c_dts_pow = [c*dt**(1) for dt in dts[:-1]]
     ax.loglog(dts[:-1], c_dts_pow, "k--", label="$\propto \Delta t$")
 
-    ax.loglog(dts[:-1], np.abs(R0-R_ref)/R_ref, "X", color=colors[2], label="$\Delta R(\Delta t)$", ms=12)
-    ax.loglog(0.1, c*0.1**(1), "o", color=colors[0], label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1))
+    ax.loglog(
+        dts[:-1], np.abs(R0-R_ref)/R_ref, "X", color=colors[2], 
+        label="$\Delta R(\Delta t)$", ms=12
+        )
+    ax.loglog(
+        0.1, c*0.1**(1), "o", color=colors[0], 
+        label="$\Delta t = 0.1, \, \Delta R = {:.4f} $".format(c * 0.1)
+        )
     ax.legend()
-    ax.set_xlabel("$\Delta t $")
+    ax.set_xlabel("$\Delta t /[\mathrm{ days }]$")
     ax.set_ylabel("$\Delta R$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -303,12 +311,14 @@ def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
     mean = np.mean(terminate, axis=1)
     var = 1/(N-1)*np.sum((terminate - mean[:, np.newaxis])**2, axis=1)
     fig, ax = plt.subplots(figsize=fs)
-    print(Is.shape, mean.shape, var.shape)
-    ax.bar(Is, mean, color=colors2[2])
-    ax.errorbar(Is, mean, np.sqrt(var/N), color="k", fmt=".", capsize=6)
+    ax.bar(Is, mean, color=colors[1], label="$P$")
+    ax.errorbar(
+        Is, mean, np.sqrt(var/N), color="k", fmt=".", capsize=6,
+        label="$\\pm \\sigma$"
+        )
     ax.set_xlabel("$I(0)$")
     ax.set_ylabel("prob.")
-
+    ax.legend()
     
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -317,7 +327,7 @@ def plot_prob_dis(terminate, Is, fs=(10, 6), name="", subdir=""):
 SEIIaR model
 """
 
-def plotSEIIaRs(result0, result, fs=(12, 6), name="", subdir="", alpha=0.8):
+def plotSEIIaRs(result0, result, fs=(12, 6), name="", subdir="", alpha=0.4):
     fig, ax = plt.subplots(figsize=fs)
 
     xs, T, dt, args = result
@@ -328,9 +338,11 @@ def plotSEIIaRs(result0, result, fs=(12, 6), name="", subdir="", alpha=0.8):
     for x in xs:
         N = np.sum(x[0])
         x = x / N # Normalize
+        lines = []
         for i in range(x.shape[1]):
-            ax.plot(t, x[:, i], color=colors2[i], alpha=alpha)
-    ax.legend([*labels2])
+            lines.append(ax.plot(t, x[:, i], color=colors2[i], alpha=alpha)[0])
+    [l.set_alpha(1) for l in lines]
+    ax.legend(lines, labels2)
 
     x, T, dt, args = result0
     Nt = get_Nt(T, dt)
@@ -344,7 +356,7 @@ def plotSEIIaRs(result0, result, fs=(12, 6), name="", subdir="", alpha=0.8):
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
-def plot_conv_SEIIaR(xs, dts, args, T, name="", subdir="", ci=2):
+def plot_conv_SEIIaR(xs, dts, args, T, name="", subdir="", ci=1):
     fig, ax = plt.subplots(figsize=(8, 6))
     N = np.sum(xs[0][0])
     R0 = [x[-1, 4]/N for x in xs[:-1]]
@@ -358,7 +370,7 @@ def plot_conv_SEIIaR(xs, dts, args, T, name="", subdir="", ci=2):
         label="$\Delta R(\Delta t)$", ms=12
         )
     ax.legend()
-    ax.set_xlabel("$\Delta t $")
+    ax.set_xlabel("$\Delta t /[\mathrm{ days }]$")
     ax.set_ylabel("$\Delta R$")
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
@@ -419,13 +431,16 @@ def plot_prob_gr(result, fs=(8, 6), name="", subdir=""):
     fig, ax = plt.subplots(figsize=fs)
 
     ax.errorbar(
-        rss, freq_more_than_zero, yerr=std_err, color=colors2[1], fmt=".", capsize=4, 
-        label="$\pm \sigma$", ms = 4, lw=.5, alpha=0.8
+        rss, freq_more_than_zero, yerr=std_err, color=colors2[0], fmt=".", capsize=4, 
+        label="$\pm \sigma$", ms = 4, lw=.4, alpha=0.8
         )
 
     f = lambda x, a, b: 1 / (1 + np.exp(a * (b - x)))
     (a, b), _ = curve_fit(f, rss, freq_more_than_zero)
-    ax.plot(rss, f(rss, a, b), "k--", label="$1/(1 + \exp[a(b-x)])$")
+    ax.plot(
+        rss, f(rss, a, b), "--", color="k", lw=3, 
+        label="$1/(1 + \exp[a(b-x)])$"
+        )
     ax.set_title("$a={:.3f}, \, b={:.3f}$".format(a, b))
 
     i = np.argwhere(freq_more_than_zero<0.5)[-1, 0]
@@ -457,9 +472,10 @@ def plot_two_towns(result, fs=(16, 6), name="", subdir=""):
         x = x / N # Normalize
         I = x[:, 2] + x[:, 3]
         peak = np.argmax(I)
-
+        
+        lines = []
         for i in range(x.shape[1]):
-            ax[n].plot(t, x[:, i], color=colors2[i], lw=4)
+            lines.append(ax[n].plot(t, x[:, i], color=colors2[i], lw=4)[0])
         ax[n].plot([t[peak], t[peak]], [0, 1], "k--")
         ax[n].set_title(
             "Town {}".format(n+1) + \
@@ -467,6 +483,7 @@ def plot_two_towns(result, fs=(16, 6), name="", subdir=""):
             ", $R(180)={:.3f}$".format(x[-1, -1])
             )
 
+    ax[0].legend(lines, labels2)
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -485,15 +502,17 @@ def plot_many_towns(result, fs=(12, 8), name="", subdir="", shape=(2, 5)):
             x = x / N # Normalize
             I = x[:, 2] + x[:, 3]
             peak = np.argmax(I)
-            
+            lines = []
             for i in range(x.shape[1]):
-                ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1, lw=4)
+                lines.append(
+                    ax[j, k].plot(t, x[:, i], color=colors2[i], alpha=1, lw=4)[0]
+                )
             ax[j, k].plot([t[peak], t[peak]], [0, 1], "k--")
             ax[j, k].set_title(
                 "Town {}".format(n+1) + \
                 ", Peak I: day {:.0f}".format(t[peak]), fontsize=30
                 )
-
+    ax[0, 0].legend(lines, labels2)
     save_plot(fig, ax, name, DIR_PATH+subdir)
 
 
@@ -512,7 +531,7 @@ def plot_town_i(result, i0, fs=(12, 8), name="", subdir=""):
     peak = np.argmax(I)
 
     for i in range(x.shape[1]):
-        ax.plot(t, x[:, i], color=colors2[i])
+        ax.plot(t, x[:, i], color=colors2[i], lw=3)
     ax.plot([t[peak], t[peak]], [0, 1], "k--")
     R_inf = x[-1, 4]
     ax.set_title(
@@ -540,7 +559,7 @@ def plot_sum_inf(result, fs=(8, 5), name="", subdir=""):
     t = np.linspace(0, T, save)
 
     for i in range(len(xs)):
-        ax.plot(t, infected_cities[i], color=colors2[2], alpha=0.4)
+        ax.plot(t, infected_cities[i], color=colors[1], alpha=0.3)
 
     ax.plot(t, infected_cities_av, "k--", lw=2, label="$\langle I \\rangle$")
 
@@ -581,5 +600,27 @@ def plot_towns(pop, fs=(8, 6), name="", subdir=""):
     ax.set_yscale("log")
     ax.set_xlabel("population rank")
     ax.set_ylabel("population")
+
+    save_plot(fig, ax, name, DIR_PATH+subdir)
+
+
+def plot_all_infected(result, fs=(16, 6), name="", subdir=""):
+    xs, T, dt, args = result 
+    x = np.sum(xs, axis=0)
+    N = np.sum(x[0])
+    x = x / N # Normalize
+    x = np.sum(x, axis=2)
+
+    t = np.linspace(0, T, len(x))
+    fig, ax = plt.subplots(figsize=fs)
+    # peak = np.argmax(I_sum)
+
+    for i in range(5):
+        ax.plot(t, x[:, i], color=colors2[i], lw=4)
+    # ax.plot([t[peak], t[peak]], [0, 1], "k--")
+    ax.set_title(
+        "Total number of infections"
+        # ", Peak I: day {:.0f}".format(t[peak])
+        )
 
     save_plot(fig, ax, name, DIR_PATH+subdir)
