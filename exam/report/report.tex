@@ -255,17 +255,18 @@
     Then, the spread should be contained to this population.
     This case is illustrated in \autoref{All commuters}, confirming that the model behaves as expected.
 
-    This method is then used to simulate the system with 10 towns, described by the matrix in Equation 10 in \cite{exam}.
-    The result from an average of then runs is showed in \autoref{two towns}, where each variable is plotted for each town
-    The peak of the infection is reached day 57 in town 1, while it is not before day 90 in Town 2.
+    This method is then used to simulate the system with 2 towns, described by the matrix in Equation 10 in \cite{exam}.
+    The result from an average of then runs is showed in \autoref{two towns}, where each variable is plotted for each town.
+    The peak of the infection is reached day 56 in town 1, while it is not before day 91 in Town 2.
     The total fraction of both towns that eventually gets the infection, however, is almost exactly the same, as the parameters are the same.
     Next, a system with 10 towns is simulated. 
     In this system, there are two large towns, town 1 and 5, and eight smaller towns, in groups of four which are connected to one of of the large towns.
     \autoref{nine towns} shows the evolution of the infection.
     The infection starts in town 2, which explains why it is the first to reach the peak of the infection, at day 57.
-    It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 100. 
+    It then spreads to town 1, as it is a hub connected to town 2, which has the peak of its infection at day 103. 
     Town 3, 4 and 4, all satellites of town 1 all hit their peak around day 120.
-    The infection then spreads to the other hub, town 6, as it is connected to town 1, which has its peak at day 141, before it at last spreads to the satellites of town 6, town 7, 8, 9 and 10, which all have their peak around day 160.
+    The infection then spreads to the other hub, town 6, as it is connected to town 1.
+    Its peak is at day 145, before it at last spreads to the satellites of town 6, town 7, 8, 9 and 10, which all have their peak around day 160.
 
     \begin{figure}[H]
         \centering
@@ -302,7 +303,7 @@
         \label{nine towns}
     \end{figure}
 
-    The last system to be simulated is a model of Norway, with the working populace of Norway spread throughout 356 cities and towns. 
+    The last system to be simulated is a model of Norway, with the working populace is spread throughout 356 cities and towns. 
     The simulation will be used to investigate the effects of reducing travel.
     This is done by cutting the off diagonal elements of the population matrix---representing those who travel to a different town for work---by 90\%, and increasing the population in their corresponding home town to keep the population living in that city constant.
     \autoref{pop structure} illustrates the population matrix before and after the lockdown, as well as the population distribution of towns and cities in question.
@@ -317,6 +318,7 @@
     The largest town, town 1, is more or less unaffected, as it is where the spread started.
     The second largest town however, town 237, is affected.
     The peak in this town is delayed by around a month due to the lockdown.
+    The total number of infections does not seem to be affected.
 
     \begin{figure}[H]
         \centering
@@ -332,7 +334,7 @@
         \includegraphics[width=.45\textwidth]{../plots/2D/num_infected.pdf}
         \includegraphics[width=.45\textwidth]{../plots/2D/num_infectedlockdown.pdf}
         \caption{The total number of towns with more than 10 infected. 
-        The green, faded lines are a single simulation, while the dashed line is the average. 
+        The red, faded lines are a single simulation, while the dashed line is the average. 
         The plot to the right is the original populations, the plot on the right is after lockdown.}
         \label{towns infected}
     \end{figure}
